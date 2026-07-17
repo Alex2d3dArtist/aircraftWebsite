@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>空中兵器高度／速度全譜圖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+:root{
+  --bg:#0A0E13;
+  --panel:#121820;
+  --panel-alt:#1A222C;
+  --panel-line:#1E2833;
+  --border:#26313D;
+  --text-1:#E8EDF2;
+  --text-2:#8CA0B3;
+  --text-3:#56677A;
+  --amber:#FFB000;
+  --amber-dim:rgba(255,176,0,.35);
+  --cyan:#4FD8E0;
+  --good:#5FE3A1;
+  --font-display:'Chakra Petch',sans-serif;
+  --font-body:'Noto Sans TC',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(255,176,0,.06), transparent 45%),
+    radial-gradient(ellipse at 90% 0%, rgba(79,216,224,.05), transparent 40%),
+    var(--bg);
+  color:var(--text-1);
+  font-family:var(--font-body);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--amber);color:#0A0E13;}
+a{color:var(--cyan);}
+
+/* ---------- scanline / hud texture ---------- */
+.hud-frame{
+  position:relative;
+  max-width:1400px;
+  margin:0 auto;
+  padding:20px 20px 60px;
+}
+.hud-frame::before{
+  content:'';
+  position:fixed; inset:0; pointer-events:none; z-index:2000;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0px, rgba(255,255,255,.012) 1px, transparent 1px, transparent 3px);
+  mix-blend-mode:overlay;
+}
+
+/* ---------- header ---------- */
+header.top{
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:linear-gradient(180deg, var(--panel-alt), var(--panel));
+  padding:22px 24px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+header.top::after{
+  content:'';
+  position:absolute; left:0; right:0; top:0; height:2px;
+  background:linear-gradient(90deg, transparent, var(--amber), transparent);
+  animation:sweep 6s linear infinite;
+}
+@keyframes sweep{
+  0%{transform:translateX(-100%);}
+  100%{transform:translateX(100%);}
+}
+.eyebrow{
+  font-family:var(--font-display);
+  font-size:11px;
+  letter-spacing:.28em;
+  color:var(--amber);
+  text-transform:uppercase;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:10px;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.lang-toggle{
+  margin-left:auto; background:var(--panel-alt); border:1px solid var(--amber-dim); color:var(--amber);
+  font-family:var(--font-display); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  padding:5px 11px; border-radius:4px; cursor:pointer; flex:none;
+}
+.lang-toggle:hover{background:rgba(255,176,0,.14);}
+h1{
+  font-family:var(--font-body);
+  font-weight:900;
+  font-size:clamp(22px,4vw,34px);
+  margin:0 0 8px;
+  letter-spacing:.01em;
+}
+h1 .accent{color:var(--amber);}
+header .sub{
+  color:var(--text-2);
+  font-size:14px;
+  max-width:640px;
+  line-height:1.7;
+  margin:0 0 18px;
+}
+.stat-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.stat-chip{
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.02);
+  border-radius:4px;
+  padding:8px 14px;
+  min-width:120px;
+}
+.stat-chip .k{font-size:10px;color:var(--text-3);letter-spacing:.12em;text-transform:uppercase;font-family:var(--font-display);}
+.stat-chip .v{font-family:var(--font-mono);font-size:16px;color:var(--text-1);font-weight:600;margin-top:2px;}
+.stat-chip .v span{color:var(--amber);}
+
+/* ---------- layout grid ---------- */
+.layout{
+  display:grid;
+  grid-template-columns:240px 1fr;
+  grid-template-areas:"filters chart";
+  gap:16px;
+  align-items:start;
+}
+@media (max-width:1080px){
+  .layout{grid-template-columns:1fr; grid-template-areas:"filters" "chart";}
+}
+
+.panel{
+  border:1px solid var(--border);
+  background:var(--panel);
+  border-radius:6px;
+  padding:16px;
+}
+.panel-title{
+  font-family:var(--font-display);
+  font-size:11px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--text-2);
+  margin:0 0 12px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--panel-line);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+/* ---------- filters ---------- */
+#filters{grid-area:filters;}
+.search-wrap{position:relative; margin-bottom:14px;}
+#search{
+  width:100%;
+  background:var(--panel-alt);
+  border:1px solid var(--border);
+  color:var(--text-1);
+  border-radius:4px;
+  padding:9px 10px;
+  font-family:var(--font-body);
+  font-size:13px;
+  outline:none;
+}
+#search:focus{border-color:var(--amber);}
+#search::placeholder{color:var(--text-3);}
+
+.group-row{
+  display:flex; align-items:center; gap:9px;
+  padding:7px 4px;
+  border-radius:4px;
+  cursor:pointer;
+  user-select:none;
+  font-size:13px;
+  transition:background .15s;
+}
+.group-row:hover{background:var(--panel-alt);}
+.group-row input{accent-color:var(--amber); width:14px;height:14px; cursor:pointer;}
+.swatch{width:10px;height:10px;border-radius:2px;flex:none;}
+.group-row .lbl{flex:1; color:var(--text-1);}
+.group-row .cnt{font-family:var(--font-mono); color:var(--text-3); font-size:11px;}
+.filter-actions{display:flex; gap:8px; margin-top:12px;}
+.btn-mini{
+  flex:1; background:var(--panel-alt); border:1px solid var(--border); color:var(--text-2);
+  font-family:var(--font-display); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  padding:7px 6px; border-radius:4px; cursor:pointer;
+}
+.btn-mini:hover{border-color:var(--amber); color:var(--amber);}
+.legend-note{margin-top:16px; padding-top:14px; border-top:1px solid var(--panel-line); font-size:11.5px; color:var(--text-3); line-height:1.7;}
+.legend-note b{color:var(--text-2);}
+
+/* ---------- chart ---------- */
+#chartPanel{grid-area:chart; min-width:0;}
+#chartContainer{width:100%; position:relative;}
+#chartContainer svg{width:100%; height:auto; display:block; overflow:visible;}
+.axis path,.axis line{stroke:var(--border);}
+.axis text{fill:var(--text-3); font-family:var(--font-mono); font-size:10.5px;}
+.axis-label{fill:var(--text-2); font-family:var(--font-display); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;}
+.band-line{stroke:var(--cyan); stroke-opacity:.28; stroke-dasharray:2 4;}
+.band-label{fill:var(--cyan); fill-opacity:.75; font-family:var(--font-mono); font-size:9.5px;}
+.cloud-line{stroke:#8FCBEA; stroke-opacity:.3; stroke-dasharray:1 3;}
+.cloud-label{fill:#8FCBEA; fill-opacity:.8; font-family:var(--font-mono); font-size:9.5px;}
+.landmark-line{stroke:#E0B84A; stroke-opacity:.35; stroke-dasharray:2 2;}
+.landmark-label{fill:#E0B84A; fill-opacity:.85; font-family:var(--font-mono); font-size:9.5px;}
+.mach-line{stroke:var(--amber); stroke-opacity:.22; stroke-dasharray:2 4;}
+.mach-label{fill:var(--amber); fill-opacity:.8; font-family:var(--font-mono); font-size:9.5px;}
+.zoom-capture{cursor:grab;}
+.zoom-capture:active{cursor:grabbing;}
+.brush-layer{display:none;}
+.brush-layer.active{display:block;}
+.brush .selection{fill:rgba(255,176,0,.14); stroke:var(--amber); stroke-width:1.5px; stroke-dasharray:5 3;}
+.brush .overlay{cursor:crosshair !important;}
+.brush .handle{display:none;}
+.pt{cursor:pointer; transition:opacity .2s;}
+.pt-ring{fill:none; stroke:var(--amber); stroke-width:2px; pointer-events:none; opacity:0;}
+.crosshair{stroke:var(--text-2); stroke-width:1px; stroke-dasharray:3 3; opacity:0; pointer-events:none;}
+.pt-label{
+  font-family:var(--font-mono); font-size:10.5px; fill:var(--text-1); text-anchor:middle;
+  paint-order:stroke; stroke:#0A0E13; stroke-width:3px; stroke-linejoin:round;
+  pointer-events:none; transition:opacity .15s;
+}
+.art-layer{pointer-events:none;}
+.art-star{fill:#EAF2FF;}
+#tooltip{
+  position:absolute; pointer-events:none; z-index:50;
+  background:#0D1218; border:1px solid var(--amber-dim); border-radius:4px;
+  padding:8px 10px; font-size:12px; color:var(--text-1); opacity:0; transition:opacity .12s;
+  box-shadow:0 8px 24px rgba(0,0,0,.5); max-width:220px;
+}
+#tooltip .tt-name{font-weight:700; margin-bottom:4px;}
+#tooltip .tt-row{font-family:var(--font-mono); font-size:11px; color:var(--text-2);}
+#tooltip .tt-row span{color:var(--amber);}
+
+.chart-hint{font-size:11px; color:var(--text-3); margin-top:8px; line-height:1.6;}
+
+#chartOuter{display:flex; align-items:stretch; gap:6px;}
+#chartMain{flex:1; min-width:0;}
+
+.axis-slider{flex:none; display:flex;}
+.axis-slider-y{flex-direction:column; width:64px; box-sizing:content-box;}
+.axis-slider-x{flex-direction:column; margin-top:10px; box-sizing:content-box;}
+
+.slider-track{position:relative; background:var(--panel-alt); border:1px solid var(--panel-line); border-radius:3px;}
+.slider-track-y{width:6px; flex:none; margin-left:auto; margin-right:6px;}
+.slider-track-x{height:6px; width:100%;}
+
+.slider-range{position:absolute; background:rgba(255,176,0,.35); border-radius:3px;}
+.slider-track-y .slider-range{left:0; right:0;}
+.slider-track-x .slider-range{top:0; bottom:0;}
+
+.slider-handle{
+  position:absolute; width:15px; height:15px; border-radius:50%;
+  background:var(--amber); border:2px solid #0A0E13; cursor:pointer;
+  box-shadow:0 1px 4px rgba(0,0,0,.5); touch-action:none; z-index:5;
+}
+.slider-handle:hover, .slider-handle:active{background:#FFC94D;}
+.slider-track-y .slider-handle{left:50%; transform:translate(-50%,-50%);}
+.slider-track-x .slider-handle{top:50%; transform:translate(-50%,-50%);}
+
+.handle-label{
+  position:absolute; font-family:var(--font-mono); font-size:9px; color:var(--amber);
+  white-space:nowrap; pointer-events:none; background:#0A0E13; padding:1px 4px; border-radius:2px;
+  border:1px solid var(--amber-dim);
+}
+.handle-label-x{top:-22px; left:50%; transform:translateX(-50%);}
+.handle-label-y{right:20px; left:auto; top:50%; transform:translateY(-50%);}
+
+/* ---------- fullscreen chart mode ---------- */
+body.chart-fullscreen{overflow:hidden;}
+body.chart-fullscreen #chartPanel{
+  position:fixed; inset:0; z-index:1000; margin:0; border-radius:0;
+  display:flex; flex-direction:column; overflow:auto;
+}
+body.chart-fullscreen #chartOuter{flex:1; min-height:0;}
+body.chart-fullscreen #chartMain{display:flex; flex-direction:column; min-height:0;}
+body.chart-fullscreen #chartContainer{flex:1; min-height:0; overflow:hidden;}
+body.chart-fullscreen .chart-hint{display:none;}
+
+/* ---------- in-chart floating detail overlay ---------- */
+#detailOverlay{
+  position:absolute; top:10px; right:10px; width:270px; max-height:calc(100% - 20px);
+  overflow-y:auto; z-index:60;
+  background:rgba(13,18,24,.96); border:1px solid var(--border); border-radius:6px;
+  padding:14px; display:none;
+  box-shadow:0 12px 32px rgba(0,0,0,.55);
+}
+#detailOverlay.open{display:block;}
+#detailOverlayClose{
+  position:absolute; top:8px; right:10px; background:none; border:none;
+  color:var(--text-3); font-family:var(--font-mono); font-size:14px; cursor:pointer; z-index:5;
+}
+#detailOverlayClose:hover{color:var(--amber);}
+
+.chart-toolbar{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;}
+.toggle-btn{
+  background:var(--panel-alt); border:1px solid var(--border); color:var(--text-2);
+  font-family:var(--font-display); font-size:10.5px; letter-spacing:.06em;
+  padding:7px 12px; border-radius:4px; cursor:pointer; transition:all .15s;
+}
+.toggle-btn:hover{border-color:var(--amber); color:var(--amber);}
+.toggle-btn.active{background:rgba(255,176,0,.14); border-color:var(--amber); color:var(--amber); box-shadow:0 0 0 1px var(--amber) inset;}
+
+/* ---------- attack-range ranking chart ---------- */
+#atkChartContainer{display:flex; flex-direction:column;}
+.atk-header-row{
+  display:grid; grid-template-columns:200px 1fr; gap:12px;
+  padding-bottom:6px; margin-bottom:4px; border-bottom:1px solid var(--border);
+}
+.atk-header-row .atk-name-h{font-family:var(--font-display); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-3);}
+.atk-track-header{position:relative; height:16px;}
+.atk-tick{position:absolute; top:0; height:100%; border-left:1px dashed var(--panel-line); padding-left:4px; font-family:var(--font-mono); font-size:9.5px; color:var(--text-3); white-space:nowrap;}
+.atk-row{
+  display:grid; grid-template-columns:200px 1fr; gap:12px; align-items:center;
+  padding:5px 0; border-bottom:1px solid var(--panel-line); cursor:pointer; transition:background .15s;
+}
+.atk-row:hover{background:var(--panel-alt);}
+.atk-row.selected{background:rgba(255,176,0,.08); box-shadow:inset 2px 0 0 var(--amber);}
+.atk-row.dim{opacity:.22;}
+.atk-name{font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; gap:6px;}
+.atk-name .tg{width:8px;height:8px;border-radius:2px;flex:none;}
+.atk-name b{font-weight:700; color:var(--text-1); overflow:hidden; text-overflow:ellipsis;}
+.atk-track{position:relative; height:20px; background:var(--panel-alt); border-radius:2px;}
+.atk-fill-line{position:absolute; top:50%; left:0; height:2px; transform:translateY(-50%); border-radius:2px;}
+.atk-dot{position:absolute; top:50%; width:9px; height:9px; border-radius:50%; transform:translate(-50%,-50%); border:1.5px solid #0A0E13;}
+.atk-value{position:absolute; top:50%; transform:translateY(-50%); font-family:var(--font-mono); font-size:10.5px; color:var(--text-1); white-space:nowrap; padding-left:9px;}
+.atk-na{position:absolute; left:6px; top:50%; transform:translateY(-50%); font-family:var(--font-mono); font-size:10.5px; color:var(--text-3); font-style:italic;}
+@media (max-width:640px){
+  .atk-header-row,.atk-row{grid-template-columns:110px 1fr;}
+  .atk-name{font-size:11px;}
+  .axis-slider-y{width:46px;}
+  .slider-track-y{margin-right:4px;}
+  .handle-label-y{right:15px; font-size:8px;}
+}
+.atk-distance-overlay{position:absolute; top:0; bottom:0; pointer-events:none; z-index:8;}
+.atk-dist-line{position:absolute; top:0; bottom:0; width:3px; margin-left:-1.5px; background:#C792EA; opacity:.6; pointer-events:auto; cursor:help; z-index:8;}
+.atk-dist-line:hover{opacity:1; width:4px; margin-left:-2px;}
+
+/* ---------- detail panel (now only used by the in-chart floating overlay) ---------- */
+.detail-empty{color:var(--text-3); font-size:13px; line-height:1.8; padding:20px 4px;}
+.detail-tag{
+  display:inline-block; font-family:var(--font-display); font-size:10px; letter-spacing:.1em;
+  padding:3px 8px; border-radius:3px; margin-bottom:8px; text-transform:uppercase;
+}
+.detail-name{font-size:18px; font-weight:900; margin:0 0 2px; line-height:1.35;}
+.detail-type{color:var(--text-2); font-size:12px; margin-bottom:14px;}
+.detail-stats{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;}
+.dstat{background:var(--panel-alt); border:1px solid var(--panel-line); border-radius:4px; padding:8px 10px;}
+.dstat .k{font-size:9.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:.08em; font-family:var(--font-display);}
+.dstat .v{font-family:var(--font-mono); font-size:14px; color:var(--text-1); margin-top:3px; font-weight:600;}
+.dstat .v small{color:var(--text-3); font-weight:400; font-size:10.5px;}
+.envelope{margin-bottom:14px;}
+.envelope-label{font-size:10px; color:var(--text-3); letter-spacing:.08em; text-transform:uppercase; font-family:var(--font-display); margin-bottom:6px;}
+.envelope-track{position:relative; height:120px; background:var(--panel-alt); border:1px solid var(--panel-line); border-radius:4px; overflow:hidden;}
+.envelope-tick{position:absolute; left:0; right:0; border-top:1px dashed rgba(79,216,224,.2); font-family:var(--font-mono); font-size:8.5px; color:var(--text-3); padding-left:4px;}
+.envelope-bar{position:absolute; left:8px; right:8px; border-radius:2px; opacity:.85;}
+.detail-desc{font-size:12.5px; line-height:1.8; color:var(--text-2); border-top:1px solid var(--panel-line); padding-top:12px;}
+
+/* ---------- table ---------- */
+#tablePanel,#atkPanel,#comparePanel{grid-column:1/-1; margin-top:16px;}
+.table-wrap{overflow-x:auto;}
+table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:760px;}
+thead th{
+  text-align:left; font-family:var(--font-display); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-2); border-bottom:1px solid var(--border); padding:9px 10px; cursor:pointer; white-space:nowrap;
+}
+thead th:hover{color:var(--amber);}
+thead th.sorted::after{content:' ▾'; color:var(--amber);}
+thead th.sorted.asc::after{content:' ▴'; color:var(--amber);}
+tbody td{padding:9px 10px; border-bottom:1px solid var(--panel-line); vertical-align:top;}
+tbody tr{cursor:pointer; transition:background .15s;}
+tbody tr:hover{background:var(--panel-alt);}
+tbody tr.selected{background:rgba(255,176,0,.08); box-shadow:inset 2px 0 0 var(--amber);}
+tbody tr.dim{opacity:.25;}
+td.num{font-family:var(--font-mono); color:var(--text-1); white-space:nowrap;}
+td .nm{font-weight:700; color:var(--text-1);}
+td .tg{display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:6px;}
+.type-chip{color:var(--text-3); font-size:11px;}
+td.cmp-td{text-align:center;}
+.cmp-check{width:15px; height:15px; accent-color:var(--amber); cursor:pointer;}
+
+/* ---------- compare panel ---------- */
+#compareBody{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px;}
+.cmp-card{
+  flex:0 0 190px; background:var(--panel-alt); border:1px solid var(--border); border-radius:5px;
+  padding:12px; position:relative;
+}
+.cmp-card .cmp-close{
+  position:absolute; top:6px; right:8px; cursor:pointer; color:var(--text-3);
+  font-family:var(--font-mono); font-size:13px; line-height:1; background:none; border:none;
+}
+.cmp-card .cmp-close:hover{color:var(--amber);}
+.cmp-card .cmp-tag{display:inline-block; width:8px;height:8px;border-radius:2px; margin-right:5px;}
+.cmp-card .cmp-name{font-size:13px; font-weight:700; margin:4px 0 2px; padding-right:16px; line-height:1.35;}
+.cmp-card .cmp-type{font-size:10.5px; color:var(--text-3); margin-bottom:10px;}
+.cmp-card .cmp-row{display:flex; justify-content:space-between; font-size:11px; padding:4px 0; border-top:1px solid var(--panel-line);}
+.cmp-card .cmp-row .k{color:var(--text-3);}
+.cmp-card .cmp-row .v{font-family:var(--font-mono); color:var(--text-1); text-align:right;}
+.cmp-clear-wrap{margin-top:10px;}
+
+footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line); color:var(--text-3); font-size:11px; line-height:1.8;}
+</style>
+</head>
+<body>
+<div class="hud-frame">
+
+  <header class="top">
+    <div class="eyebrow"><span class="dot"></span> AIRSPACE THREAT ENVELOPE · REFERENCE PLOT
+      <button id="btnLang" class="lang-toggle">EN</button>
+    </div>
+    <h1 data-i18n="title">空中兵器<span class="accent">高度</span>／<span class="accent">速度</span>全譜圖</h1>
+    <p class="sub" data-i18n="subtitle">從掌心大小的穿越機自殺無人機，到再入大氣層時速兩萬多公里的洲際彈道飛彈——用同一張對數座標圖，看懂天空垂直維度上真正的尺度差異。</p>
+    <div class="stat-row">
+      <div class="stat-chip"><div class="k" data-i18n="statCountLabel">收錄兵器</div><div class="v"><span id="statCount">--</span> <span data-i18n="unitItems">項</span></div></div>
+      <div class="stat-chip"><div class="k" data-i18n="statAltLabel">高度跨度</div><div class="v"><span data-i18n="ground">地面</span> → <span id="statAlt">--</span></div></div>
+      <div class="stat-chip"><div class="k" data-i18n="statSpeedLabel">速度跨度</div><div class="v"><span id="statSpeed">--</span></div></div>
+      <div class="stat-chip"><div class="k" data-i18n="statGroupsLabel">分類</div><div class="v"><span id="statGroups">--</span> <span data-i18n="unitCategories">大類</span></div></div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="panel" id="filters">
+      <div class="panel-title" data-i18n="filterTitle">篩選 / FILTER</div>
+      <div class="search-wrap">
+        <input type="text" id="search" data-i18n-placeholder="searchPlaceholder" placeholder="搜尋名稱、型號…">
+      </div>
+      <div id="groupList"></div>
+      <div class="filter-actions">
+        <button class="btn-mini" id="btnAll" data-i18n="selectAll">全選</button>
+        <button class="btn-mini" id="btnNone" data-i18n="selectNone">清空</button>
+      </div>
+
+      <div class="panel-title" style="margin-top:16px;" data-i18n="layersTitle">參考線圖層 / LAYERS</div>
+      <div id="refLayerList"></div>
+
+      <div class="legend-note" data-i18n="chartLegendNote">
+        <b>圖表判讀：</b>橫軸＝最高速度，縱軸＝最高作戰高度／彈道頂點。點的大小＝最大射程／作戰半徑。青色虛線為大氣分層／軌道，淺藍虛線為雲層，金色虛線為地標建築與山峰，琥珀色虛線為音速／馬赫參考線。
+      </div>
+    </aside>
+
+    <section class="panel" id="chartPanel">
+      <div class="panel-title"><span data-i18n="chartTitle">高度 × 速度 散點圖</span> <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="chartCount"></span></div>
+      <div class="chart-toolbar">
+        <button id="toggleScale" class="toggle-btn" aria-pressed="false"></button>
+        <button id="toggleXScale" class="toggle-btn" aria-pressed="false"></button>
+        <button id="btnBoxZoom" class="toggle-btn" aria-pressed="false" data-i18n="btnBoxZoom">🔲 框選縮放</button>
+        <button id="btnZoomFit" class="toggle-btn" data-i18n="btnZoomFit">🔍 縮放至可見項目</button>
+        <button id="btnResetZoom" class="toggle-btn" data-i18n="btnResetZoom">重置縮放</button>
+        <button id="btnLabelMode" class="toggle-btn"></button>
+        <button id="btnArt" class="toggle-btn active" aria-pressed="true" data-i18n="btnArt">🌌 藝術效果</button>
+        <button id="btnFullscreen" class="toggle-btn" aria-pressed="false" data-i18n="btnFullscreen">⛶ 全螢幕</button>
+      </div>
+      <div id="chartOuter">
+        <div id="ySliderWrap" class="axis-slider axis-slider-y">
+          <div class="slider-track slider-track-y" id="ySliderTrack">
+            <div class="slider-range" id="ySliderRange"></div>
+            <div class="slider-handle" id="ySliderHandleTop"><span class="handle-label handle-label-y" id="yHandleTopLabel"></span></div>
+            <div class="slider-handle" id="ySliderHandleBot"><span class="handle-label handle-label-y" id="yHandleBotLabel"></span></div>
+          </div>
+        </div>
+        <div id="chartMain">
+          <div id="chartContainer">
+            <div id="tooltip"></div>
+            <div id="detailOverlay">
+              <button id="detailOverlayClose">✕</button>
+              <div id="detailOverlayBody"></div>
+            </div>
+          </div>
+          <div id="xSliderWrap" class="axis-slider axis-slider-x">
+            <div class="slider-track slider-track-x" id="xSliderTrack">
+              <div class="slider-range" id="xSliderRange"></div>
+              <div class="slider-handle" id="xSliderHandleL"><span class="handle-label handle-label-x" id="xHandleLLabel"></span></div>
+              <div class="slider-handle" id="xSliderHandleR"><span class="handle-label handle-label-x" id="xHandleRLabel"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-hint" data-i18n="chartHint">滑鼠滾輪在圖表上可縮放（無上限，可持續放大到極細節）、拖曳可平移；也可直接拖動座標軸旁的拉桿手把調整範圍（即時生效）。想精準聚焦某個角落，按「框選縮放」後在圖表上拖曳畫出一個框，放開即自動縮放到該範圍；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原成完整檢視。Y軸拉桿固定以對數方式分佈、下限為 1km，避免兩個手把在低空區域擠在一起；要看 1km 以下的細節，用滾輪或框選縮放即可。</div>
+    </section>
+
+    <section class="panel" id="comparePanel">
+      <div class="panel-title"><span data-i18n="compareTitle">比較清單 / COMPARE</span> <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="compareCount"></span></div>
+      <div id="compareBody">
+        <div class="detail-empty" style="padding:6px 4px;" data-i18n="compareEmpty">在下方列表勾選任意武器（建議 2–6 項），即可在此並排比較高度、速度與攻擊距離。</div>
+      </div>
+    </section>
+
+    <section class="panel" id="tablePanel" style="display:none;">
+      <div class="panel-title"><span data-i18n="tableTitle">完整數據列表 / DATA TABLE</span> <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="tableCount"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="_nosort" style="cursor:default;width:34px;" data-i18n="thCompare">比較</th>
+              <th data-key="name" data-i18n="thName">名稱</th>
+              <th data-key="group" data-i18n="thCategory">分類</th>
+              <th data-key="altMax" data-i18n="thAltRange">高度範圍</th>
+              <th data-key="spdMax" data-i18n="thSpdRange">速度範圍</th>
+              <th data-key="range" data-i18n="thRange">最大射程／半徑</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" id="atkPanel">
+      <div class="panel-title"><span data-i18n="atkTitle">攻擊距離全譜排行 / EFFECTIVE STRIKE RANGE</span> <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="atkCount"></span></div>
+      <div class="legend-note" style="margin-top:0;padding-top:0;border-top:none;margin-bottom:10px;" data-i18n="atkMethodNote">
+        <b>估算方式：</b>飛彈／火箭／自殺無人機等「彈藥類」武器，攻擊距離＝其自身最大射程。戰機／直升機／察打一體無人機等「載具類」平台，攻擊距離＝作戰半徑（非轉場航程）＋所攜帶主要武器有效射程，兩者相加為簡化估算，實際依任務剖面、掛載與空中加油與否而異。純偵察無人機／偵察機（如全球鷹、U-2、SR-71）不具備武裝，標示為「非打擊平台」。
+      </div>
+      <label class="group-row" style="padding:4px 4px 10px;">
+        <input type="checkbox" id="toggleDistAnchor" checked>
+        <span class="swatch" style="background:#C792EA;"></span>
+        <span class="lbl" data-i18n="distAnchorToggle">顯示距離錨點（虛線；滑鼠移到線上可看說明）</span>
+      </label>
+      <div class="legend-note" id="distLegendText" style="margin-top:0;padding-top:0;border-top:none;margin-bottom:14px;" data-i18n="distLegend">
+        <b>距離參考：</b>香港－澳門 ~60km／台灣海峽最窄處 ~130km／首爾－平壤 ~195km／香港－台北 ~810km／香港－北京 ~1,980km／香港－東京 ~2,900km／地球對蹠點（地表最遠兩點）~20,000km。
+      </div>
+      <div id="atkRowsWrap" style="position:relative;">
+        <div id="atkChartContainer"></div>
+        <div id="atkDistanceOverlay" class="atk-distance-overlay"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer data-i18n="footerDisclaimer">
+    數據為公開資料整理之概略估算值（部分為官方公開數據，部分為公開報導或愛好者社群估計），僅供科普、遊戲設計與創作參考，實際性能規格因型號、酬載與飛行條件而異，敏感軍事數值屬機密，不代表任何機構之權威數字。馬赫換算以海平面音速約 1,235 km/h 概略計算，實際音速隨高度與氣溫變化。
+  </footer>
+
+</div>
+
+<script>
+window.GROUPS = {"UAV_LOITER":{"label":"無人機／游蕩彈藥","color":"#4FD8E0","order":1,"label_en":"UAVs / Loitering Munitions"},"HELI":{"label":"武裝直升機","color":"#9CAE5D","order":2,"label_en":"Attack Helicopters"},"PROP_PLANE":{"label":"螺旋槳飛機","color":"#C9975B","order":3,"label_en":"Propeller Aircraft"},"JET_PLANE":{"label":"噴射機","color":"#4D96FF","order":4,"label_en":"Jet Aircraft"},"CIVILIAN":{"label":"民用飛機","color":"#8FE3C0","order":5,"label_en":"Civilian Aircraft"},"BALLOON":{"label":"熱氣球／氣象氣球","color":"#F4978E","order":6,"label_en":"Balloons (Manned / Weather)"},"CRUISE":{"label":"巡航導彈","color":"#FF7A45","order":7,"label_en":"Cruise Missiles"},"ROCKET":{"label":"非正規／戰術火箭","color":"#D4C24A","order":8,"label_en":"Irregular / Tactical Rockets"},"BALLISTIC_HYPERSONIC":{"label":"彈道飛彈／高超音速武器","color":"#FF4466","order":9,"label_en":"Ballistic Missiles / Hypersonic Weapons"}};
+window.DATA = [{"id":1,"name":"FPV 穿越機自殺無人機","group":"UAV_LOITER","type":"微型消耗性無人機","era":"當代衝突","name_en":"FPV Kamikaze Drone","type_en":"Micro Expendable Drone","era_en":"Contemporary Conflict","desc_en":"A racing FPV drone fitted with a warhead — cheap and quick to mass-produce. The operator flies it into the target using first-person video, making it the most common expendable strike platform on the Ukraine front line.","altMin":5,"altMax":500,"spdMin":60,"spdMax":150,"range":10,"atkRange":10,"atkCategory":"munition","desc":"民用競速穿越機改裝加裝戰鬥部，成本低廉且量產迅速，依賴第一人稱影像由操作員目視導引撞擊目標，是俄烏戰場前線最普遍的消耗性打擊平台。"},{"id":2,"name":"Switchblade 300 彈簧刀","group":"UAV_LOITER","type":"單兵便攜游蕩彈藥","era":"當代衝突","name_en":"Switchblade 300","type_en":"Man-Portable Loitering Munition","era_en":"Contemporary Conflict","desc_en":"A tube-launched kamikaze drone a single soldier can carry in a backpack. It loiters for about 15 minutes waiting for a moving target, and the operator can abort the strike at the last second — the smallest possible version of a \"sensor-to-shooter\" system.","altMin":50,"altMax":150,"spdMin":100,"spdMax":161,"range":10,"atkRange":10,"atkCategory":"munition","desc":"單兵可由背包取出、管式發射的自殺無人機，滯空約 15 分鐘伺機打擊移動目標，操作員可在最後一刻取消攻擊，屬「察打一體」的最小單位版本。"},{"id":3,"name":"Shahed-136 見證者","group":"UAV_LOITER","type":"長程游蕩彈藥","era":"當代衝突","name_en":"Shahed-136 \"Geran\"","type_en":"Long-Range Loitering Munition","era_en":"Contemporary Conflict","desc_en":"An Iranian-designed, Russian-mass-produced delta-wing kamikaze cruise drone. Used in swarms to exhaust an opponent's air-defense missile stockpile — the poster child of the modern \"win through volume\" saturation-attack doctrine.","altMin":60,"altMax":4000,"spdMin":150,"spdMax":185,"range":2500,"atkRange":2500,"atkCategory":"munition","desc":"伊朗設計、俄羅斯量產的三角翼低成本巡航式自殺無人機，以蜂群數量消耗對方防空飛彈存量，是現代「以量取勝」飽和攻擊思路的代表作。"},{"id":4,"name":"Bayraktar TB2 旗手","group":"UAV_LOITER","type":"中空長航時察打一體無人機","era":"現代","name_en":"Bayraktar TB2","type_en":"Medium-Altitude Long-Endurance Strike UAV","era_en":"Modern","desc_en":"A Turkish medium-altitude, long-endurance reconnaissance-strike drone armed with light laser-guided bombs. It made its name in Nagorno-Karabakh and the early stages of the war in Ukraine, changing the cost of gaining local air superiority for small states.","altMin":1000,"altMax":8200,"spdMin":130,"spdMax":222,"range":150,"atkRange":158,"atkCategory":"platform","combatRadius":150,"weaponRange":8,"desc":"土耳其研製的中空長航時偵察打擊無人機，攜帶輕型雷射導引炸彈，於納卡戰爭及烏克蘭戰爭初期一戰成名，改變小國取得空中優勢的成本結構。"},{"id":5,"name":"MQ-9 死神","group":"UAV_LOITER","type":"中高空長航時察打一體無人機","era":"現代","name_en":"MQ-9 Reaper","type_en":"Medium/High-Altitude Long-Endurance Strike UAV","era_en":"Modern","desc_en":"The main US strike-reconnaissance drone, armed with Hellfire missiles and precision-guided bombs, with over 27 hours of endurance — the core platform of \"War on Terror\"-era decapitation strikes.","altMin":1000,"altMax":15000,"spdMin":250,"spdMax":482,"range":1850,"atkRange":1858,"atkCategory":"platform","combatRadius":1850,"weaponRange":8,"desc":"美軍主力對地打擊偵察無人機，可掛載地獄火飛彈與精確導引炸彈，續航力超過 27 小時，是「反恐戰爭」時期斬首行動的核心平台。"},{"id":6,"name":"RQ-4 全球鷹","group":"UAV_LOITER","type":"高空戰略偵察無人機","era":"現代","name_en":"RQ-4 Global Hawk","type_en":"High-Altitude Strategic Reconnaissance UAV","era_en":"Modern","desc_en":"A high-altitude, long-endurance strategic reconnaissance drone able to fly for over 30 hours at stratospheric altitude, conducting wide-area surveillance and signals intelligence far beyond the operating envelope of ordinary airliners.","altMin":15000,"altMax":18300,"spdMin":500,"spdMax":575,"range":22780,"atkRange":0,"atkCategory":"recon","desc":"高空長航時戰略偵察無人機，可連續飛行超過 30 小時，於平流層高度進行廣域監視與訊號情報蒐集，飛行包絡遠超一般民航機。"},{"id":7,"name":"RQ-170 哨兵","group":"UAV_LOITER","type":"匿蹤偵察無人機","era":"現代","name_en":"RQ-170 Sentinel","type_en":"Stealth Reconnaissance UAV","era_en":"Modern","desc_en":"A US flying-wing stealth reconnaissance drone used to penetrate sensitive airspace. One was captured and put on display in Iran in 2011, revealing the existence of a US stealth drone program.","altMin":13000,"altMax":15240,"spdMin":300,"spdMax":500,"range":3000,"atkRange":0,"atkCategory":"recon","desc":"美軍飛翼外形匿蹤偵察無人機，用於敏感空域滲透偵察，2011 年一架曾於伊朗境內被俘獲並展示，暴露美軍匿蹤無人機的存在。"},{"id":8,"name":"X-47B 艦載驗證機","group":"UAV_LOITER","type":"匿蹤艦載作戰無人機驗證機","era":"現代","name_en":"X-47B","type_en":"Stealth Carrier-Based UCAV Demonstrator","era_en":"Modern","desc_en":"A US Navy flying-wing stealth carrier-based unmanned combat aircraft demonstrator that showed off autonomous aerial refueling and catapult launch/carrier landing — paving the way for future unmanned carrier aircraft.","altMin":10000,"altMax":12190,"spdMin":700,"spdMax":940,"range":3900,"atkRange":0,"atkCategory":"recon","desc":"美國海軍飛翼匿蹤艦載無人作戰飛機技術驗證機，展示自主空中加油與航空母艦彈射起降能力，為未來無人艦載機鋪路。"},{"id":37,"name":"Kargu-2 蜂群自殺無人機","group":"UAV_LOITER","type":"AI 自主辨識微型無人機","era":"當代","name_en":"Kargu-2","type_en":"AI Autonomous-Targeting Micro Drone","era_en":"Contemporary","desc_en":"A Turkish-made quadcopter kamikaze drone with autonomous image-recognition targeting. A UN report suggested one attacked personnel in Libya without real-time human control, making it a landmark case in the autonomous-weapons debate.","altMin":5,"altMax":150,"spdMin":40,"spdMax":72,"range":5,"atkRange":5,"atkCategory":"munition","desc":"土耳其研製四旋翼自殺型無人機，具備影像 AI 自主鎖定能力，據聯合國報告曾於利比亞戰場在未經人為即時操控下攻擊人員，被視為自主武器爭議的指標案例。"},{"id":38,"name":"Roadrunner-M 可回收攔截機","group":"UAV_LOITER","type":"垂直起降噴射攔截無人機","era":"當代","name_en":"Roadrunner-M","type_en":"VTOL Jet-Powered Recoverable Interceptor","era_en":"Contemporary","atkNoteOverride_en":"VTOL interceptor drone used against incoming missiles/drones; the figure shown is its intercept radius, not a ground-attack range.","desc_en":"A US-developed VTOL jet-powered interceptor drone built to shoot down incoming cruise missiles and drones. If it misses, it flies home vertically to be reused instead of self-destructing — a new design philosophy for low-cost air defense.","altMin":0,"altMax":15000,"spdMin":400,"spdMax":980,"range":30,"atkRange":30,"atkCategory":"platform","combatRadius":30,"weaponRange":0,"atkNoteOverride":"垂直起降攔截無人機，用於攔截來襲導彈／無人機，此處以其攔截作戰半徑表示，非對地攻擊距離","desc":"美國新創研製的垂直起降噴射動力攔截無人機，專門攔截敵方巡航導彈與無人機；若未命中可垂直返航重複使用而非自毀，代表低成本防空的新設計哲學。"},{"id":39,"name":"Lancet 手術刀游蕩彈藥","group":"UAV_LOITER","type":"精確制導游蕩彈藥","era":"當代衝突","name_en":"Lancet","type_en":"Precision-Guided Loitering Munition","era_en":"Contemporary Conflict","desc_en":"A Russian X-tailed precision loitering munition with an electro-optical seeker used to hunt armored vehicles and artillery positions — the signature weapon for picking off front-line heavy equipment in the Russia-Ukraine war.","altMin":50,"altMax":1000,"spdMin":80,"spdMax":300,"range":40,"atkRange":40,"atkCategory":"munition","desc":"俄羅斯 X 形尾翼精確制導游蕩彈藥，具光電導引鎖定裝甲車輛與火砲陣地，成為俄烏戰場獵殺前線重裝備的標誌性武器。"},{"id":9,"name":"AH-64 阿帕契","group":"HELI","type":"攻擊直升機","era":"現代","name_en":"AH-64 Apache","type_en":"Attack Helicopter","era_en":"Modern","desc_en":"The main US Army attack helicopter, usually flying nap-of-the-earth to use terrain for cover. Armed with a 30mm cannon, Hellfire missiles and rocket pods, it is the core of the Army's close air support.","altMin":10,"altMax":6400,"spdMin":150,"spdMax":293,"range":480,"atkRange":158,"atkCategory":"platform","combatRadius":150,"weaponRange":8,"desc":"美軍主力攻擊直升機，通常貼地飛行以地形起伏掩護接敵，配備 30 毫米機砲、地獄火飛彈與火箭莢艙，是陸軍近距離空中支援的核心。"},{"id":10,"name":"Mi-24 雌鹿","group":"HELI","type":"攻擊運輸直升機","era":"冷戰","name_en":"Mi-24 Hind","type_en":"Attack/Transport Helicopter","era_en":"Cold War","desc_en":"A uniquely Soviet armed transport helicopter that doubles as a gunship and troop carrier. Its speed and heavy armor earned it the nickname \"flying tank,\" and it was a fixture of Cold War proxy wars.","altMin":10,"altMax":4500,"spdMin":150,"spdMax":335,"range":450,"atkRange":168,"atkCategory":"platform","combatRadius":160,"weaponRange":8,"desc":"蘇聯獨創的武裝運輸兩用直升機，兼具空中砲艇與人員投送能力，因高速與厚重裝甲被暱稱「飛行戰車」，是冷戰代理戰爭常客。"},{"id":11,"name":"AH-1Z 毒蛇","group":"HELI","type":"攻擊直升機","era":"現代","name_en":"AH-1Z Viper","type_en":"Attack Helicopter","era_en":"Modern","desc_en":"The US Marine Corps' current front-line attack helicopter. Its four-blade rotor boosts payload and agility, emphasizing fast, low-level engagement and precision weapons delivery.","altMin":10,"altMax":6000,"spdMin":150,"spdMax":296,"range":685,"atkRange":208,"atkCategory":"platform","combatRadius":200,"weaponRange":8,"desc":"美國海軍陸戰隊現役主力攻擊直升機，四葉片旋翼提升酬載與機動性，強調低空高速接戰與精準武器投射。"},{"id":12,"name":"噴火式戰鬥機 Spitfire","group":"PROP_PLANE","type":"二戰螺旋槳戰機","era":"二戰","name_en":"Spitfire","type_en":"WWII Propeller Fighter","era_en":"WWII","desc_en":"The RAF's mainstay fighter in the Battle of Britain. Its elliptical wing balanced high speed with excellent turning performance, making it a spiritual symbol of Britain's home air defense.","altMin":0,"altMax":11300,"spdMin":300,"spdMax":594,"range":750,"atkRange":400,"atkCategory":"platform","combatRadius":400,"weaponRange":0,"desc":"英國皇家空軍不列顛空戰主力戰機，橢圓形機翼設計兼顧高速與優異迴旋性能，是英國本土防空戰的精神象徵。"},{"id":13,"name":"野馬式戰鬥機 P-51 Mustang","group":"PROP_PLANE","type":"二戰螺旋槳戰機","era":"二戰","name_en":"P-51 Mustang","type_en":"WWII Propeller Fighter","era_en":"WWII","desc_en":"Once refitted with the Rolls-Royce Merlin engine its performance leapt forward, making it the archetype of the long-range escort fighter, able to accompany bomber formations all the way into Germany for daylight raids.","altMin":0,"altMax":12800,"spdMin":300,"spdMax":703,"range":2755,"atkRange":1100,"atkCategory":"platform","combatRadius":1100,"weaponRange":0,"desc":"換裝勞斯萊斯灰背隼引擎後性能大幅躍升，成為長程護航戰機典範，可全程護送轟炸機群深入德國本土進行日間轟炸。"},{"id":14,"name":"零式艦上戰鬥機","group":"PROP_PLANE","type":"二戰螺旋槳戰機","era":"二戰","name_en":"A6M Zero","type_en":"WWII Propeller Fighter","era_en":"WWII","desc_en":"The Imperial Japanese Navy's mainstay carrier fighter in the early Pacific War. Its extremely light airframe bought exceptional range and dogfighting agility at the cost of armor protection.","altMin":0,"altMax":10000,"spdMin":300,"spdMax":533,"range":3105,"atkRange":1000,"atkCategory":"platform","combatRadius":1000,"weaponRange":0,"desc":"日本帝國海軍太平洋戰爭初期主力艦載戰機，以極輕量化機身換取超長航程與格鬥靈活性，卻也犧牲了防護裝甲。"},{"id":44,"name":"Bf 109 梅塞希密特戰鬥機","group":"PROP_PLANE","type":"二戰螺旋槳戰機","era":"二戰","name_en":"Bf 109","type_en":"WWII Propeller Fighter","era_en":"WWII","desc_en":"The Luftwaffe's mainstay WWII fighter, with over 30,000 built — one of the most-produced combat aircraft in history. It served and was continuously upgraded throughout the entire war, and was the Spitfire's main opponent in the Battle of Britain.","altMin":0,"altMax":11500,"spdMin":300,"spdMax":620,"range":850,"atkRange":350,"atkCategory":"platform","combatRadius":350,"weaponRange":0,"desc":"德國空軍二戰主力戰鬥機，產量超過三萬架為史上生產最多的戰機之一，貫穿整場二戰並持續改良，是不列顛空戰中噴火式戰機的主要對手。"},{"id":45,"name":"Fw 190 focke-wulf戰鬥機","group":"PROP_PLANE","type":"二戰螺旋槳戰機","era":"二戰","name_en":"Fw 190","type_en":"WWII Propeller Fighter","era_en":"WWII","desc_en":"The Luftwaffe's late-war mainstay fighter, outperforming the Bf 109 at low altitude and in firepower — Allied pilots came to fear it as the \"Butcher Bird.\"","altMin":0,"altMax":11410,"spdMin":300,"spdMax":656,"range":800,"atkRange":300,"atkCategory":"platform","combatRadius":300,"weaponRange":0,"desc":"德國空軍後期主力戰機，低空性能與火力優於 Bf 109，令盟軍飛行員一度非常忌憚，被暱稱為「Butcher Bird（屠夫鳥）」。"},{"id":46,"name":"颶風式戰鬥機 Hawker Hurricane","group":"PROP_PLANE","type":"二戰螺旋槳戰機","era":"二戰","name_en":"Hawker Hurricane","type_en":"WWII Propeller Fighter","era_en":"WWII","desc_en":"The British fighter that shot down the most enemy aircraft during the Battle of Britain. Less famous than the Spitfire, but cheaper to build and easier to maintain, it was the real workhorse defending the British homeland.","altMin":0,"altMax":10850,"spdMin":280,"spdMax":547,"range":740,"atkRange":300,"atkCategory":"platform","combatRadius":300,"weaponRange":0,"desc":"不列顛空戰中擊落敵機數量最多的英國戰機，雖不如噴火式知名，但產量更大、更易維修，是保衛英國本土的真正主力。"},{"id":47,"name":"P-38 閃電式戰鬥機 Lightning","group":"PROP_PLANE","type":"二戰雙引擎螺旋槳戰機","era":"二戰","name_en":"P-38 Lightning","type_en":"WWII Twin-Engine Propeller Fighter","era_en":"WWII","desc_en":"America's distinctive twin-boom, twin-engine fighter, prized in the Pacific for its exceptional range. It was the aircraft used in the mission that shot down Admiral Yamamoto, Japan's top ace commander.","altMin":0,"altMax":13400,"spdMin":300,"spdMax":666,"range":1770,"atkRange":800,"atkCategory":"platform","combatRadius":800,"weaponRange":0,"desc":"美軍獨特的雙機身雙引擎戰機，憑藉超長航程活躍於太平洋戰場，擊落日軍頭號王牌飛行員山本五十六座機的任務即由其執行。"},{"id":48,"name":"B-17 飛行堡壘轟炸機","group":"PROP_PLANE","type":"重型戰略轟炸機","era":"二戰","name_en":"B-17 Flying Fortress","type_en":"Heavy Strategic Bomber","era_en":"WWII","desc_en":"The core aircraft of the US daylight precision-bombing strategy. Bristling with defensive machine guns, it flew in mutually-covering \"box formations\" deep into Germany on high-risk raids that suffered heavy losses.","altMin":0,"altMax":10850,"spdMin":250,"spdMax":462,"range":3219,"atkRange":1600,"atkCategory":"platform","combatRadius":1600,"weaponRange":0,"desc":"美軍日間精確轟炸戰略的核心機種，機身遍佈防禦機槍形成「箱型編隊」互相掩護，深入德國本土執行高風險轟炸任務，戰損率極高。"},{"id":49,"name":"Ju 87 斯圖卡俯衝轟炸機","group":"PROP_PLANE","type":"俯衝轟炸機","era":"二戰","name_en":"Ju 87 Stuka","type_en":"Dive Bomber","era_en":"WWII","desc_en":"The airborne symbol of German Blitzkrieg. Sirens mounted on its wings shrieked during dives to shatter enemy morale; slow and vulnerable once air superiority was lost, it became an easy target.","altMin":0,"altMax":8000,"spdMin":200,"spdMax":383,"range":500,"atkRange":250,"atkCategory":"platform","combatRadius":250,"weaponRange":0,"desc":"德軍閃電戰的空中打擊象徵，俯衝時機翼裝設警報器發出淒厲尖嘯以打擊敵軍士氣，速度緩慢，在制空權喪失後便淪為活靶。"},{"id":15,"name":"MiG-15","group":"JET_PLANE","type":"早期後掠翼噴射戰機","era":"韓戰／冷戰初期","name_en":"MiG-15","type_en":"Early Swept-Wing Jet Fighter","era_en":"Korean War / Early Cold War","desc_en":"The swept-wing jet fighter that stunned the West during the Korean War, fighting F-86s over \"MiG Alley\" in history's first large-scale jet-versus-jet air battles — opening the jet-age race for air superiority.","altMin":0,"altMax":15500,"spdMin":700,"spdMax":1075,"range":1330,"atkRange":550,"atkCategory":"platform","combatRadius":550,"weaponRange":0,"desc":"韓戰中令西方震驚的後掠翼噴射戰機，與 F-86 在「米格走廊」上演史上首場大規模噴射機空戰，開啟噴射時代的空優競賽。"},{"id":16,"name":"F-86 軍刀式戰鬥機","group":"JET_PLANE","type":"早期後掠翼噴射戰機","era":"韓戰／冷戰初期","name_en":"F-86 Sabre","type_en":"Early Swept-Wing Jet Fighter","era_en":"Korean War / Early Cold War","desc_en":"The US Air Force's mainstay swept-wing jet fighter in Korea, closely matched to the MiG-15 — pilot training and gunsight quality became the decisive factors in air combat.","altMin":0,"altMax":15100,"spdMin":700,"spdMax":1091,"range":1344,"atkRange":530,"atkCategory":"platform","combatRadius":530,"weaponRange":0,"desc":"美軍韓戰主力後掠翼噴射戰機，性能與 MiG-15 相近，飛行員訓練素質與雷達瞄準具成為空戰勝負的關鍵差異。"},{"id":17,"name":"F-16 戰隼式戰鬥機","group":"JET_PLANE","type":"第四代多用途戰鬥機","era":"現代","name_en":"F-16 Fighting Falcon","type_en":"4th-Generation Multirole Fighter","era_en":"Modern","desc_en":"The lightweight multirole fighter flown by more countries than any other. Its bubble canopy gives near-total visibility and fly-by-wire control gives it high agility — the \"people's car\" of jet fighters.","altMin":0,"altMax":15240,"spdMin":800,"spdMax":2120,"range":4220,"atkRange":710,"atkCategory":"platform","combatRadius":550,"weaponRange":160,"desc":"全球最多國家採用的輕型多用途戰機，氣泡座艙罩提供近乎全視野視界，線傳飛控賦予其高機動性，堪稱噴射戰機的「國民車」。"},{"id":18,"name":"F-22 猛禽式戰鬥機","group":"JET_PLANE","type":"第五代匿蹤空優戰鬥機","era":"現代","name_en":"F-22 Raptor","type_en":"5th-Generation Stealth Air-Superiority Fighter","era_en":"Modern","desc_en":"A stealth air-superiority fighter with supercruise capability, combining a low-observable airframe with thrust-vectoring post-stall maneuvers — long regarded as the benchmark for air-combat performance.","altMin":0,"altMax":19812,"spdMin":1000,"spdMax":2410,"range":2960,"atkRange":940,"atkCategory":"platform","combatRadius":760,"weaponRange":180,"desc":"具備超音速巡航能力的匿蹤空優戰機，結合低可偵測外形與推力向量控制帶來的過失速機動，長期被視為空戰性能標竿。"},{"id":19,"name":"Su-57 重罪式戰鬥機","group":"JET_PLANE","type":"第五代戰鬥機","era":"現代","name_en":"Su-57 Felon","type_en":"5th-Generation Fighter","era_en":"Modern","desc_en":"Russia's first stealth multirole fighter, emphasizing super-maneuverability and internal weapons bays for a stealthy loadout — a somewhat different design philosophy from the low-observability focus of Western stealth fighters.","altMin":0,"altMax":20000,"spdMin":1000,"spdMax":2135,"range":3500,"atkRange":860,"atkCategory":"platform","combatRadius":660,"weaponRange":200,"desc":"俄羅斯首款匿蹤多用途戰機，強調超機動性與內置彈艙的匿蹤武器配置，設計哲學與美系匿蹤戰機著重的低可偵測性略有不同。"},{"id":20,"name":"MiG-25 狐蝠式截擊機","group":"JET_PLANE","type":"高速截擊機","era":"冷戰","name_en":"MiG-25 Foxbat","type_en":"High-Speed Interceptor","era_en":"Cold War","desc_en":"A stainless-steel-bodied high-speed interceptor built to catch high-altitude, high-speed reconnaissance aircraft and bombers. Capable of brief sprints past Mach 3, but at the cost of engine life.","altMin":0,"altMax":20700,"spdMin":1500,"spdMax":3000,"range":1730,"atkRange":350,"atkCategory":"platform","combatRadius":300,"weaponRange":50,"desc":"以不鏽鋼打造機身的極速截擊機，專為攔截高空高速偵察機與轟炸機而生，短暫衝刺可達馬赫 3 以上，卻須以耗損引擎壽命為代價。"},{"id":21,"name":"SR-71 黑鳥式偵察機","group":"JET_PLANE","type":"高速高空戰略偵察機","era":"冷戰","name_en":"SR-71 Blackbird","type_en":"High-Speed, High-Altitude Strategic Reconnaissance Aircraft","era_en":"Cold War","desc_en":"The fastest crewed aircraft ever to enter service, sustaining supersonic cruise to outrun missile intercepts. Its airframe expands and contracts so much from heat that it leaks fuel while parked on the ground.","altMin":20000,"altMax":25900,"spdMin":3000,"spdMax":3540,"range":5400,"atkRange":0,"atkCategory":"recon","desc":"史上服役過飛行速度最快的有人飛機，以持續超音速巡航甩開飛彈攔截，機體因高溫摩擦熱脹冷縮，地面停機時甚至會滲漏燃油。"},{"id":22,"name":"U-2 蛟龍夫人偵察機","group":"JET_PLANE","type":"高空戰略偵察機","era":"冷戰","name_en":"U-2 Dragon Lady","type_en":"High-Altitude Strategic Reconnaissance Aircraft","era_en":"Cold War","desc_en":"A classic Cold War high-altitude reconnaissance aircraft with an extremely narrow flight envelope, cruising near stall speed to hold its ceiling. One was shot down over Soviet airspace in 1960, triggering a diplomatic crisis.","altMin":18000,"altMax":21000,"spdMin":700,"spdMax":800,"range":11265,"atkRange":0,"atkCategory":"recon","desc":"冷戰經典高空偵察機，飛行包絡線極窄，接近失速邊緣飛行以維持升限，1960 年一架曾於蘇聯領空遭防空飛彈擊落，引發外交風暴。"},{"id":23,"name":"戰斧巡航導彈 Tomahawk","group":"CRUISE","type":"次音速巡航導彈","era":"現代","name_en":"Tomahawk","type_en":"Subsonic Cruise Missile","era_en":"Modern","desc_en":"A subsonic, terrain-hugging cruise missile fired from US ships and submarines, relying on extremely low-altitude flight and terrain-avoidance routing to dodge radar — synonymous with \"surgical strikes\" since the Gulf War.","altMin":30,"altMax":150,"spdMin":850,"spdMax":880,"range":2500,"atkRange":2500,"atkCategory":"munition","desc":"美軍艦艇／潛艦發射的次音速地形貼地巡航導彈，依賴極低空飛行與地形迴避程式閃避雷達偵測，是波灣戰爭以來「外科手術式打擊」的代名詞。"},{"id":24,"name":"Kh-101 巡航導彈","group":"CRUISE","type":"次音速匿蹤巡航導彈","era":"現代","name_en":"Kh-101","type_en":"Subsonic Stealth Cruise Missile","era_en":"Modern","desc_en":"A Russian stealth-shaped air-launched cruise missile that can either penetrate at low altitude or cruise high to save fuel, used for precision strikes on high-value strategic targets with a range spanning the whole European continent.","altMin":30,"altMax":6000,"spdMin":700,"spdMax":970,"range":5500,"atkRange":5500,"atkCategory":"munition","desc":"俄羅斯匿蹤外形空射巡航導彈，可低空突防亦可高空巡航節省燃料，用於精確打擊高價值戰略目標，射程涵蓋整個歐洲大陸。"},{"id":25,"name":"口徑巡航導彈 Kalibr","group":"CRUISE","type":"多用途艦潛射巡航導彈","era":"現代","name_en":"Kalibr","type_en":"Multirole Ship/Submarine-Launched Cruise Missile","era_en":"Modern","desc_en":"A family of Russian ship- and submarine-launched multirole missiles; some variants accelerate to supersonic speed in the terminal phase, sharply shrinking the defender's reaction and intercept window.","altMin":20,"altMax":100,"spdMin":800,"spdMax":3000,"range":2500,"atkRange":2500,"atkCategory":"munition","desc":"俄羅斯艦載／潛射多用途導彈家族，部分型號於末端加速至超音速，大幅縮短防禦方的反應與攔截時間窗口。"},{"id":26,"name":"冰雹式多管火箭 BM-21 Grad","group":"ROCKET","type":"無導引多管火箭","era":"冷戰至今","name_en":"BM-21 Grad","type_en":"Unguided Multiple Rocket Launcher","era_en":"Cold War to Present","desc_en":"The classic successor to WWII's Katyusha as a saturation-strike system, winning through volume and density of fire rather than accuracy — still widely used in regional conflicts today.","altMin":0,"altMax":5000,"spdMin":300,"spdMax":1200,"range":40,"atkRange":40,"atkCategory":"munition","desc":"二戰喀秋莎火箭之後繼經典飽和打擊系統，以數量與火力密度取勝而非精準度，至今仍廣泛用於各地區武裝衝突。"},{"id":27,"name":"卡桑火箭 Qassam","group":"ROCKET","type":"簡易自製無導引火箭","era":"當代衝突","name_en":"Qassam Rocket","type_en":"Improvised Unguided Rocket","era_en":"Contemporary Conflict","desc_en":"An unguided rocket built by Gaza-based armed groups from simple materials such as industrial piping — extremely inaccurate but extremely cheap, symbolizing the \"make do with nothing\" tactical logic of asymmetric warfare.","altMin":0,"altMax":3000,"spdMin":200,"spdMax":700,"range":17,"atkRange":17,"atkCategory":"munition","desc":"加薩地區武裝團體以工業水管等簡易材料自製之無導引火箭，精準度極低但成本極廉，象徵不對稱作戰中「以無代有」的戰術思路。"},{"id":28,"name":"飛毛腿-B彈道飛彈 Scud-B","group":"BALLISTIC_HYPERSONIC","type":"短程彈道導彈 (SRBM)","era":"冷戰至今","name_en":"Scud-B","type_en":"Short-Range Ballistic Missile (SRBM)","era_en":"Cold War to Present","desc_en":"A classic Soviet Cold War short-range ballistic missile whose technology spread to and was continuously refined by many countries, making it one of the most common and most easily obtained ballistic weapons in regional conflicts.","altMin":0,"altMax":90000,"spdMin":3000,"spdMax":6150,"range":300,"atkRange":300,"atkCategory":"munition","desc":"冷戰時期蘇聯經典短程彈道導彈，技術擴散至多國並持續改良，成為許多地區衝突中最常見、也最容易取得的彈道武器。"},{"id":29,"name":"伊斯坎德爾飛彈 Iskander","group":"BALLISTIC_HYPERSONIC","type":"短程準彈道導彈 (SRBM)","era":"現代","name_en":"Iskander","type_en":"Short-Range Quasi-Ballistic Missile (SRBM)","era_en":"Modern","desc_en":"A Russian in-service quasi-ballistic missile with terminal maneuvering and evasive capability to defeat missile-defense systems — one of the core weapons in Russia's conventional precision-strike arsenal.","altMin":0,"altMax":50000,"spdMin":5000,"spdMax":8500,"range":500,"atkRange":500,"atkCategory":"munition","desc":"俄羅斯現役準彈道飛彈，具末端變軌與機動能力以規避反飛彈系統攔截，是俄軍常規精確打擊力量的核心裝備之一。"},{"id":30,"name":"陸軍戰術飛彈系統 ATACMS","group":"BALLISTIC_HYPERSONIC","type":"短程彈道導彈 (SRBM)","era":"現代","name_en":"ATACMS","type_en":"Short-Range Ballistic Missile (SRBM)","era_en":"Modern","desc_en":"A US ground-launched tactical ballistic missile fired from the M270/HIMARS systems, used in Ukraine to strike deep targets such as rear ammunition depots and command nodes.","altMin":0,"altMax":50000,"spdMin":3000,"spdMax":3700,"range":300,"atkRange":300,"atkCategory":"munition","desc":"美製地面發射戰術彈道導彈，可由 M270／HIMARS 系統發射，烏克蘭戰場中用於打擊敵後彈藥庫與指揮節點等縱深目標。"},{"id":31,"name":"東風-21D 反艦彈道飛彈","group":"BALLISTIC_HYPERSONIC","type":"中程彈道導彈／反艦彈道導彈 (ASBM)","era":"現代","name_en":"DF-21D","type_en":"Medium-Range Ballistic Missile / Anti-Ship Ballistic Missile (ASBM)","era_en":"Modern","desc_en":"A Chinese anti-ship ballistic missile dubbed the \"carrier killer,\" said to be able to maneuver its warhead after reentry to home in on a moving ship at sea.","altMin":0,"altMax":300000,"spdMin":8000,"spdMax":12000,"range":2150,"atkRange":2150,"atkCategory":"munition","desc":"中國研發的反艦彈道導彈，被稱為「航艦殺手」，號稱具備再入大氣層後末端機動變軌以鎖定海上移動艦艇的能力。"},{"id":32,"name":"民兵三式洲際彈道飛彈 Minuteman III","group":"BALLISTIC_HYPERSONIC","type":"洲際彈道導彈 (ICBM)","era":"冷戰至今","name_en":"Minuteman III","type_en":"Intercontinental Ballistic Missile (ICBM)","era_en":"Cold War to Present","desc_en":"The mainstay of America's land-based nuclear deterrent; its warhead can reach roughly 7 km/s during reentry, making it the fastest-reacting leg of the US nuclear triad.","altMin":0,"altMax":1200000,"spdMin":20000,"spdMax":24000,"range":13000,"atkRange":13000,"atkCategory":"munition","desc":"美國陸基核嚇阻主力，彈頭於再入大氣層階段速度可達每秒約 7 公里，是美軍「三位一體」核武力量中反應最快的一環。"},{"id":33,"name":"三叉戟 II 潛射彈道飛彈 Trident II D5","group":"BALLISTIC_HYPERSONIC","type":"潛射洲際彈道導彈 (SLBM)","era":"冷戰至今","name_en":"Trident II D5","type_en":"Submarine-Launched Intercontinental Ballistic Missile (SLBM)","era_en":"Cold War to Present","desc_en":"An intercontinental missile launched from a submerged ballistic-missile submarine; its concealment and hard-to-detect location make it the most critical \"second-strike\" capability in the nuclear deterrence system.","altMin":0,"altMax":1100000,"spdMin":20000,"spdMax":24000,"range":12000,"atkRange":12000,"atkCategory":"munition","desc":"由彈道飛彈潛艦於水下發射的洲際飛彈，其隱蔽性與難以預先偵測的位置，使其成為核嚇阻體系中「二次反擊」能力最關鍵的一環。"},{"id":34,"name":"東風-17 高超音速飛彈","group":"BALLISTIC_HYPERSONIC","type":"高超音速滑翔飛彈 (HGV)","era":"當代","name_en":"DF-17","type_en":"Hypersonic Glide Vehicle (HGV) Missile","era_en":"Contemporary","desc_en":"Carries a waverider hypersonic glide warhead that maneuvers unpredictably at the edge of the atmosphere. Its flight profile is far lower than a traditional ballistic missile, drastically compressing an opponent's warning and intercept time.","altMin":40000,"altMax":60000,"spdMin":5000,"spdMax":12000,"range":2500,"atkRange":2500,"atkCategory":"munition","desc":"搭載乘波體高超音速滑翔彈頭，於大氣層邊緣以不規則軌跡進行機動飛行，飛行剖面遠低於傳統彈道飛彈，大幅壓縮對手預警與攔截時間。"},{"id":35,"name":"匕首高超音速飛彈 Kinzhal","group":"BALLISTIC_HYPERSONIC","type":"空射彈道式高超音速飛彈","era":"當代","name_en":"Kinzhal","type_en":"Air-Launched Ballistic Hypersonic Missile","era_en":"Contemporary","desc_en":"An air-launched ballistic missile carried by a MiG-31, using the launch aircraft's high speed as an initial boost to extend range and increase overall penetration speed.","altMin":0,"altMax":20000,"spdMin":6000,"spdMax":12300,"range":2000,"atkRange":2000,"atkCategory":"munition","desc":"以 MiG-31 戰機掛載發射的空射彈道導彈，藉載機高速飛行提供初始助推，延伸射程並提升整體突防速度。"},{"id":36,"name":"先鋒高超音速滑翔載具 Avangard","group":"BALLISTIC_HYPERSONIC","type":"洲際高超音速滑翔載具 (HGV)","era":"當代","name_en":"Avangard","type_en":"Intercontinental Hypersonic Glide Vehicle (HGV)","era_en":"Contemporary","desc_en":"A hypersonic glide vehicle carried by a Russian intercontinental ballistic missile, claimed to reach roughly Mach 27 with an unpredictable flight path said to defeat existing missile-defense systems.","altMin":50000,"altMax":100000,"spdMin":15000,"spdMax":33000,"range":10000,"atkRange":10000,"atkCategory":"munition","desc":"俄羅斯洲際彈道飛彈搭載的高超音速滑翔載具，以宣稱可達馬赫 27 的極端速度與不可預測的機動軌跡，號稱能突破現有反飛彈系統。"},{"id":40,"name":"光纖制導穿越機","group":"UAV_LOITER","type":"光纖制導自殺無人機（抗電子干擾）","era":"當代衝突","name_en":"Fiber-Optic FPV Drone","type_en":"Fiber-Optic Guided Kamikaze Drone (Jam-Resistant)","era_en":"Contemporary Conflict","desc_en":"Replaces radio video/control links with a physical fiber-optic cable, making it completely immune to jamming and GPS spoofing — a new type of FPV drone developed to cope with increasingly dense electronic warfare on the Ukraine front, at the cost of a range limited by cable length and a risk of the cable snagging on terrain.","altMin":5,"altMax":300,"spdMin":60,"spdMax":150,"range":15,"atkRange":15,"atkCategory":"munition","desc":"以實體光纖線纜取代無線電傳輸影像與操控訊號，完全不受電子干擾與GPS干擾影響，是俄烏戰場因應日益密集電子戰環境而發展出的新型態穿越機，代價是射程受限於線纜長度、且線纜可能纏繞地物影響機動。"},{"id":41,"name":"民用改裝偵察投彈四旋翼","group":"UAV_LOITER","type":"消費級改裝偵察／投彈平台","era":"當代衝突","name_en":"Modified Recon/Bomber Quadcopter","type_en":"Modified Consumer Recon/Munition-Drop Platform","era_en":"Contemporary Conflict","desc_en":"A low-cost recon and bombing platform converted from a commercial drone (such as a DJI Mavic), reusable and able to drop a grenade or mortar round straight into a trench. It is currently the most common — and hardest to fully defend against — drone type at the individual-soldier level.","altMin":30,"altMax":500,"spdMin":40,"spdMax":72,"range":7,"atkRange":7,"atkCategory":"platform","combatRadius":7,"weaponRange":0,"desc":"以市售民用空拍機（如大疆Mavic系列）改裝而成的低成本偵察與投彈平台，可重複使用、垂直投擲手榴彈或迫擊砲彈直接命中戰壕內目標，是目前單兵層級最普及、也最難以徹底防禦的無人機類型。"},{"id":42,"name":"重型多旋翼夜間轟炸機（巴巴雅嘎）","group":"UAV_LOITER","type":"重型多旋翼轟炸平台","era":"當代衝突","name_en":"Heavy Night-Bombing Multirotor (\"Baba Yaga\")","type_en":"Heavy Multirotor Bombing Platform","era_en":"Contemporary Conflict","desc_en":"A heavy six/eight-rotor drone nicknamed \"Baba Yaga\" on the Ukraine front, able to carry multiple mortar rounds or anti-tank grenades for long night bombing patrols. Its payload far exceeds a typical FPV drone — large, slow, but devastating, making it one of the biggest drone threats to infantry and logistics in trench warfare.","altMin":50,"altMax":1500,"spdMin":20,"spdMax":60,"range":15,"atkRange":15,"atkCategory":"platform","combatRadius":15,"weaponRange":0,"desc":"烏克蘭戰場暱稱「芭芭雅嘎」的重型六軸／八軸多旋翼無人機，可掛載多枚迫擊砲彈或反戰車手榴彈於夜間長時間巡弋轟炸，酬載遠超一般穿越機，體積大、速度慢但威力驚人，是壕溝戰中對步兵與後勤最具威脅性的無人機之一。"},{"id":43,"name":"Switchblade 600 彈簧刀600","group":"UAV_LOITER","type":"反裝甲游蕩彈藥","era":"現代","name_en":"Switchblade 600","type_en":"Anti-Armor Loitering Munition","era_en":"Modern","desc_en":"The larger, tank-hunting member of the Switchblade family, carrying a shaped-charge warhead similar to a Javelin missile with longer loiter time and range — illustrating how loitering munitions are gradually replacing some traditional anti-tank missiles.","altMin":50,"altMax":1500,"spdMin":100,"spdMax":185,"range":40,"atkRange":40,"atkCategory":"munition","desc":"彈簧刀家族中專門獵殺戰車與裝甲目標的大型化版本，配備類似標槍飛彈的聚能破甲彈頭與更長的滯空時間及射程，體現游蕩彈藥正逐漸取代部分傳統反戰車飛彈的趨勢。"},{"id":50,"name":"波音747 珍寶客機","group":"CIVILIAN","type":"大型民用噴射客機","era":"現代","name_en":"Boeing 747","type_en":"Large Civilian Jet Airliner","era_en":"Modern","desc_en":"The classic wide-body four-engine airliner nicknamed the \"Jumbo Jet.\" Its raised upper-deck hump is one of the most recognizable silhouettes in aviation history, and it has long been the backbone of long-haul intercontinental routes.","altMin":0,"altMax":13100,"spdMin":700,"spdMax":988,"range":13450,"atkRange":0,"atkCategory":"civilian","desc":"暱稱「珍寶客機」的經典廣體四引擎客機，機背隆起的上層甲板成為航空史上最容易辨識的外形之一，長期是跨洋長程航線的主力。"},{"id":51,"name":"空中巴士A320","group":"CIVILIAN","type":"窄體民用噴射客機","era":"現代","name_en":"Airbus A320","type_en":"Narrow-Body Civilian Jet Airliner","era_en":"Modern","desc_en":"One of the most numerous narrow-body airliner families in the world; together with the Boeing 737 it forms the backbone of short- and medium-haul routes, and is the aircraft most people fly on most often.","altMin":0,"altMax":12000,"spdMin":700,"spdMax":871,"range":6150,"atkRange":0,"atkCategory":"civilian","desc":"全球機隊數量最多的窄體客機家族之一，與波音737共同構成短中程航線的骨幹，也是絕大多數人搭飛機時最常乘坐的機型。"},{"id":52,"name":"Cessna 172 賽斯納","group":"CIVILIAN","type":"小型民用螺旋槳飛機","era":"現代","name_en":"Cessna 172","type_en":"Small Civilian Propeller Aircraft","era_en":"Modern","desc_en":"The most-produced aircraft in history, widely used for flight training and personal ownership. Simple to build and friendly to fly, it is many people's first experience of a \"real\" small aircraft.","altMin":0,"altMax":4100,"spdMin":100,"spdMax":226,"range":1270,"atkRange":0,"atkCategory":"civilian","desc":"史上量產數量最多的飛機，廣泛用於飛行訓練與自用小型飛機，構造簡單、操作親和，是許多人第一次搭乘的「真．小飛機」。"},{"id":53,"name":"Gulfstream G650 私人商務機","group":"CIVILIAN","type":"大型民用商務噴射機","era":"現代","name_en":"Gulfstream G650","type_en":"Large Civilian Business Jet","era_en":"Modern","desc_en":"One of the fastest, highest-flying civilian business jets available, with a cruise altitude above most airliners; its near-sonic top speed lets it dodge most weather and congested air routes.","altMin":0,"altMax":15545,"spdMin":800,"spdMax":1022,"range":13890,"atkRange":0,"atkCategory":"civilian","desc":"目前速度最快、飛得最高的民用商務噴射機之一，巡航高度可超過多數民航客機，接近音速的極速使其得以避開多數天氣與航路壅塞。"},{"id":54,"name":"萊特飛行者一號 Wright Flyer","group":"PROP_PLANE","type":"世界第一架動力飛機","era":"1903年","name_en":"Wright Flyer","type_en":"World's First Powered Aircraft","era_en":"1903","desc_en":"The Wright brothers achieved humanity's first controlled, powered flight at Kitty Hawk, North Carolina on December 17, 1903. The initial flight lasted just 12 seconds and covered about 36 meters; even the longest flight that day covered only 260 meters, a few meters off the ground — on this chart it's barely a dot hugging the ground, yet it's the starting point of all aviation history that followed.","altMin":0,"altMax":3,"spdMin":40,"spdMax":48,"range":0.26,"atkRange":0,"atkCategory":"civilian","desc":"萊特兄弟於1903年12月17日在北卡羅來納州小鷹鎮完成人類史上第一次受控動力飛行，首次試飛僅持續12秒、飛行距離約36公尺，最遠一次也只飛了260公尺、離地不過幾公尺高——放在這張圖上幾乎是貼著地面的一個小點，卻是所有後續航空史的起點。"},{"id":55,"name":"Fokker Dr.I 三翼機","group":"PROP_PLANE","type":"一戰螺旋槳戰鬥機","era":"一戰","name_en":"Fokker Dr.I","type_en":"WWI Propeller Fighter","era_en":"WWI","desc_en":"The aircraft flown by Germany's \"Red Baron\" Manfred von Richthofen. Its three stacked wings gave exceptional climb rate and turning radius, making it one of the most recognizable aircraft of WWI air combat — a symbol of aerial warfare in its infancy.","altMin":0,"altMax":6000,"spdMin":120,"spdMax":185,"range":300,"atkRange":150,"atkCategory":"platform","combatRadius":150,"weaponRange":0,"desc":"德國「紅男爵」里希特霍芬座機，三層機翼帶來極佳的爬升率與迴旋半徑，是一戰空戰中辨識度最高的機型之一，象徵著空戰從無到有的萌芽時期。"},{"id":56,"name":"Sopwith Camel 駱駝式戰鬥機","group":"PROP_PLANE","type":"一戰螺旋槳戰鬥機","era":"一戰","name_en":"Sopwith Camel","type_en":"WWI Propeller Fighter","era_en":"WWI","desc_en":"Britain's top WWI ace-maker, credited with shooting down more enemy aircraft than any other Allied fighter. Its name came from the hump housing twin machine guns ahead of the cockpit; its ferocious handling made it deadly in experienced hands but claimed many novice pilots too.","altMin":0,"altMax":5800,"spdMin":120,"spdMax":182,"range":485,"atkRange":180,"atkCategory":"platform","combatRadius":180,"weaponRange":0,"desc":"英國一戰王牌戰機，擊落敵機數量超過任何其他協約國戰機，機頭前方兩挺機槍前的隆起外形因而得名「駱駝」，但機動特性凶悍難以駕馭，新手飛行員的損失率也相當高。"},{"id":57,"name":"SPAD S.XIII","group":"PROP_PLANE","type":"一戰螺旋槳戰鬥機","era":"一戰","name_en":"SPAD S.XIII","type_en":"WWI Propeller Fighter","era_en":"WWI","desc_en":"France's mainstay late-WWI fighter, with a sturdy airframe and fast diving speed. It was the favored mount of American ace Eddie Rickenbacker and France's famed \"Stork Squadron,\" and was among the fastest propeller fighters of its day.","altMin":0,"altMax":6650,"spdMin":120,"spdMax":224,"range":350,"atkRange":150,"atkCategory":"platform","combatRadius":150,"weaponRange":0,"desc":"法國一戰後期主力戰機，機身結構堅固、俯衝速度快，是美國王牌飛行員瑞根貝克與法國「鸛鳥中隊」的愛用機型，速度在當時的螺旋槳戰機中名列前茅。"},{"id":58,"name":"熱氣球（觀光／運動用）","group":"BALLOON","type":"載人熱氣球","era":"現代","name_en":"Hot Air Balloon (Recreational)","type_en":"Manned Hot Air Balloon","era_en":"Modern","desc_en":"A common recreational/sport hot air balloon that gains lift by heating the air inside its envelope. It has no propulsion of its own and drifts entirely with the wind, with altitude and direction depending heavily on the air currents of the moment — one of the oldest forms of manned flight.","altMin":0,"altMax":3000,"spdMin":0,"spdMax":40,"range":30,"atkRange":0,"atkCategory":"civilian","desc":"常見的觀光／運動用熱氣球，靠加熱空氣產生浮力升空，本身沒有動力前進，完全隨風飄移，飛行高度與方向高度依賴當下氣流，是最古老的載人飛行方式之一。"},{"id":59,"name":"平流層科學氣球（如Red Bull Stratos）","group":"BALLOON","type":"載人平流層科學氣球","era":"現代","name_en":"Stratospheric Science Balloon (e.g. Red Bull Stratos)","type_en":"Manned Stratospheric Science Balloon","era_en":"Modern","desc_en":"A giant helium balloon like the one used in Felix Baumgartner's \"Red Bull Stratos\" project, capable of lifting a pressurized capsule and a skydiver to the edge of the stratosphere near the boundary of space — one of the most extreme altitudes a balloon can reach, inflating to a volume roughly the size of a football stadium.","altMin":0,"altMax":39000,"spdMin":5,"spdMax":30,"range":50,"atkRange":0,"atkCategory":"civilian","desc":"如Felix Baumgartner「Red Bull Stratos」計畫使用的巨型氦氣球，可將加壓艙與跳傘員載運至接近太空邊緣的平流層高度，是人類靠氣球所能到達的最極端高度之一，充氣後體積可達足球場等級。"},{"id":60,"name":"氣象探空氣球","group":"BALLOON","type":"無人氣象探測氣球","era":"現代","name_en":"Weather / Radiosonde Balloon","type_en":"Unmanned Weather Sounding Balloon","era_en":"Modern","desc_en":"A radiosonde balloon launched daily by weather services worldwide, carrying lightweight sensors that continuously report pressure, temperature and wind speed as it rises, until falling air pressure lets it expand until it bursts. Unpowered and entirely wind-driven, it can reach very high horizontal speeds if it drifts into the high-altitude jet stream.","altMin":0,"altMax":35000,"spdMin":5,"spdMax":200,"range":150,"atkRange":0,"atkCategory":"civilian","desc":"全球氣象單位每天施放的探空氣球，攜帶輕型感測器上升過程中持續回傳氣壓、溫度、風速數據，直到高空氣壓過低使氣球膨脹破裂；沒有動力、完全隨風飄移，若飄入高空噴射氣流甚至可達到極高的水平移動速度。"}];
+</script>
+<script>
+(function(){
+  'use strict';
+  var GROUPS = window.GROUPS;
+  var DATA = window.DATA.slice().sort(function(a,b){ return b.range - a.range; }); // draw big bubbles first so small ones stay clickable on top
+
+  // ---------------- formatting helpers ----------------
+  function fmtAlt(m){
+    if(m <= 0) return t('fmtOnGround');
+    if(m < 1000) return Math.round(m) + ' m';
+    var km = m/1000;
+    return km.toLocaleString('en-US',{maximumFractionDigits: km<10?1:0}) + ' km';
+  }
+  function fmtSpeed(kmh){
+    return Math.round(kmh).toLocaleString('en-US') + ' km/h';
+  }
+  function machOf(kmh){
+    return kmh/1235;
+  }
+  function fmtMach(kmh){
+    var m = machOf(kmh);
+    var prefix = state.lang === 'en' ? '~Ma ' : '約 Ma ';
+    if(m < 1) return prefix + m.toFixed(2);
+    return prefix + m.toFixed(1);
+  }
+  function fmtRange(km){
+    return km.toLocaleString('en-US') + ' km';
+  }
+  // Rough label width estimate for the monospace label font, without
+  // touching the DOM: CJK glyphs render close to 1em wide, Latin/digits
+  // in a monospace face render close to 0.62em — good enough for collision
+  // detection purposes.
+  function estimateLabelWidth(text, fontSize){
+    var w = 0;
+    for(var i = 0; i < text.length; i++){
+      var c = text.charCodeAt(i);
+      var isWide = (c >= 0x2E80 && c <= 0x9FFF) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFF00 && c <= 0xFFEF) || (c >= 0x3000 && c <= 0x303F);
+      w += fontSize * (isWide ? 1.0 : 0.62);
+    }
+    return w;
+  }
+
+  // ---------------- state ----------------
+  var state = {
+    activeGroups: new Set(Object.keys(GROUPS)),
+    search: '',
+    selectedId: null,
+    sortKey: 'altMax',
+    sortDir: 'desc',
+    yMode: 'log',          // 'log' | 'linear'
+    xMode: 'log',          // 'log' | 'linear'
+    refLayers: { atmosphere: true, cloud: true, landmark: true },
+    compareIds: new Set(),
+    boxZoomMode: false,
+    labelMode: 'auto', // 'auto' | 'show' | 'hide'
+    showArt: true,
+    lang: 'zh', // 'zh' | 'en'
+    fullscreen: false
+  };
+
+  // ---------------- i18n ----------------
+  var UI_STRINGS = {
+    zh: {
+      title: '空中兵器<span class="accent">高度</span>／<span class="accent">速度</span>全譜圖',
+      subtitle: '從掌心大小的穿越機自殺無人機，到再入大氣層時速兩萬多公里的洲際彈道飛彈——用同一張對數座標圖，看懂天空垂直維度上真正的尺度差異。',
+      statCountLabel: '收錄兵器', unitItems: '項', statAltLabel: '高度跨度', ground: '地面',
+      statSpeedLabel: '速度跨度', statGroupsLabel: '分類', unitCategories: '大類',
+      filterTitle: '篩選 / FILTER', searchPlaceholder: '搜尋名稱、型號…', selectAll: '全選', selectNone: '清空',
+      layersTitle: '參考線圖層 / LAYERS',
+      chartLegendNote: '<b>圖表判讀：</b>橫軸＝最高速度，縱軸＝最高作戰高度／彈道頂點。點的大小＝最大射程／作戰半徑。青色虛線為大氣分層／軌道，淺藍虛線為雲層，金色虛線為地標建築與山峰，琥珀色虛線為音速／馬赫參考線。',
+      chartTitle: '高度 × 速度 散點圖',
+      btnBoxZoom: '🔲 框選縮放', btnZoomFit: '🔍 縮放至可見項目', btnResetZoom: '重置縮放', btnArt: '🌌 藝術效果', btnFullscreen: '⛶ 全螢幕', btnExitFullscreen: '⛶ 退出全螢幕',
+      scaleLog: '對數', scaleLinear: '線性', altScalePrefix: '高度尺度：', spdScalePrefix: '速度尺度：',
+      labelModePrefix: '名稱：', labelAuto: '自動', labelShow: '顯示', labelHide: '隱藏',
+      chartHint: '滑鼠滾輪在圖表上可縮放（無上限，可持續放大到極細節）、拖曳可平移；也可直接拖動座標軸旁的拉桿手把調整範圍（即時生效）。想精準聚焦某個角落，按「框選縮放」後在圖表上拖曳畫出一個框，放開即自動縮放到該範圍；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原成完整檢視。Y軸拉桿固定以對數方式分佈、下限為 1km，避免兩個手把在低空區域擠在一起；要看 1km 以下的細節，用滾輪或框選縮放即可。',
+      detailTitle: '詳細數據 / DETAIL',
+      detailEmpty: '尚未選取項目。<br><br>點選圖表上的光點，或下方列表中的任一列，查看該兵器完整的高度範圍、速度範圍與射程數據。',
+      compareTitle: '比較清單 / COMPARE',
+      compareEmpty: '在下方列表勾選任意武器（建議 2–6 項），即可在此並排比較高度、速度與攻擊距離。',
+      tableTitle: '完整數據列表 / DATA TABLE',
+      thCompare: '比較', thName: '名稱', thCategory: '分類', thAltRange: '高度範圍', thSpdRange: '速度範圍', thRange: '最大射程／半徑',
+      atkTitle: '攻擊距離全譜排行 / EFFECTIVE STRIKE RANGE',
+      atkMethodNote: '<b>估算方式：</b>飛彈／火箭／自殺無人機等「彈藥類」武器，攻擊距離＝其自身最大射程。戰機／直升機／察打一體無人機等「載具類」平台，攻擊距離＝作戰半徑（非轉場航程）＋所攜帶主要武器有效射程，兩者相加為簡化估算，實際依任務剖面、掛載與空中加油與否而異。純偵察無人機／偵察機（如全球鷹、U-2、SR-71）不具備武裝，標示為「非打擊平台」。',
+      distAnchorToggle: '顯示距離錨點（虛線；滑鼠移到線上可看說明）',
+      distLegend: '<b>距離參考：</b>香港－澳門 ~60km／台灣海峽最窄處 ~130km／首爾－平壤 ~195km／香港－台北 ~810km／香港－北京 ~1,980km／香港－東京 ~2,900km／地球對蹠點（地表最遠兩點）~20,000km。',
+      footerDisclaimer: '數據為公開資料整理之概略估算值（部分為官方公開數據，部分為公開報導或愛好者社群估計），僅供科普、遊戲設計與創作參考，實際性能規格因型號、酬載與飛行條件而異，敏感軍事數值屬機密，不代表任何機構之權威數字。馬赫換算以海平面音速約 1,235 km/h 概略計算，實際音速隨高度與氣溫變化。',
+      langButton: 'EN',
+      fmtGroundTilde: '~地面', fmtGround: '地面', fmtOnGround: '貼地 (~0m)',
+      detailAltMax: '作戰高度上限', detailAltMin: '典型／最低高度', detailSpdMax: '最高速度', detailSpdMin: '最低／巡航速度',
+      detailRange: '最大射程／作戰半徑', envelopeLabel: '高度活動範圍（對照大氣分層）',
+      addToCompare: '＋ 加入比較清單', removeFromCompare: '✕ 移出比較清單',
+      cmpAltRange: '高度範圍', cmpSpdRange: '速度範圍', cmpTopSpeed: '最高速度', cmpAtkRange: '攻擊距離', cmpRangeRadius: '射程／半徑',
+      clearCompare: '清空比較',
+      tooltipAltMax: '高度上限', tooltipSpdMax: '最高速度', tooltipRange: '最大射程',
+      atkNameHeader: '武器 / 平台',
+      naRecon: '非打擊平台（偵察用途）', naCivilian: '非打擊平台（民用機）',
+      xAxisLabel: '最高速度 (km/h, ', yAxisLabel: '↑ 最高作戰高度／彈道頂點 (',
+      logSuffix: '對數尺度)', linSuffix: '線性尺度)', arrow: ') →'
+    },
+    en: {
+      title: '<span class="accent">Altitude</span> ＆ <span class="accent">Speed</span> of Airborne Weapons',
+      subtitle: 'From palm-sized FPV kamikaze drones to intercontinental ballistic missiles screaming back into the atmosphere at over 20,000 km/h — one logarithmic chart to grasp the real scale of the sky\'s vertical dimension.',
+      statCountLabel: 'Weapons Covered', unitItems: 'items', statAltLabel: 'Altitude Span', ground: 'Ground',
+      statSpeedLabel: 'Speed Span', statGroupsLabel: 'Categories', unitCategories: 'groups',
+      filterTitle: 'FILTER', searchPlaceholder: 'Search name or model…', selectAll: 'All', selectNone: 'None',
+      layersTitle: 'REFERENCE LAYERS',
+      chartLegendNote: '<b>Reading the chart:</b> X axis = top speed, Y axis = max operating altitude / apogee. Bubble size = max range / combat radius. Cyan dashed lines = atmosphere/orbit, light-blue = clouds, gold = landmark buildings &amp; peaks, amber = sound-speed / Mach references.',
+      chartTitle: 'Altitude × Speed Scatter Plot',
+      btnBoxZoom: '🔲 Box Zoom', btnZoomFit: '🔍 Zoom to Visible', btnResetZoom: 'Reset View', btnArt: '🌌 Art Effects', btnFullscreen: '⛶ Fullscreen', btnExitFullscreen: '⛶ Exit Fullscreen',
+      scaleLog: 'Log', scaleLinear: 'Linear', altScalePrefix: 'Altitude scale: ', spdScalePrefix: 'Speed scale: ',
+      labelModePrefix: 'Names: ', labelAuto: 'Auto', labelShow: 'Show', labelHide: 'Hide',
+      chartHint: 'Scroll on the chart to zoom (no limit — keep going for extreme detail), drag to pan; you can also drag the handles on the sliders beside each axis for live adjustment. To focus precisely on one corner, click "Box Zoom" then drag a box on the chart — release to zoom straight to it. "Zoom to Visible" fits the current sidebar filter results. "Reset View" restores the full view. The altitude slider always uses a log scale with a fixed 1 km floor so the two handles don\'t collide down in the low-altitude cluster; use scroll or box zoom to inspect detail below 1 km.',
+      detailTitle: 'DETAIL',
+      detailEmpty: 'Nothing selected yet.<br><br>Click a dot on the chart, or any row in the table below, to see that weapon\'s full altitude range, speed range, and reach.',
+      compareTitle: 'COMPARE',
+      compareEmpty: 'Tick any weapons in the table below (2–6 works best) to compare their altitude, speed and strike range side by side here.',
+      tableTitle: 'FULL DATA TABLE',
+      thCompare: 'Cmp', thName: 'Name', thCategory: 'Category', thAltRange: 'Altitude Range', thSpdRange: 'Speed Range', thRange: 'Max Range / Radius',
+      atkTitle: 'EFFECTIVE STRIKE RANGE RANKING',
+      atkMethodNote: '<b>Methodology:</b> for "munitions" — missiles, rockets, kamikaze drones — strike range = their own maximum flight range. For "platforms" — fighters, helicopters, strike UAVs — strike range = combat radius (not ferry range) + the effective range of the main weapon carried; the sum is a simplified estimate that varies with mission profile, loadout and aerial refueling. Pure reconnaissance UAVs/aircraft (Global Hawk, U-2, SR-71) carry no weapons and are marked "non-strike platform."',
+      distAnchorToggle: 'Show distance anchors (dashed lines; hover for details)',
+      distLegend: '<b>Distance references:</b> Hong Kong–Macau ~60 km／Taiwan Strait (narrowest) ~130 km／Seoul–Pyongyang ~195 km／Hong Kong–Taipei ~810 km／Hong Kong–Beijing ~1,980 km／Hong Kong–Tokyo ~2,900 km／Earth\'s antipodal distance (farthest two points on the globe) ~20,000 km.',
+      footerDisclaimer: 'Figures are rough estimates compiled from public sources (some official specs, some from public reporting or enthusiast community estimates), intended for education, game design and creative reference only. Actual performance varies by variant, payload and flight conditions; sensitive military figures are classified and these numbers are not authoritative for any organization. Mach is approximated using sea-level sound speed of ~1,235 km/h; actual sound speed varies with altitude and temperature.',
+      langButton: '中',
+      fmtGroundTilde: '~Ground', fmtGround: 'Ground', fmtOnGround: 'Hugs ground (~0m)',
+      detailAltMax: 'Altitude ceiling', detailAltMin: 'Typical / min altitude', detailSpdMax: 'Top speed', detailSpdMin: 'Min / cruise speed',
+      detailRange: 'Max range / combat radius', envelopeLabel: 'Altitude envelope (vs. atmosphere layers)',
+      addToCompare: '＋ Add to compare', removeFromCompare: '✕ Remove from compare',
+      cmpAltRange: 'Altitude range', cmpSpdRange: 'Speed range', cmpTopSpeed: 'Top speed', cmpAtkRange: 'Strike range', cmpRangeRadius: 'Range / radius',
+      clearCompare: 'Clear all',
+      tooltipAltMax: 'Ceiling', tooltipSpdMax: 'Top speed', tooltipRange: 'Max range',
+      atkNameHeader: 'Weapon / Platform',
+      naRecon: 'Non-strike (recon)', naCivilian: 'Non-strike (civilian)',
+      xAxisLabel: 'Top speed (km/h, ', yAxisLabel: '↑ Max altitude / apogee (',
+      logSuffix: 'log scale)', linSuffix: 'linear scale)', arrow: ') →'
+    }
+  };
+  function t(key){ return (UI_STRINGS[state.lang] && UI_STRINGS[state.lang][key]) || UI_STRINGS.zh[key] || ''; }
+  // Localized accessor for bilingual data fields: L(item,'name') / L(item,'desc') / L(item,'type') / L(item,'era')
+  function L(obj, field){
+    if(!obj) return '';
+    if(state.lang === 'en'){
+      var v = obj[field + '_en'];
+      if(v !== undefined) return v;
+    }
+    return obj[field];
+  }
+
+  function isVisible(d){
+    if(!state.activeGroups.has(d.group)) return false;
+    if(state.search){
+      var q = state.search.toLowerCase();
+      var hay = (d.name + ' ' + d.type + ' ' + (d.name_en||'') + ' ' + (d.type_en||'')).toLowerCase();
+      if(hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  }
+  // chart-only visibility: also respects the "hide high altitude" toggle
+  function isChartVisible(d){
+    return isVisible(d);
+  }
+
+  // ---------------- header stats ----------------
+  (function initHeaderStats(){
+    document.getElementById('statCount').textContent = DATA.length;
+    var maxAlt = d3.max(DATA, function(d){ return d.altMax; });
+    var minSpd = d3.min(DATA, function(d){ return d.spdMin; });
+    var maxSpd = d3.max(DATA, function(d){ return d.spdMax; });
+    document.getElementById('statAlt').textContent = fmtAlt(maxAlt);
+    document.getElementById('statSpeed').textContent = fmtSpeed(minSpd) + ' – ' + fmtSpeed(maxSpd);
+    document.getElementById('statGroups').textContent = Object.keys(GROUPS).length;
+  })();
+
+  // ---------------- filter panel: group toggles ----------------
+  var groupListEl = document.getElementById('groupList');
+  function renderGroupList(){
+    groupListEl.innerHTML = '';
+    Object.keys(GROUPS).sort(function(a,b){ return GROUPS[a].order - GROUPS[b].order; }).forEach(function(key){
+      var g = GROUPS[key];
+      var count = DATA.filter(function(d){ return d.group === key; }).length;
+      var row = document.createElement('label');
+      row.className = 'group-row';
+      var checked = state.activeGroups.has(key) ? 'checked' : '';
+      row.innerHTML =
+        '<input type="checkbox" ' + checked + ' data-group="' + key + '">' +
+        '<span class="swatch" style="background:' + g.color + '"></span>' +
+        '<span class="lbl">' + L(g,'label') + '</span>' +
+        '<span class="cnt">' + count + '</span>';
+      groupListEl.appendChild(row);
+    });
+  }
+  renderGroupList();
+  groupListEl.addEventListener('change', function(e){
+    var cb = e.target;
+    if(cb && cb.dataset && cb.dataset.group){
+      if(cb.checked) state.activeGroups.add(cb.dataset.group);
+      else state.activeGroups.delete(cb.dataset.group);
+      refreshAll();
+    }
+  });
+  document.getElementById('btnAll').addEventListener('click', function(){
+    state.activeGroups = new Set(Object.keys(GROUPS));
+    groupListEl.querySelectorAll('input').forEach(function(i){ i.checked = true; });
+    refreshAll();
+  });
+  document.getElementById('btnNone').addEventListener('click', function(){
+    state.activeGroups = new Set();
+    groupListEl.querySelectorAll('input').forEach(function(i){ i.checked = false; });
+    refreshAll();
+  });
+  document.getElementById('search').addEventListener('input', function(e){
+    state.search = e.target.value.trim();
+    refreshAll();
+  });
+
+  // ---------------- filter panel: reference layer toggles ----------------
+  var REF_LAYER_META = [
+    { key: 'atmosphere', label: '大氣分層／軌道', label_en: 'Atmosphere / orbit', color: '#4FD8E0' },
+    { key: 'cloud',      label: '雲層高度',       label_en: 'Cloud layers',       color: '#8FCBEA' },
+    { key: 'landmark',   label: '地標建築／山峰',  label_en: 'Landmarks / peaks',   color: '#E0B84A' }
+  ];
+  var refLayerListEl = document.getElementById('refLayerList');
+  function renderRefLayerList(){
+    refLayerListEl.innerHTML = '';
+    REF_LAYER_META.forEach(function(m){
+      var row = document.createElement('label');
+      row.className = 'group-row';
+      var checked = state.refLayers[m.key] ? 'checked' : '';
+      row.innerHTML =
+        '<input type="checkbox" ' + checked + ' data-layer="' + m.key + '">' +
+        '<span class="swatch" style="background:' + m.color + '"></span>' +
+        '<span class="lbl">' + L(m,'label') + '</span>';
+      refLayerListEl.appendChild(row);
+    });
+  }
+  renderRefLayerList();
+  refLayerListEl.addEventListener('change', function(e){
+    var cb = e.target;
+    if(cb && cb.dataset && cb.dataset.layer){
+      state.refLayers[cb.dataset.layer] = cb.checked;
+      if(refreshRefLayersOnChart) refreshRefLayersOnChart();
+      else buildChart();
+    }
+  });
+
+  // ---------------- toolbar: scale + zoom buttons ----------------
+  var btnScale = document.getElementById('toggleScale');
+  var btnXScale = document.getElementById('toggleXScale');
+  var btnZoomFit = document.getElementById('btnZoomFit');
+  btnZoomFit.addEventListener('click', zoomToFit);
+  var btnBoxZoom = document.getElementById('btnBoxZoom');
+  btnBoxZoom.addEventListener('click', function(){
+    setBoxZoomMode(!state.boxZoomMode);
+  });
+  var btnResetZoom = document.getElementById('btnResetZoom');
+  btnScale.addEventListener('click', function(){
+    if(getCurrentValueRange){
+      var r = getCurrentValueRange();
+      pendingXRange = [r.xMin, r.xMax];
+      pendingYRange = [r.yMin, r.yMax];
+    }
+    state.yMode = state.yMode === 'log' ? 'linear' : 'log';
+    btnScale.textContent = t('altScalePrefix') + (state.yMode === 'log' ? t('scaleLog') : t('scaleLinear'));
+    btnScale.classList.toggle('active', state.yMode === 'linear');
+    btnScale.setAttribute('aria-pressed', state.yMode === 'linear');
+    buildChart();
+  });
+  btnXScale.addEventListener('click', function(){
+    if(getCurrentValueRange){
+      var r = getCurrentValueRange();
+      pendingXRange = [r.xMin, r.xMax];
+      pendingYRange = [r.yMin, r.yMax];
+    }
+    state.xMode = state.xMode === 'log' ? 'linear' : 'log';
+    btnXScale.textContent = t('spdScalePrefix') + (state.xMode === 'log' ? t('scaleLog') : t('scaleLinear'));
+    btnXScale.classList.toggle('active', state.xMode === 'linear');
+    btnXScale.setAttribute('aria-pressed', state.xMode === 'linear');
+    buildChart();
+  });
+  btnResetZoom.addEventListener('click', function(){
+    if(resetChartViewRef) resetChartViewRef();
+  });
+  var btnLabelMode = document.getElementById('btnLabelMode');
+  var LABEL_MODE_NEXT = { auto: 'show', show: 'hide', hide: 'auto' };
+  var LABEL_MODE_KEY = { auto: 'labelAuto', show: 'labelShow', hide: 'labelHide' };
+  btnLabelMode.addEventListener('click', function(){
+    state.labelMode = LABEL_MODE_NEXT[state.labelMode];
+    btnLabelMode.textContent = t('labelModePrefix') + t(LABEL_MODE_KEY[state.labelMode]);
+    btnLabelMode.classList.toggle('active', state.labelMode !== 'auto');
+    if(refreshLabelsOnChart) refreshLabelsOnChart();
+  });
+  var btnArt = document.getElementById('btnArt');
+  btnArt.addEventListener('click', function(){
+    state.showArt = !state.showArt;
+    btnArt.classList.toggle('active', state.showArt);
+    btnArt.setAttribute('aria-pressed', state.showArt);
+    if(gArtRef) gArtRef.style('display', state.showArt ? null : 'none');
+  });
+  var btnFullscreen = document.getElementById('btnFullscreen');
+  function setFullscreen(on){
+    state.fullscreen = on;
+    document.body.classList.toggle('chart-fullscreen', on);
+    btnFullscreen.classList.toggle('active', on);
+    btnFullscreen.setAttribute('aria-pressed', on);
+    btnFullscreen.textContent = on ? t('btnExitFullscreen') : t('btnFullscreen');
+    // rebuild after the layout change has applied so clientHeight is correct
+    requestAnimationFrame(function(){ buildChart(); });
+  }
+  btnFullscreen.addEventListener('click', function(){ setFullscreen(!state.fullscreen); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && state.fullscreen) setFullscreen(false);
+  });
+  // sets the language-dependent toolbar button labels — called on init and on language switch
+  function refreshToolbarText(){
+    btnScale.textContent = t('altScalePrefix') + (state.yMode === 'log' ? t('scaleLog') : t('scaleLinear'));
+    btnXScale.textContent = t('spdScalePrefix') + (state.xMode === 'log' ? t('scaleLog') : t('scaleLinear'));
+    btnLabelMode.textContent = t('labelModePrefix') + t(LABEL_MODE_KEY[state.labelMode]);
+    btnFullscreen.textContent = state.fullscreen ? t('btnExitFullscreen') : t('btnFullscreen');
+  }
+  refreshToolbarText();
+
+  // ---------------- chart ----------------
+  var chartContainer = document.getElementById('chartContainer');
+  var tooltip = document.getElementById('tooltip');
+  var ySliderWrap = document.getElementById('ySliderWrap');
+  var ySliderTrack = document.getElementById('ySliderTrack');
+  var ySliderRange = document.getElementById('ySliderRange');
+  var yHandleTop = document.getElementById('ySliderHandleTop');
+  var yHandleBot = document.getElementById('ySliderHandleBot');
+  var yHandleTopLabel = document.getElementById('yHandleTopLabel');
+  var yHandleBotLabel = document.getElementById('yHandleBotLabel');
+  var xSliderWrap = document.getElementById('xSliderWrap');
+  var xSliderTrack = document.getElementById('xSliderTrack');
+  var xSliderRange = document.getElementById('xSliderRange');
+  var xHandleL = document.getElementById('xSliderHandleL');
+  var xHandleR = document.getElementById('xSliderHandleR');
+  var xHandleLLabel = document.getElementById('xHandleLLabel');
+  var xHandleRLabel = document.getElementById('xHandleRLabel');
+  var svg, gRoot, gPoints, gCrosshair;
+  var xScale, yScale, rScale;
+  var applyValueBoxRef = null, resetChartViewRef = null;
+  var refreshLabelsOnChart = null;
+  var refreshRefLayersOnChart = null;
+  var gArtRef = null;
+  var brushBehavior = null, brushLayerSel = null;
+  var refreshSelectionOnChart = null;
+  var getCurrentValueRange = null;
+  var pendingXRange = null, pendingYRange = null;
+  var margin = { top: 26, right: 18, bottom: 46, left: 56 };
+
+  var SPEED_MIN = 20, SPEED_MAX = 40000;
+  var ALT_MIN = 1, ALT_MAX = 1600000;
+
+  function yTickLabel(v){
+    if(v<=0) return t('fmtGround');
+    if(v<=1) return t('fmtGroundTilde');
+    if(v<1000) return Math.round(v)+' m';
+    return (v/1000).toLocaleString('en-US',{maximumFractionDigits:2}) + ' km';
+  }
+  function xTickLabel(v){
+    if(v>=1000) return (v/1000).toLocaleString('en-US',{maximumFractionDigits:1}) + 'k';
+    return Math.round(v);
+  }
+  // Picks tick VALUES for a log axis so labels never overwhelm the
+  // available pixel space: a "1-2-5 per decade" pattern when it fits,
+  // falling back to one tick per decade, and finally thinning out the
+  // decades themselves for extremely wide domains. d3's built-in
+  // scaleLog().ticks(n) does something similar but its dense/sparse
+  // switchover is keyed to decade-count vs. n in a way that, for this
+  // chart's ~6-decade altitude axis, kept landing in "dense" mode and
+  // printing every 1–9 multiple of every decade — the wall of overlapping
+  // labels this replaces.
+  function niceLogTicks(lo, hi, pxSpan){
+    if(lo <= 0) lo = 1e-9;
+    if(hi <= lo) return [lo];
+    var kLo = Math.floor(Math.log(lo) / Math.LN10);
+    var kHi = Math.ceil(Math.log(hi) / Math.LN10);
+    var mult125 = [], decadesOnly = [];
+    for(var k = kLo; k <= kHi; k++){
+      [1,2,5].forEach(function(m){
+        var v = m * Math.pow(10, k);
+        if(v >= lo && v <= hi) mult125.push(v);
+      });
+      var vd = Math.pow(10, k);
+      if(vd >= lo && vd <= hi) decadesOnly.push(vd);
+    }
+    var minGapPx = 28;
+    var maxTicks = Math.max(2, Math.floor(pxSpan / minGapPx));
+    if(mult125.length <= maxTicks) return mult125;
+    if(decadesOnly.length <= maxTicks) return decadesOnly;
+    var step = Math.ceil(decadesOnly.length / maxTicks);
+    return decadesOnly.filter(function(v, i){ return i % step === 0; });
+  }
+
+  // master reference-line list: atmosphere / cloud / landmark categories
+  var REF_LINES = [
+    // atmosphere — headline layers
+    { y: 12000,   label: '12 km · 對流層頂／高雲(卷雲)層頂', label_en: '12 km · Tropopause / high cloud (cirrus) top', cat: 'atmosphere' },
+    { y: 50000,   label: '50 km · 平流層頂', label_en: '50 km · Stratopause', cat: 'atmosphere' },
+    { y: 100000,  label: '100 km · 卡門線（太空邊界）', label_en: '100 km · Kármán line (edge of space)', cat: 'atmosphere' },
+    { y: 400000,  label: '400 km · 國際太空站軌道', label_en: '400 km · ISS orbit', cat: 'atmosphere' },
+    { y: 1200000, label: '1,200 km · 洲際飛彈頂點量級', label_en: '1,200 km · ICBM apogee range', cat: 'atmosphere' },
+    // atmosphere — fine low-altitude markers (only visible once you zoom into the low-altitude region)
+    { y: 50,   label: '50 m · FPV穿越機常見貼地高度', label_en: '50 m · typical FPV drone hugging altitude', cat: 'atmosphere' },
+    { y: 100,  label: '100 m', label_en: '100 m', cat: 'atmosphere' },
+    { y: 500,  label: '500 m', label_en: '500 m', cat: 'atmosphere' },
+    { y: 1000, label: '1 km', label_en: '1 km', cat: 'atmosphere' },
+    { y: 1500, label: '1.5 km', label_en: '1.5 km', cat: 'atmosphere' },
+    // clouds
+    { y: 2000, label: '2 km · 低雲層頂（積雲／層雲）', label_en: '2 km · low cloud top (cumulus/stratus)', cat: 'cloud' },
+    { y: 7000, label: '7 km · 中雲層頂（高積雲／高層雲）', label_en: '7 km · mid cloud top (altocumulus/altostratus)', cat: 'cloud' },
+    // landmarks: a few well-known buildings + Everest
+    { y: 508,  label: '508 m · 台北 101', label_en: '508 m · Taipei 101', cat: 'landmark' },
+    { y: 828,  label: '828 m · 哈里發塔（現今全球最高建築）', label_en: '828 m · Burj Khalifa (tallest building today)', cat: 'landmark' },
+    { y: 8849, label: '8,849 m · 珠穆朗瑪峰', label_en: '8,849 m · Mount Everest', cat: 'landmark' }
+  ];
+  var machLines = [
+    { x: 1235,  label: '音速 · Ma 1', label_en: 'Sound barrier · Ma 1' },
+    { x: 2470,  label: 'Ma 2', label_en: 'Ma 2' },
+    { x: 6175,  label: 'Ma 5', label_en: 'Ma 5' },
+    { x: 12350, label: 'Ma 10', label_en: 'Ma 10' },
+    { x: 24700, label: 'Ma 20', label_en: 'Ma 20' }
+  ];
+
+  function activeRefLines(){
+    return REF_LINES.filter(function(b){ return state.refLayers[b.cat]; });
+  }
+
+  function buildChart(){
+    chartContainer.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var width = chartContainer.clientWidth;
+    var isSmall = width < 620;
+    margin.right = isSmall ? 12 : 18;
+    var innerW = Math.max(280, width - margin.left - margin.right);
+    var height = state.fullscreen
+      ? Math.max(320, chartContainer.clientHeight || (window.innerHeight - 180))
+      : (isSmall ? 460 : 560);
+    var innerH = height - margin.top - margin.bottom;
+
+    // align the slider tracks exactly with the plot area
+    ySliderWrap.style.paddingTop = margin.top + 'px';
+    ySliderWrap.style.paddingBottom = margin.bottom + 'px';
+    ySliderTrack.style.height = innerH + 'px';
+    xSliderWrap.style.paddingLeft = margin.left + 'px';
+    xSliderWrap.style.paddingRight = margin.right + 'px';
+    xSliderTrack.style.width = innerW + 'px';
+
+    svg = d3.select(chartContainer).insert('svg', '#tooltip')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('viewBox', '0 0 ' + width + ' ' + height);
+
+    // clip path so zoomed/panned content doesn't spill into margins
+    var clipId = 'plotClip';
+    svg.append('defs').append('clipPath').attr('id', clipId)
+      .append('rect').attr('width', innerW).attr('height', innerH);
+
+    gRoot = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    // ---- base scales (unzoomed reference; NOT clamped, we clip visually instead) ----
+    if(state.xMode === 'linear'){
+      xScale = d3.scaleLinear().domain([0, SPEED_MAX]).range([0, innerW]);
+    } else {
+      xScale = d3.scaleLog().domain([SPEED_MIN, SPEED_MAX]).range([0, innerW]);
+    }
+    if(state.yMode === 'linear'){
+      yScale = d3.scaleLinear().domain([0, ALT_MAX]).range([innerH, 0]);
+    } else {
+      yScale = d3.scaleLog().domain([ALT_MIN, ALT_MAX]).range([innerH, 0]);
+    }
+    rScale = d3.scaleSqrt().domain([0, d3.max(DATA, function(d){ return d.range; })]).range([3.5, 20]);
+
+    var clip = gRoot.append('g').attr('clip-path', 'url(#' + clipId + ')');
+
+    // ---- decorative "space" art: a clean, hard-edged switch to black above
+    // the Kármán line with a handful of stars, and a simple flat-shape cloud
+    // icon around the low/mid cloud layer. No blur, no gradient mush — kept
+    // deliberately simple. Purely visual, never intercepts mouse events.
+    // Toggle with the 🌌 button. ----
+    var gArt = clip.append('g').attr('class', 'art-layer');
+    gArt.style('display', state.showArt ? null : 'none');
+    gArtRef = gArt;
+
+    var artDefs = svg.select('defs');
+    var gradId = 'spaceGrad' + Math.round(Math.random()*1e6);
+    var grad = artDefs.append('linearGradient')
+      .attr('id', gradId)
+      .attr('gradientUnits', 'userSpaceOnUse')
+      .attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', innerH);
+
+    gArt.append('rect')
+      .attr('class', 'art-space-bg')
+      .attr('x', 0).attr('y', 0).attr('width', innerW).attr('height', innerH)
+      .attr('fill', 'url(#' + gradId + ')');
+
+    var STAR_COUNT = 50;
+    var stars = d3.range(STAR_COUNT).map(function(){
+      var altVal = 100000 * Math.pow(ALT_MAX / 100000, Math.random()); // log-spread, 100km → ALT_MAX
+      return { xFrac: Math.random(), altVal: altVal, r: Math.random()*0.9+0.5 };
+    });
+    var starSel = gArt.selectAll('circle.art-star')
+      .data(stars)
+      .join('circle')
+      .attr('class', 'art-star')
+      .attr('r', function(d){ return d.r; });
+
+    function updateArt(){
+      var karmanPx = curYScale(100000);
+      var blackPx = curYScale(500000);
+      var offB = Math.max(0, Math.min(1, blackPx / innerH));
+      var offK = Math.max(0, Math.min(1, karmanPx / innerH));
+      if(offK < offB) offK = offB;
+      grad.selectAll('stop').remove();
+      grad.append('stop').attr('offset', 0).attr('stop-color', '#03040A').attr('stop-opacity', 1);
+      grad.append('stop').attr('offset', offB).attr('stop-color', '#03040A').attr('stop-opacity', 1);
+      grad.append('stop').attr('offset', offK).attr('stop-color', '#03040A').attr('stop-opacity', 0);
+      grad.append('stop').attr('offset', 1).attr('stop-color', '#03040A').attr('stop-opacity', 0);
+
+      var yDomain = curYScale.domain();
+      starSel
+        .attr('cx', function(d){ return d.xFrac * innerW; })
+        .attr('cy', function(d){ return curYScale(d.altVal); })
+        .attr('opacity', function(d){ return (d.altVal >= yDomain[0] && d.altVal <= yDomain[1]) ? 1 : 0; });
+    }
+
+    // background hit-area: sits beneath everything so every pixel in the
+    // plot is scrollable/draggable, but circles (painted after) still
+    // receive their own hover/click first — wheel/drag events bubble up
+    // from either one to gRoot, where the zoom behavior listens.
+    var bgRect = clip.append('rect')
+      .attr('class', 'zoom-capture')
+      .attr('width', innerW).attr('height', innerH)
+      .attr('fill', 'transparent')
+      .style('pointer-events', 'all');
+
+    var gBands = clip.append('g').attr('class', 'bands');
+    var gMach = clip.append('g').attr('class', 'machs');
+    gPoints = clip.append('g').attr('class', 'points');
+    gCrosshair = clip.append('g').attr('class', 'crosshair-group');
+
+    var refData = activeRefLines();
+    var bandLines = gBands.selectAll('line.ref-line')
+      .data(refData, function(d){ return d.cat + d.y; })
+      .join('line')
+      .attr('class', function(d){ return 'ref-line ' + (d.cat === 'cloud' ? 'cloud-line' : d.cat === 'landmark' ? 'landmark-line' : 'band-line'); })
+      .attr('x1', 0).attr('x2', innerW);
+    var bandLabels = isSmall ? null : gBands.selectAll('text.ref-label')
+      .data(refData, function(d){ return d.cat + d.y; })
+      .join('text')
+      .attr('class', function(d){ return 'ref-label ' + (d.cat === 'cloud' ? 'cloud-label' : d.cat === 'landmark' ? 'landmark-label' : 'band-label'); })
+      .attr('x', innerW - 6)
+      .attr('text-anchor', 'end')
+      .text(function(d){ return L(d,'label'); });
+
+    // Re-bind just the reference-line layers (atmosphere/cloud/landmark
+    // checkboxes) without touching scales, zoom state, or anything else —
+    // so toggling a layer doesn't reset whatever you're currently zoomed
+    // into. redraw() will reposition the new selection using curYScale.
+    function refreshRefLayers(){
+      var data = activeRefLines();
+      bandLines = gBands.selectAll('line.ref-line')
+        .data(data, function(d){ return d.cat + d.y; })
+        .join('line')
+        .attr('class', function(d){ return 'ref-line ' + (d.cat === 'cloud' ? 'cloud-line' : d.cat === 'landmark' ? 'landmark-line' : 'band-line'); })
+        .attr('x1', 0).attr('x2', innerW);
+      bandLabels = isSmall ? null : gBands.selectAll('text.ref-label')
+        .data(data, function(d){ return d.cat + d.y; })
+        .join('text')
+        .attr('class', function(d){ return 'ref-label ' + (d.cat === 'cloud' ? 'cloud-label' : d.cat === 'landmark' ? 'landmark-label' : 'band-label'); })
+        .attr('x', innerW - 6)
+        .attr('text-anchor', 'end')
+        .text(function(d){ return L(d,'label'); });
+      redraw();
+    }
+    refreshRefLayersOnChart = refreshRefLayers;
+
+    var machLinesSel = gMach.selectAll('line.mach-ref')
+      .data(machLines, function(d){ return d.x; })
+      .join('line')
+      .attr('class', 'mach-line')
+      .attr('y1', 0).attr('y2', innerH);
+    var machLabelsSel = gMach.selectAll('text.mach-lbl')
+      .data(machLines, function(d){ return d.x; })
+      .join('text')
+      .attr('class', 'mach-label')
+      .attr('y', 10)
+      .text(function(d){ return L(d,'label'); });
+
+    // axes
+    var gAxisX = gRoot.append('g')
+      .attr('class', 'axis axis-x')
+      .attr('transform', 'translate(0,' + innerH + ')');
+    var gAxisY = gRoot.append('g')
+      .attr('class', 'axis axis-y');
+    var xAxisLabel = gRoot.append('text')
+      .attr('class', 'axis-label')
+      .attr('x', innerW)
+      .attr('y', innerH + 38)
+      .attr('text-anchor', 'end');
+    var yAxisLabel = gRoot.append('text')
+      .attr('class', 'axis-label')
+      .attr('transform', 'rotate(-90)')
+      .attr('x', 0)
+      .attr('y', -40)
+      .attr('text-anchor', 'end');
+
+    function updateAxisLabels(){
+      xAxisLabel.text(t('xAxisLabel') + (state.xMode === 'linear' ? t('linSuffix') : t('logSuffix')) + t('arrow'));
+      yAxisLabel.text(t('yAxisLabel') + (state.yMode === 'linear' ? t('linSuffix') : t('logSuffix')) + ')');
+    }
+    updateAxisLabels();
+
+    var chX = gCrosshair.append('line').attr('class', 'crosshair chx');
+    var chY = gCrosshair.append('line').attr('class', 'crosshair chy');
+
+    var ptSel = gPoints.selectAll('circle.pt')
+      .data(DATA, function(d){ return d.id; })
+      .join('circle')
+      .attr('class', 'pt')
+      .attr('r', function(d){ return rScale(d.range); })
+      .attr('fill', function(d){ return GROUPS[d.group].color; })
+      .attr('fill-opacity', function(d){ return isChartVisible(d) ? 0.82 : 0.05; })
+      .attr('pointer-events', function(d){ return isChartVisible(d) ? 'auto' : 'none'; })
+      .attr('stroke', '#0A0E13')
+      .attr('stroke-width', 1)
+      .on('mouseenter', function(event, d){
+        showTooltip(event, d);
+        moveCrosshair(chX, chY, curX(d), curY(d), innerW, innerH);
+      })
+      .on('mousemove', function(event, d){ positionTooltip(event); })
+      .on('mouseleave', function(){
+        hideTooltip();
+        if(state.selectedId === null){ chX.attr('opacity',0); chY.attr('opacity',0); }
+      })
+      .on('click', function(event, d){
+        state.selectedId = d.id;
+        refreshAll();
+      });
+
+    var selRing = gPoints.append('circle').attr('class','pt-ring').attr('id','selRing');
+
+    var labelSel = gPoints.selectAll('text.pt-label')
+      .data(DATA, function(d){ return d.id; })
+      .join('text')
+      .attr('class', 'pt-label')
+      .text(function(d){ return L(d,'name'); })
+      .attr('opacity', 0);
+
+    // current (possibly zoomed) scales + position helpers
+    var curXScale = xScale, curYScale = yScale;
+    function curX(d){ return curXScale(Math.max(d.spdMax, 0.001)); }
+    function curY(d){ return curYScale(Math.max(d.altMax, 0.001)); }
+
+    function positionSelection(){
+      if(state.selectedId !== null){
+        var sd = DATA.find(function(d){ return d.id === state.selectedId; });
+        if(sd){
+          moveCrosshair(chX, chY, curX(sd), curY(sd), innerW, innerH);
+          chX.attr('opacity',.9); chY.attr('opacity',.9);
+          selRing.attr('cx', curX(sd)).attr('cy', curY(sd)).attr('r', rScale(sd.range) + 5).attr('opacity', 1);
+          return;
+        }
+      }
+      selRing.attr('opacity', 0);
+      chX.attr('opacity', 0); chY.attr('opacity', 0);
+    }
+    refreshSelectionOnChart = positionSelection;
+    refreshLabelsOnChart = redraw;
+
+    // ================= independent-axis view window =================
+    // The view is a rectangle in BASE pixel space [0..innerW]×[0..innerH].
+    // Each axis is rescaled INDEPENDENTLY so a wide-flat box selection
+    // stretches vertically to fill the plot — the aspect ratio adapts
+    // to whatever region you choose, instead of being locked to the
+    // full chart's proportions like d3.zoom's single-k transform.
+    // Default view window: log mode shows the full altitude range (that's
+    // the whole point of log scale), but linear mode defaults to just the
+    // low-altitude slice (0–2 km) since the full 1,600 km range would
+    // otherwise squash everything into a sliver at the bottom.
+    function defaultView(){
+      if(state.yMode === 'linear'){
+        return { x0: 0, x1: innerW, y0: yScale(2000), y1: innerH };
+      }
+      return { x0: 0, x1: innerW, y0: 0, y1: innerH };
+    }
+    var view = defaultView();
+    var MIN_FRAC = 1/100000; // effectively unlimited zoom depth
+    if(pendingXRange){
+      var pxv0 = xScale(Math.max(pendingXRange[0], SPEED_MIN)), pxv1 = xScale(Math.max(pendingXRange[1], SPEED_MIN));
+      view.x0 = Math.min(pxv0, pxv1); view.x1 = Math.max(pxv0, pxv1);
+      pendingXRange = null;
+    }
+    if(pendingYRange){
+      var pyv0 = yScale(Math.max(pendingYRange[0], ALT_MIN)), pyv1 = yScale(Math.max(pendingYRange[1], ALT_MIN));
+      view.y0 = Math.min(pyv0, pyv1); view.y1 = Math.max(pyv0, pyv1);
+      pendingYRange = null;
+    }
+    clampView();
+
+    function clampView(){
+      var w = view.x1 - view.x0, h = view.y1 - view.y0;
+      var minW = innerW * MIN_FRAC, minH = innerH * MIN_FRAC;
+      if(w < minW){ var cx=(view.x0+view.x1)/2; view.x0=cx-minW/2; view.x1=cx+minW/2; w=minW; }
+      if(h < minH){ var cy=(view.y0+view.y1)/2; view.y0=cy-minH/2; view.y1=cy+minH/2; h=minH; }
+      if(w >= innerW){ view.x0 = 0; view.x1 = innerW; }
+      else {
+        if(view.x0 < 0){ view.x1 -= view.x0; view.x0 = 0; }
+        if(view.x1 > innerW){ view.x0 -= (view.x1 - innerW); view.x1 = innerW; }
+      }
+      if(h >= innerH){ view.y0 = 0; view.y1 = innerH; }
+      else {
+        if(view.y0 < 0){ view.y1 -= view.y0; view.y0 = 0; }
+        if(view.y1 > innerH){ view.y0 -= (view.y1 - innerH); view.y1 = innerH; }
+      }
+    }
+
+    // Exposes what data range is currently on screen, in real units — used
+    // by the log/linear toggle buttons so switching the ruler doesn't also
+    // jump you to a different part of the sky.
+    getCurrentValueRange = function(){
+      var xv0 = curXScale.invert(0), xv1 = curXScale.invert(innerW);
+      var yv0 = curYScale.invert(0), yv1 = curYScale.invert(innerH);
+      return {
+        xMin: Math.min(xv0, xv1), xMax: Math.max(xv0, xv1),
+        yMin: Math.min(yv0, yv1), yMax: Math.max(yv0, yv1)
+      };
+    };
+
+    function updateScalesFromView(){
+      // x: base pixel window [x0,x1] → values, stretched across full width
+      curXScale = xScale.copy().domain([ xScale.invert(view.x0), xScale.invert(view.x1) ]);
+      // y: base pixel y0 is the TOP of the window (higher altitude);
+      //    scale range is [innerH, 0] so domain must be [lowVal, highVal]
+      curYScale = yScale.copy().domain([ yScale.invert(view.y1), yScale.invert(view.y0) ]);
+    }
+
+    function redraw(){
+      updateScalesFromView();
+      updateArt();
+
+      var xTicksNow = state.xMode === 'linear' ? curXScale.ticks(isSmall?5:8) : niceLogTicks(curXScale.domain()[0], curXScale.domain()[1], innerW);
+      var yTicksNow = state.yMode === 'linear' ? curYScale.ticks(isSmall?5:8) : niceLogTicks(curYScale.domain()[0], curYScale.domain()[1], innerH);
+      gAxisX.call(d3.axisBottom(curXScale).tickValues(xTicksNow).tickFormat(xTickLabel).tickSize(4));
+      gAxisY.call(d3.axisLeft(curYScale).tickValues(yTicksNow).tickFormat(yTickLabel).tickSize(4));
+
+      ptSel.attr('cx', function(d){ return curX(d); }).attr('cy', function(d){ return curY(d); });
+
+      // Show name labels once the user has zoomed in enough that they
+      // won't just pile on top of each other — and even then, run a cheap
+      // greedy collision pass so overlapping labels don't stack: selected
+      // item wins first, then bigger bubbles win, anything that would
+      // collide with an already-placed label is hidden (still reachable
+      // via hover tooltip).
+      var zoomX = innerW / Math.max(1, (view.x1 - view.x0));
+      var zoomY = innerH / Math.max(1, (view.y1 - view.y0));
+      var LABEL_ZOOM_THRESHOLD = 2.4;
+      var showLabels;
+      if(state.labelMode === 'show') showLabels = true;
+      else if(state.labelMode === 'hide') showLabels = false;
+      else showLabels = Math.min(zoomX, zoomY) >= LABEL_ZOOM_THRESHOLD;
+
+      var labelVisible = {};
+      if(showLabels){
+        var LFS = 10.5; // label font-size, px
+        var candidates = [];
+        DATA.forEach(function(d){
+          if(!isChartVisible(d)) return;
+          candidates.push({
+            d: d,
+            x: curX(d),
+            y: curY(d) - rScale(d.range) - 6,
+            w: estimateLabelWidth(L(d,'name'), LFS),
+            h: LFS + 3
+          });
+        });
+        candidates.sort(function(a, b){
+          if(a.d.id === state.selectedId) return -1;
+          if(b.d.id === state.selectedId) return 1;
+          return b.d.range - a.d.range;
+        });
+        var placed = [];
+        var PAD = 2;
+        candidates.forEach(function(c){
+          var box = { x0: c.x - c.w/2 - PAD, x1: c.x + c.w/2 + PAD, y0: c.y - c.h - PAD, y1: c.y + PAD };
+          var hit = placed.some(function(b){
+            return !(box.x1 < b.x0 || box.x0 > b.x1 || box.y1 < b.y0 || box.y0 > b.y1);
+          });
+          labelVisible[c.d.id] = !hit;
+          if(!hit) placed.push(box);
+        });
+      }
+      labelSel
+        .attr('x', function(d){ return curX(d); })
+        .attr('y', function(d){ return curY(d) - rScale(d.range) - 6; })
+        .attr('opacity', function(d){ return labelVisible[d.id] ? 1 : 0; });
+
+      bandLines
+        .attr('y1', function(d){ return curYScale(d.y); })
+        .attr('y2', function(d){ return curYScale(d.y); })
+        .attr('opacity', function(d){ var dm = curYScale.domain(); return (d.y >= dm[0] && d.y <= dm[1]) ? 1 : 0; });
+      if(bandLabels){
+        bandLabels
+          .attr('y', function(d){ return curYScale(d.y) - 3; })
+          .attr('opacity', function(d){ var dm = curYScale.domain(); return (d.y >= dm[0] && d.y <= dm[1]) ? 1 : 0; });
+      }
+      machLinesSel
+        .attr('x1', function(d){ return curXScale(d.x); })
+        .attr('x2', function(d){ return curXScale(d.x); })
+        .attr('opacity', function(d){ var dm = curXScale.domain(); return (d.x >= dm[0] && d.x <= dm[1]) ? 1 : 0; });
+      machLabelsSel
+        .attr('x', function(d){ return curXScale(d.x) + 3; })
+        .attr('opacity', function(d){ var dm = curXScale.domain(); return (d.x >= dm[0] && d.x <= dm[1]) ? 1 : 0; });
+
+      positionSelection();
+      updateSliderUI();
+    }
+
+    // The Y slider always uses its OWN logarithmic mapping (regardless of
+    // whether the chart itself is in log or linear mode) so the handles
+    // stay usable and don't collapse into each other. Its floor is fixed
+    // at 1 km — below that, drag with the mouse wheel or box-zoom instead.
+    var SLIDER_ALT_FLOOR = 1000;
+    var sliderYScale = d3.scaleLog().domain([SLIDER_ALT_FLOOR, ALT_MAX]).range([innerH, 0]);
+
+    function updateSliderUI(){
+      // X slider: view.x0/x1 are already in the same pixel space as the track width (innerW)
+      var lx = Math.max(0, Math.min(innerW, view.x0));
+      var rx = Math.max(0, Math.min(innerW, view.x1));
+      xHandleL.style.left = lx + 'px';
+      xHandleR.style.left = rx + 'px';
+      xSliderRange.style.left = lx + 'px';
+      xSliderRange.style.width = Math.max(0, rx - lx) + 'px';
+      xHandleLLabel.textContent = fmtSpeed(xScale.invert(view.x0));
+      xHandleRLabel.textContent = fmtSpeed(xScale.invert(view.x1));
+
+      // Y slider: log-mapped, floor clamped to 1 km for the handle's POSITION;
+      // the label still shows the real value even if the actual view goes lower.
+      var y0Val = yScale.invert(view.y0), y1Val = yScale.invert(view.y1);
+      var ty = Math.max(0, Math.min(innerH, sliderYScale(Math.max(y0Val, SLIDER_ALT_FLOOR))));
+      var by = Math.max(0, Math.min(innerH, sliderYScale(Math.max(y1Val, SLIDER_ALT_FLOOR))));
+      yHandleTop.style.top = ty + 'px';
+      yHandleBot.style.top = by + 'px';
+      ySliderRange.style.top = ty + 'px';
+      ySliderRange.style.height = Math.max(0, by - ty) + 'px';
+      yHandleTopLabel.textContent = fmtAlt(y0Val);
+      yHandleBotLabel.textContent = fmtAlt(y1Val);
+    }
+
+    var MIN_HANDLE_GAP = 6; // px, keeps the two handles from crossing entirely
+
+    // Relative (offset-based) dragging: we record where the pointer and the
+    // handle were at pointerdown, then move the handle by the pointer's
+    // DELTA. A plain click (zero movement) therefore changes nothing — the
+    // old absolute-position logic made even a 2-3px jitter near the bottom
+    // of the log-mapped Y track jump the view by tens of km.
+    function wireSliderHandle(handleEl, axis, which){
+      handleEl.onpointerdown = function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        handleEl.setPointerCapture(ev.pointerId);
+        var startClientX = ev.clientX, startClientY = ev.clientY;
+        // handle's logical position at drag start, in slider-track pixels
+        var startPos;
+        if(axis === 'x'){
+          startPos = which === 'l' ? view.x0 : view.x1;
+        } else {
+          var vAtStart = yScale.invert(which === 'top' ? view.y0 : view.y1);
+          startPos = sliderYScale(Math.max(vAtStart, SLIDER_ALT_FLOOR));
+          startPos = Math.max(0, Math.min(innerH, startPos));
+        }
+        var moved = false;
+        function onMove(e){
+          var dx = e.clientX - startClientX, dy = e.clientY - startClientY;
+          if(!moved && Math.abs(dx) < 3 && Math.abs(dy) < 3) return; // ignore click jitter
+          moved = true;
+          if(axis === 'x'){
+            var px = Math.max(0, Math.min(innerW, startPos + dx));
+            // gap enforced in the slider's own pixel space; never wider than
+            // the current window so touching a handle can't force a zoom-out
+            var gapX = Math.min(MIN_HANDLE_GAP, Math.max(0.5, view.x1 - view.x0));
+            if(which === 'l'){ view.x0 = Math.min(px, view.x1 - gapX); }
+            else { view.x1 = Math.max(px, view.x0 + gapX); }
+          } else {
+            var py = Math.max(0, Math.min(innerH, startPos + dy));
+            // CRITICAL: the min-gap between the two Y handles must be
+            // enforced in SLIDER pixel space (log-mapped, where 0m and 2km
+            // sit ~46px apart), NOT in base chart pixel space. In linear
+            // chart mode the whole 0–2km window is <1px of base space, so a
+            // base-space gap of 6px used to snap the view open to ~20km the
+            // instant a handle was touched.
+            var otherVal = yScale.invert(which === 'top' ? view.y1 : view.y0);
+            var otherSliderPos = Math.max(0, Math.min(innerH, sliderYScale(Math.max(otherVal, SLIDER_ALT_FLOOR))));
+            if(which === 'top'){ py = Math.min(py, otherSliderPos - MIN_HANDLE_GAP); }
+            else { py = Math.max(py, otherSliderPos + MIN_HANDLE_GAP); }
+            py = Math.max(0, Math.min(innerH, py));
+            var val = sliderYScale.invert(py); // value in [~1km, ALT_MAX]
+            var chartPx = yScale(val); // convert to the chart's own current pixel space
+            // ordering guard only — no base-pixel gap (that was the 20km bug)
+            if(which === 'top'){ view.y0 = Math.min(chartPx, view.y1 - 0.0001); }
+            else { view.y1 = Math.max(chartPx, view.y0 + 0.0001); }
+          }
+          redraw();
+        }
+        function onUp(){
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+        }
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+      };
+    }
+    wireSliderHandle(xHandleL, 'x', 'l');
+    wireSliderHandle(xHandleR, 'x', 'r');
+    wireSliderHandle(yHandleTop, 'y', 'top');
+    wireSliderHandle(yHandleBot, 'y', 'bot');
+
+    // smooth animation between view rectangles
+    var animFrame = null;
+    function animateViewTo(target, duration){
+      if(animFrame) cancelAnimationFrame(animFrame);
+      var from = { x0: view.x0, x1: view.x1, y0: view.y0, y1: view.y1 };
+      var t0 = performance.now();
+      duration = duration || 400;
+      function step(now){
+        var t = Math.min(1, (now - t0) / duration);
+        var e = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        view.x0 = from.x0 + (target.x0 - from.x0) * e;
+        view.x1 = from.x1 + (target.x1 - from.x1) * e;
+        view.y0 = from.y0 + (target.y0 - from.y0) * e;
+        view.y1 = from.y1 + (target.y1 - from.y1) * e;
+        redraw();
+        if(t < 1) animFrame = requestAnimationFrame(step);
+        else animFrame = null;
+      }
+      animFrame = requestAnimationFrame(step);
+    }
+
+    // value-space box → per-axis-fit view window (with padding)
+    function applyValueBox(vx0, vx1, vy0, vy1){
+      var px0 = xScale(Math.min(vx0, vx1)), px1 = xScale(Math.max(vx0, vx1));
+      var pyA = yScale(Math.min(vy0, vy1)), pyB = yScale(Math.max(vy0, vy1));
+      var py0 = Math.min(pyA, pyB), py1 = Math.max(pyA, pyB);
+      var padX = Math.max((px1 - px0) * 0.12, 2);
+      var padY = Math.max((py1 - py0) * 0.12, 2);
+      var target = { x0: px0 - padX, x1: px1 + padX, y0: py0 - padY, y1: py1 + padY };
+      // clamp target the same way clampView does (operate on a copy)
+      var saved = { x0: view.x0, x1: view.x1, y0: view.y0, y1: view.y1 };
+      view.x0 = target.x0; view.x1 = target.x1; view.y0 = target.y0; view.y1 = target.y1;
+      clampView();
+      target = { x0: view.x0, x1: view.x1, y0: view.y0, y1: view.y1 };
+      view.x0 = saved.x0; view.x1 = saved.x1; view.y0 = saved.y0; view.y1 = saved.y1;
+      animateViewTo(target, 450);
+    }
+    applyValueBoxRef = applyValueBox;
+    resetChartViewRef = function(){
+      animateViewTo(defaultView(), 350);
+    };
+
+    // ---- wheel zoom (both axes, anchored at cursor; ratio preserved while scrolling) ----
+    svg.on('wheel', function(event){
+      if(state.boxZoomMode) return;
+      event.preventDefault();
+      var pt = d3.pointer(event, gRoot.node());
+      var mx = Math.max(0, Math.min(innerW, pt[0]));
+      var my = Math.max(0, Math.min(innerH, pt[1]));
+      var factor = Math.exp(-event.deltaY * 0.0022);
+      var bx = view.x0 + (mx / innerW) * (view.x1 - view.x0);
+      var by = view.y0 + (my / innerH) * (view.y1 - view.y0);
+      var newW = (view.x1 - view.x0) / factor;
+      var newH = (view.y1 - view.y0) / factor;
+      var fx = (bx - view.x0) / (view.x1 - view.x0);
+      var fy = (by - view.y0) / (view.y1 - view.y0);
+      view.x0 = bx - fx * newW; view.x1 = view.x0 + newW;
+      view.y0 = by - fy * newH; view.y1 = view.y0 + newH;
+      clampView();
+      redraw();
+    }, { passive: false });
+
+    // ---- drag-to-pan on the empty background ----
+    bgRect.call(d3.drag()
+      .filter(function(event){ return !state.boxZoomMode && !event.button; })
+      .on('drag', function(event){
+        var sx = (view.x1 - view.x0) / innerW;
+        var sy = (view.y1 - view.y0) / innerH;
+        view.x0 -= event.dx * sx; view.x1 -= event.dx * sx;
+        view.y0 -= event.dy * sy; view.y1 -= event.dy * sy;
+        clampView();
+        redraw();
+      }));
+
+    // ---- box-select (brush) zoom: drag a rectangle, release → BOTH axes
+    //      independently stretch that exact region to fill the plot ----
+    var brushG = clip.append('g').attr('class', 'brush-layer brush');
+    brushBehavior = d3.brush()
+      .extent([[0,0],[innerW,innerH]])
+      .on('end', function(event){
+        if(!event.selection) return;
+        var sel = event.selection; // [[x0,y0],[x1,y1]] in CURRENT screen pixels
+        var x0v = curXScale.invert(sel[0][0]), x1v = curXScale.invert(sel[1][0]);
+        var yTopV = curYScale.invert(sel[0][1]), yBotV = curYScale.invert(sel[1][1]);
+        brushBehavior.move(brushG, null);
+        setBoxZoomMode(false);
+        applyValueBox(x0v, x1v, yBotV, yTopV);
+      });
+    brushG.call(brushBehavior);
+    brushLayerSel = brushG;
+    brushLayerSel.classed('active', state.boxZoomMode);
+
+    redraw();
+    applyChartFilters();
+  }
+
+  function moveCrosshair(chX, chY, x, y, innerW, innerH){
+    chX.attr('x1', x).attr('x2', x).attr('y1', 0).attr('y2', innerH).attr('opacity', .7);
+    chY.attr('x1', 0).attr('x2', innerW).attr('y1', y).attr('y2', y).attr('opacity', .7);
+  }
+
+  function setBoxZoomMode(on){
+    state.boxZoomMode = on;
+    btnBoxZoom.classList.toggle('active', on);
+    btnBoxZoom.setAttribute('aria-pressed', on);
+    if(brushLayerSel) brushLayerSel.classed('active', on);
+  }
+
+  // Fit BOTH axes independently to whatever currently passes the sidebar filters.
+  function zoomToFit(){
+    if(!applyValueBoxRef) return;
+    var items = DATA.filter(isChartVisible);
+    if(items.length === 0) return;
+    var xVals = items.map(function(d){ return d.spdMax; });
+    var yVals = items.map(function(d){ return d.altMax; });
+    applyValueBoxRef(
+      Math.min.apply(null, xVals), Math.max.apply(null, xVals),
+      Math.min.apply(null, yVals), Math.max.apply(null, yVals)
+    );
+  }
+
+  function showTooltip(event, d){
+    tooltip.innerHTML =
+      '<div class="tt-name">' + L(d,'name') + '</div>' +
+      '<div class="tt-row">' + t('tooltipAltMax') + ' <span>' + fmtAlt(d.altMax) + '</span></div>' +
+      '<div class="tt-row">' + t('tooltipSpdMax') + ' <span>' + fmtSpeed(d.spdMax) + '</span></div>' +
+      '<div class="tt-row">' + t('tooltipRange') + ' <span>' + fmtRange(d.range) + '</span></div>';
+    tooltip.style.opacity = 1;
+    positionTooltip(event);
+  }
+  function positionTooltip(event){
+    var rect = chartContainer.getBoundingClientRect();
+    var x = event.clientX - rect.left + 14;
+    var y = event.clientY - rect.top - 10;
+    if(x > rect.width - 180) x = event.clientX - rect.left - 200;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  }
+  function hideTooltip(){ tooltip.style.opacity = 0; }
+
+  function applyChartFilters(){
+    if(!gPoints) return;
+    gPoints.selectAll('circle.pt')
+      .transition().duration(150)
+      .attr('fill-opacity', function(d){ return isChartVisible(d) ? 0.82 : 0.05; })
+      .attr('pointer-events', function(d){ return isChartVisible(d) ? 'auto' : 'none'; });
+    var shownCount = DATA.filter(isChartVisible).length;
+    document.getElementById('chartCount').textContent =
+      state.lang === 'en'
+        ? '(showing ' + shownCount + ' / ' + DATA.length + ')'
+        : '(顯示 ' + shownCount + ' / ' + DATA.length + ' 項)';
+  }
+
+  // ---------------- detail panel ----------------
+  function buildDetailHTML(d){
+    var g = GROUPS[d.group];
+    var dispMin = 1, dispMax = 1600000;
+    var logMin = Math.log10(dispMin), logMax = Math.log10(dispMax);
+    function pct(v){ v = Math.max(v, dispMin); return (1 - (Math.log10(v) - logMin) / (logMax - logMin)) * 100; }
+    var topPct = pct(d.altMax);
+    var botPct = pct(Math.max(d.altMin, dispMin));
+    var envTicksVals = [1000, 12000, 100000, 1000000];
+    var envTicks = envTicksVals.map(function(v){
+      return '<div class="envelope-tick" style="top:' + pct(v).toFixed(1) + '%">' + (v>=1000000?'1,000km':v>=1000?(v/1000)+'km':v+'m') + '</div>';
+    }).join('');
+    var inCompare = state.compareIds.has(d.id);
+    return '<span class="detail-tag" style="background:' + g.color + '22;color:' + g.color + ';border:1px solid ' + g.color + '55;">' + L(g,'label') + '</span>' +
+      '<h3 class="detail-name">' + L(d,'name') + '</h3>' +
+      '<div class="detail-type">' + L(d,'type') + ' · ' + L(d,'era') + '</div>' +
+      '<div class="detail-stats">' +
+        '<div class="dstat"><div class="k">' + t('detailAltMax') + '</div><div class="v">' + fmtAlt(d.altMax) + '</div></div>' +
+        '<div class="dstat"><div class="k">' + t('detailAltMin') + '</div><div class="v">' + fmtAlt(d.altMin) + '</div></div>' +
+        '<div class="dstat"><div class="k">' + t('detailSpdMax') + '</div><div class="v">' + fmtSpeed(d.spdMax) + '<br><small>' + fmtMach(d.spdMax) + '</small></div></div>' +
+        '<div class="dstat"><div class="k">' + t('detailSpdMin') + '</div><div class="v">' + fmtSpeed(d.spdMin) + '</div></div>' +
+      '</div>' +
+      '<div class="envelope">' +
+        '<div class="envelope-label">' + t('envelopeLabel') + '</div>' +
+        '<div class="envelope-track">' + envTicks +
+          '<div class="envelope-bar" style="top:' + topPct.toFixed(1) + '%; height:' + Math.max(2, (botPct-topPct)).toFixed(1) + '%; background:' + g.color + ';"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="dstat" style="margin-bottom:14px;"><div class="k">' + t('detailRange') + '</div><div class="v">' + fmtRange(d.range) + '</div></div>' +
+      '<div class="detail-desc">' + L(d,'desc') + '</div>' +
+      '<div class="filter-actions" style="margin-top:14px;">' +
+        '<button class="btn-mini detail-cmp-toggle">' + (inCompare ? t('removeFromCompare') : t('addToCompare')) + '</button>' +
+      '</div>';
+  }
+
+  function renderDetail(){
+    var overlay = document.getElementById('detailOverlay');
+    var overlayBody = document.getElementById('detailOverlayBody');
+    if(state.selectedId === null){
+      overlay.classList.remove('open');
+      return;
+    }
+    var d = DATA.find(function(x){ return x.id === state.selectedId; });
+    if(!d) return;
+
+    // in-chart floating detail card — the sole detail surface now that the
+    // right-hand sidebar has been removed to give the chart more room
+    overlayBody.innerHTML = buildDetailHTML(d);
+    overlay.classList.add('open');
+
+    document.querySelectorAll('.detail-cmp-toggle').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(state.compareIds.has(d.id)) state.compareIds.delete(d.id);
+        else state.compareIds.add(d.id);
+        refreshAll();
+      });
+    });
+  }
+  document.getElementById('detailOverlayClose').addEventListener('click', function(){
+    document.getElementById('detailOverlay').classList.remove('open');
+  });
+
+  // ---------------- table ----------------
+  var tableBody = document.getElementById('tableBody');
+  var theadRow = document.querySelector('thead tr');
+
+  function renderTable(){
+    var rows = DATA.slice().sort(function(a,b){
+      if(state.sortKey === '_nosort') return 0;
+      var av = a[state.sortKey], bv = b[state.sortKey];
+      if(typeof av === 'string'){ return state.sortDir==='asc' ? (av>bv?1:-1) : (av<bv?1:-1); }
+      return state.sortDir === 'asc' ? av - bv : bv - av;
+    });
+    tableBody.innerHTML = rows.map(function(d){
+      var g = GROUPS[d.group];
+      var vis = isVisible(d);
+      var checked = state.compareIds.has(d.id) ? 'checked' : '';
+      return '<tr data-id="' + d.id + '" class="' + (state.selectedId===d.id?'selected':'') + (vis?'':' dim') + '">' +
+        '<td class="cmp-td"><input type="checkbox" class="cmp-check" data-id="' + d.id + '" ' + checked + '></td>' +
+        '<td><span class="tg" style="background:' + g.color + '"></span><span class="nm">' + L(d,'name') + '</span></td>' +
+        '<td class="type-chip">' + L(g,'label') + '<br>' + L(d,'type') + '</td>' +
+        '<td class="num">' + fmtAlt(d.altMin) + ' – ' + fmtAlt(d.altMax) + '</td>' +
+        '<td class="num">' + fmtSpeed(d.spdMin) + ' – ' + fmtSpeed(d.spdMax) + '</td>' +
+        '<td class="num">' + fmtRange(d.range) + '</td>' +
+      '</tr>';
+    }).join('');
+    var tvisCount = DATA.filter(isVisible).length;
+    document.getElementById('tableCount').textContent =
+      state.lang === 'en' ? '(' + tvisCount + ' / ' + DATA.length + ')' : '(' + tvisCount + ' / ' + DATA.length + ' 項)';
+
+    tableBody.querySelectorAll('tr').forEach(function(tr){
+      tr.addEventListener('click', function(event){
+        if(event.target && event.target.classList.contains('cmp-check')) return;
+        state.selectedId = Number(tr.dataset.id);
+        refreshAll();
+      });
+    });
+    tableBody.querySelectorAll('.cmp-check').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        var id = Number(cb.dataset.id);
+        if(cb.checked) state.compareIds.add(id);
+        else state.compareIds.delete(id);
+        renderCompare();
+        renderDetail();
+      });
+    });
+
+    theadRow.querySelectorAll('th').forEach(function(th){
+      th.classList.toggle('sorted', th.dataset.key === state.sortKey && th.dataset.key !== '_nosort');
+      th.classList.toggle('asc', th.dataset.key === state.sortKey && state.sortDir === 'asc');
+    });
+  }
+  theadRow.querySelectorAll('th').forEach(function(th){
+    if(th.dataset.key === '_nosort') return;
+    th.addEventListener('click', function(){
+      var key = th.dataset.key;
+      if(state.sortKey === key){ state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc'; }
+      else { state.sortKey = key; state.sortDir = 'desc'; }
+      renderTable();
+    });
+  });
+
+  // ---------------- compare panel ----------------
+  function renderCompare(){
+    var body = document.getElementById('compareBody');
+    var ids = Array.from(state.compareIds);
+    document.getElementById('compareCount').textContent = ids.length ? '(' + ids.length + (state.lang==='en'?'':' 項') + ')' : '';
+    if(ids.length === 0){
+      body.innerHTML = '<div class="detail-empty" style="padding:6px 4px;">' + t('compareEmpty') + '</div>';
+      return;
+    }
+    var items = ids.map(function(id){ return DATA.find(function(d){ return d.id === id; }); }).filter(Boolean);
+    var cards = items.map(function(d){
+      var g = GROUPS[d.group];
+      var atk = (d.atkCategory === 'recon' || d.atkCategory === 'civilian') ? (d.atkCategory === 'civilian' ? t('naCivilian') : t('naRecon')) : fmtRange(d.atkRange);
+      return '<div class="cmp-card">' +
+        '<button class="cmp-close" data-id="' + d.id + '">✕</button>' +
+        '<div><span class="cmp-tag" style="background:' + g.color + '"></span><span style="font-size:10px;color:var(--text-3);">' + L(g,'label') + '</span></div>' +
+        '<div class="cmp-name">' + L(d,'name') + '</div>' +
+        '<div class="cmp-type">' + L(d,'type') + ' · ' + L(d,'era') + '</div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpAltRange') + '</span><span class="v">' + fmtAlt(d.altMin) + '<br>–' + fmtAlt(d.altMax) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpSpdRange') + '</span><span class="v">' + fmtSpeed(d.spdMin) + '<br>–' + fmtSpeed(d.spdMax) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpTopSpeed') + '</span><span class="v">' + fmtMach(d.spdMax) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpAtkRange') + '</span><span class="v">' + atk + '</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpRangeRadius') + '</span><span class="v">' + fmtRange(d.range) + '</span></div>' +
+      '</div>';
+    }).join('');
+    body.innerHTML = cards + '<div class="cmp-clear-wrap"><button class="btn-mini" id="btnCompareClear" style="height:100%;">' + t('clearCompare') + '</button></div>';
+    body.querySelectorAll('.cmp-close').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.compareIds.delete(Number(btn.dataset.id));
+        refreshAll();
+      });
+    });
+    var clearBtn = document.getElementById('btnCompareClear');
+    if(clearBtn){
+      clearBtn.addEventListener('click', function(){
+        state.compareIds = new Set();
+        refreshAll();
+      });
+    }
+  }
+
+  // ---------------- attack-range ranking chart ----------------
+  var atkContainer = document.getElementById('atkChartContainer');
+  var ATK_MIN = 4, ATK_MAX = 21000;
+  var atkHeaderTicks = [10, 100, 1000, 10000, 20000];
+  var DISTANCE_ANCHORS = [
+    { km: 60,    label: '香港－澳門 ~60 km', label_en: 'Hong Kong–Macau ~60 km' },
+    { km: 130,   label: '台灣海峽最窄處 ~130 km', label_en: 'Taiwan Strait (narrowest) ~130 km' },
+    { km: 195,   label: '首爾－平壤 ~195 km', label_en: 'Seoul–Pyongyang ~195 km' },
+    { km: 810,   label: '香港－台北 ~810 km', label_en: 'Hong Kong–Taipei ~810 km' },
+    { km: 1980,  label: '香港－北京 ~1,980 km', label_en: 'Hong Kong–Beijing ~1,980 km' },
+    { km: 2900,  label: '香港－東京 ~2,900 km', label_en: 'Hong Kong–Tokyo ~2,900 km' },
+    { km: 20000, label: '地球對蹠點（地表最遠兩點）~20,000 km', label_en: "Earth's antipodal distance ~20,000 km" }
+  ];
+  state.showDistAnchors = true;
+
+  function atkPct(v){
+    var vv = Math.max(v, ATK_MIN);
+    var p = (Math.log10(vv) - Math.log10(ATK_MIN)) / (Math.log10(ATK_MAX) - Math.log10(ATK_MIN)) * 100;
+    return Math.max(0, Math.min(100, p));
+  }
+  function getAtkNote(d){
+    if(state.lang === 'en' && d.atkNoteOverride_en) return d.atkNoteOverride_en;
+    if(d.atkNoteOverride) return d.atkNoteOverride;
+    if(d.atkCategory === 'munition'){
+      return state.lang === 'en'
+        ? 'This is the weapon itself — its maximum flight range of ' + fmtRange(d.atkRange) + ' is its strike range.'
+        : '本身即為攻擊武器，最大射程 ' + fmtRange(d.atkRange) + ' 即為攻擊距離。';
+    }
+    if(d.atkCategory === 'recon'){
+      return state.lang === 'en'
+        ? 'An unarmed reconnaissance platform with no direct strike capability.'
+        : '無武裝之偵察平台，不具備直接攻擊能力。';
+    }
+    if(d.atkCategory === 'civilian'){
+      return state.lang === 'en'
+        ? 'A civilian aircraft, unarmed — listed here only as an altitude/speed reference, with no strike capability.'
+        : '民用航空器，非武裝平台，列於此處僅供高度／速度對照參考，不具備攻擊能力。';
+    }
+    if(d.atkCategory === 'platform'){
+      return state.lang === 'en'
+        ? 'Combat radius ' + d.combatRadius + ' km + weapon range ' + d.weaponRange + ' km ≈ strike range ' + d.atkRange + ' km (a simplified estimate that varies with mission profile and loadout).'
+        : '作戰半徑 ' + d.combatRadius + ' km ＋ 武器有效射程 ' + d.weaponRange + ' km ≈ 攻擊距離 ' + d.atkRange + ' km（簡化估算，實際依任務剖面與掛載而異）。';
+    }
+    return '';
+  }
+  function renderAtkChart(){
+    var rows = DATA.slice().sort(function(a,b){ return b.atkRange - a.atkRange; });
+    var header = '<div class="atk-header-row"><div class="atk-name-h">' + t('atkNameHeader') + '</div><div class="atk-track-header">' +
+      atkHeaderTicks.map(function(tick){
+        return '<div class="atk-tick" style="left:' + atkPct(tick).toFixed(1) + '%">' + (tick >= 1000 ? (tick/1000) + ',000' : tick) + ' km</div>';
+      }).join('') + '</div></div>';
+    var body = rows.map(function(d){
+      var g = GROUPS[d.group];
+      var vis = isVisible(d);
+      var cls = 'atk-row' + (state.selectedId === d.id ? ' selected' : '') + (vis ? '' : ' dim');
+      var inner;
+      if(d.atkCategory === 'recon' || d.atkCategory === 'civilian'){
+        var naLabel = d.atkCategory === 'civilian' ? t('naCivilian') : t('naRecon');
+        inner = '<div class="atk-na">◌ ' + naLabel + '</div>';
+      } else {
+        var p = atkPct(d.atkRange);
+        inner =
+          '<div class="atk-fill-line" style="width:' + p.toFixed(1) + '%; background:' + g.color + ';"></div>' +
+          '<div class="atk-dot" style="left:' + p.toFixed(1) + '%; background:' + g.color + ';"></div>' +
+          '<div class="atk-value" style="left:' + p.toFixed(1) + '%;">' + fmtRange(d.atkRange) + '</div>';
+      }
+      return '<div class="' + cls + '" data-id="' + d.id + '" title="' + getAtkNote(d).replace(/"/g,'&quot;') + '">' +
+        '<div class="atk-name"><span class="tg" style="background:' + g.color + '"></span><b>' + L(d,'name') + '</b></div>' +
+        '<div class="atk-track">' + inner + '</div>' +
+      '</div>';
+    }).join('');
+    atkContainer.innerHTML = header + body;
+    var avisCount = DATA.filter(isVisible).length;
+    document.getElementById('atkCount').textContent =
+      state.lang === 'en' ? '(' + avisCount + ' / ' + DATA.length + ')' : '(' + avisCount + ' / ' + DATA.length + ' 項)';
+    atkContainer.querySelectorAll('.atk-row').forEach(function(row){
+      row.addEventListener('click', function(){
+        state.selectedId = Number(row.dataset.id);
+        refreshAll();
+      });
+    });
+    positionDistanceOverlay();
+  }
+
+  function positionDistanceOverlay(){
+    var overlay = document.getElementById('atkDistanceOverlay');
+    var wrap = document.getElementById('atkRowsWrap');
+    if(!overlay || !wrap) return;
+    if(!state.showDistAnchors){
+      overlay.innerHTML = '';
+      overlay.style.width = '0px';
+      return;
+    }
+    var trackEl = atkContainer.querySelector('.atk-track-header') || atkContainer.querySelector('.atk-track');
+    if(!trackEl){ overlay.innerHTML = ''; return; }
+    var wrapRect = wrap.getBoundingClientRect();
+    var trackRect = trackEl.getBoundingClientRect();
+    overlay.style.left = (trackRect.left - wrapRect.left) + 'px';
+    overlay.style.width = trackRect.width + 'px';
+    overlay.innerHTML = DISTANCE_ANCHORS.map(function(a){
+      var p = atkPct(a.km);
+      return '<div class="atk-dist-line" style="left:' + p.toFixed(2) + '%;" title="' + L(a,'label').replace(/"/g,'&quot;') + '"></div>';
+    }).join('');
+  }
+  var toggleDistAnchor = document.getElementById('toggleDistAnchor');
+  toggleDistAnchor.addEventListener('change', function(){
+    state.showDistAnchors = toggleDistAnchor.checked;
+    positionDistanceOverlay();
+  });
+
+  // ---------------- language toggle ----------------
+  function applyStaticI18n(){
+    document.documentElement.lang = state.lang === 'en' ? 'en' : 'zh-Hant';
+    document.title = state.lang === 'en' ? 'Altitude & Speed of Airborne Weapons' : '空中兵器高度／速度全譜圖';
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var key = el.getAttribute('data-i18n');
+      var val = t(key);
+      if(val) el.innerHTML = val;
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){
+      var key = el.getAttribute('data-i18n-placeholder');
+      var val = t(key);
+      if(val) el.setAttribute('placeholder', val);
+    });
+  }
+  var btnLang = document.getElementById('btnLang');
+  function applyLanguage(){
+    applyStaticI18n();
+    btnLang.textContent = t('langButton');
+    renderGroupList();
+    renderRefLayerList();
+    refreshToolbarText();
+    buildChart();
+    renderTable();
+    renderDetail();
+    renderAtkChart();
+    renderCompare();
+  }
+  btnLang.addEventListener('click', function(){
+    state.lang = state.lang === 'zh' ? 'en' : 'zh';
+    applyLanguage();
+  });
+  applyStaticI18n();
+  btnLang.textContent = t('langButton');
+
+  // ---------------- master refresh ----------------
+  function refreshAll(){
+    applyChartFilters();
+    if(refreshSelectionOnChart) refreshSelectionOnChart();
+    renderDetail();
+    renderTable();
+    renderAtkChart();
+    renderCompare();
+  }
+
+  // ---------------- init + resize ----------------
+  buildChart();
+  renderTable();
+  renderDetail();
+  renderAtkChart();
+  renderCompare();
+
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      buildChart();
+      positionDistanceOverlay();
+    }, 180);
+  });
+})();
+
+</script>
+</body>
+</html>
