@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>二戰戰車比較圖：速度／防護力／火力</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+:root{
+  --bg:#12100D;
+  --panel:#1B1815;
+  --panel-alt:#242019;
+  --panel-line:#2E291F;
+  --border:#3A3327;
+  --text-1:#EDE7DC;
+  --text-2:#AFA48F;
+  --text-3:#726B5C;
+  --amber:#D99A3C;
+  --amber-dim:rgba(217,154,60,.35);
+  --cyan:#7FB8AE;
+  --good:#8FBF7A;
+  --font-display:'Chakra Petch',sans-serif;
+  --font-body:'Noto Sans TC',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(217,154,60,.06), transparent 45%),
+    radial-gradient(ellipse at 90% 0%, rgba(127,184,174,.05), transparent 40%),
+    var(--bg);
+  color:var(--text-1);
+  font-family:var(--font-body);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--amber);color:#12100D;}
+
+.hud-frame{position:relative; max-width:1400px; margin:0 auto; padding:20px 20px 60px;}
+
+header.top{
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:linear-gradient(180deg, var(--panel-alt), var(--panel));
+  padding:22px 24px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+header.top::after{
+  content:'';
+  position:absolute; left:0; right:0; top:0; height:2px;
+  background:linear-gradient(90deg, transparent, var(--amber), transparent);
+  animation:sweep 6s linear infinite;
+}
+@keyframes sweep{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+.eyebrow{
+  font-family:var(--font-display); font-size:11px; letter-spacing:.28em; color:var(--amber);
+  text-transform:uppercase; display:flex; align-items:center; gap:8px; margin-bottom:10px;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+h1{font-family:var(--font-body); font-weight:900; font-size:clamp(22px,4vw,34px); margin:0 0 8px;}
+h1 .accent{color:var(--amber);}
+header .sub{color:var(--text-2); font-size:14px; max-width:760px; line-height:1.7; margin:0 0 18px;}
+.stat-row{display:flex; flex-wrap:wrap; gap:10px;}
+.stat-chip{border:1px solid var(--border); background:rgba(255,255,255,.02); border-radius:4px; padding:8px 14px; min-width:120px;}
+.stat-chip .k{font-size:10px;color:var(--text-3);letter-spacing:.12em;text-transform:uppercase;font-family:var(--font-display);}
+.stat-chip .v{font-family:var(--font-mono);font-size:16px;color:var(--text-1);font-weight:600;margin-top:2px;}
+.stat-chip .v span{color:var(--amber);}
+
+.layout{display:grid; grid-template-columns:240px 1fr; grid-template-areas:"filters chart"; gap:16px; align-items:start;}
+@media (max-width:1080px){ .layout{grid-template-columns:1fr; grid-template-areas:"filters" "chart";} }
+
+.panel{border:1px solid var(--border); background:var(--panel); border-radius:6px; padding:16px;}
+.panel-title{
+  font-family:var(--font-display); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--text-2);
+  margin:0 0 12px; padding-bottom:8px; border-bottom:1px solid var(--panel-line);
+  display:flex; justify-content:space-between; align-items:center;
+}
+
+#filters{grid-area:filters;}
+.search-wrap{position:relative; margin-bottom:14px;}
+#search{width:100%; background:var(--panel-alt); border:1px solid var(--border); color:var(--text-1); border-radius:4px; padding:9px 10px; font-family:var(--font-body); font-size:13px; outline:none;}
+#search:focus{border-color:var(--amber);}
+#search::placeholder{color:var(--text-3);}
+
+.group-row{display:flex; align-items:center; gap:9px; padding:7px 4px; border-radius:4px; cursor:pointer; user-select:none; font-size:13px; transition:background .15s;}
+.group-row:hover{background:var(--panel-alt);}
+.group-row input{accent-color:var(--amber); width:14px;height:14px; cursor:pointer;}
+.swatch{width:10px;height:10px;border-radius:2px;flex:none;}
+.group-row .lbl{flex:1; color:var(--text-1);}
+.group-row .cnt{font-family:var(--font-mono); color:var(--text-3); font-size:11px;}
+.filter-actions{display:flex; gap:8px; margin-top:12px;}
+.btn-mini{flex:1; background:var(--panel-alt); border:1px solid var(--border); color:var(--text-2); font-family:var(--font-display); font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:7px 6px; border-radius:4px; cursor:pointer;}
+.btn-mini:hover{border-color:var(--amber); color:var(--amber);}
+.legend-note{margin-top:16px; padding-top:14px; border-top:1px solid var(--panel-line); font-size:11.5px; color:var(--text-3); line-height:1.7;}
+.legend-note b{color:var(--text-2);}
+
+#chartPanel{grid-area:chart; min-width:0;}
+.chart-toolbar{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;}
+.toggle-btn{background:var(--panel-alt); border:1px solid var(--border); color:var(--text-2); font-family:var(--font-display); font-size:10.5px; letter-spacing:.06em; padding:7px 12px; border-radius:4px; cursor:pointer; transition:all .15s;}
+.toggle-btn:hover{border-color:var(--amber); color:var(--amber);}
+.toggle-btn.active{background:rgba(217,154,60,.14); border-color:var(--amber); color:var(--amber); box-shadow:0 0 0 1px var(--amber) inset;}
+
+#chartOuter{display:flex; align-items:stretch; gap:6px;}
+#chartMain{flex:1; min-width:0;}
+.axis-slider{flex:none; display:flex;}
+.axis-slider-y{flex-direction:column; width:64px; box-sizing:content-box;}
+.axis-slider-x{flex-direction:column; margin-top:10px; box-sizing:content-box;}
+.slider-track{position:relative; background:var(--panel-alt); border:1px solid var(--panel-line); border-radius:3px;}
+.slider-track-y{width:6px; flex:none; margin-left:auto; margin-right:6px;}
+.slider-track-x{height:6px; width:100%;}
+.slider-range{position:absolute; background:rgba(217,154,60,.35); border-radius:3px;}
+.slider-track-y .slider-range{left:0; right:0;}
+.slider-track-x .slider-range{top:0; bottom:0;}
+.slider-handle{position:absolute; width:15px; height:15px; border-radius:50%; background:var(--amber); border:2px solid #12100D; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.5); touch-action:none; z-index:5;}
+.slider-handle:hover, .slider-handle:active{background:#EAB35F;}
+.slider-track-y .slider-handle{left:50%; transform:translate(-50%,-50%);}
+.slider-track-x .slider-handle{top:50%; transform:translate(-50%,-50%);}
+.handle-label{position:absolute; font-family:var(--font-mono); font-size:9px; color:var(--amber); white-space:nowrap; pointer-events:none; background:#12100D; padding:1px 4px; border-radius:2px; border:1px solid var(--amber-dim);}
+.handle-label-x{top:-22px; left:50%; transform:translateX(-50%);}
+.handle-label-y{right:20px; left:auto; top:50%; transform:translateY(-50%);}
+
+body.chart-fullscreen{overflow:hidden;}
+body.chart-fullscreen #chartPanel{position:fixed; inset:0; z-index:1000; margin:0; border-radius:0; display:flex; flex-direction:column; overflow:auto;}
+body.chart-fullscreen #chartOuter{flex:1; min-height:0;}
+body.chart-fullscreen #chartMain{display:flex; flex-direction:column; min-height:0;}
+body.chart-fullscreen #chartContainer{flex:1; min-height:0; overflow:hidden;}
+body.chart-fullscreen .chart-hint{display:none;}
+
+#chartContainer{width:100%; position:relative;}
+#chartContainer svg{width:100%; height:auto; display:block; overflow:visible;}
+.axis path,.axis line{stroke:var(--border);}
+.axis text{fill:var(--text-3); font-family:var(--font-mono); font-size:10.5px;}
+.axis-label{fill:var(--text-2); font-family:var(--font-display); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;}
+.band-line{stroke:var(--cyan); stroke-opacity:.28; stroke-dasharray:2 4;}
+.band-label{fill:var(--cyan); fill-opacity:.75; font-family:var(--font-mono); font-size:9.5px;}
+.mach-line{stroke:var(--amber); stroke-opacity:.3; stroke-dasharray:2 4;}
+.mach-label{fill:var(--amber); fill-opacity:.85; font-family:var(--font-mono); font-size:9.5px;}
+.pt{cursor:pointer;}
+.pt-ring{fill:none; stroke:var(--amber); stroke-width:2px; pointer-events:none; opacity:0;}
+.crosshair{stroke:var(--text-2); stroke-width:1px; stroke-dasharray:3 3; opacity:0; pointer-events:none;}
+.pt-label{font-family:var(--font-mono); font-size:10.5px; fill:var(--text-1); text-anchor:middle; paint-order:stroke; stroke:#12100D; stroke-width:3px; stroke-linejoin:round; pointer-events:none; transition:opacity .15s;}
+.zoom-capture{cursor:grab;}
+.zoom-capture:active{cursor:grabbing;}
+.brush-layer{display:none;}
+.brush-layer.active{display:block;}
+.brush .selection{fill:rgba(217,154,60,.14); stroke:var(--amber); stroke-width:1.5px; stroke-dasharray:5 3;}
+.brush .overlay{cursor:crosshair !important;}
+.brush .handle{display:none;}
+
+#tooltip{position:absolute; pointer-events:none; z-index:50; background:#181410; border:1px solid var(--amber-dim); border-radius:4px; padding:8px 10px; font-size:12px; color:var(--text-1); opacity:0; transition:opacity .12s; box-shadow:0 8px 24px rgba(0,0,0,.5); max-width:220px;}
+#tooltip .tt-name{font-weight:700; margin-bottom:4px;}
+#tooltip .tt-row{font-family:var(--font-mono); font-size:11px; color:var(--text-2);}
+#tooltip .tt-row span{color:var(--amber);}
+.chart-hint{font-size:11px; color:var(--text-3); margin-top:8px; line-height:1.6;}
+
+#detailOverlay{position:absolute; top:10px; right:10px; width:270px; max-height:calc(100% - 20px); overflow-y:auto; z-index:60; background:rgba(24,20,16,.97); border:1px solid var(--border); border-radius:6px; padding:14px; display:none; box-shadow:0 12px 32px rgba(0,0,0,.55);}
+#detailOverlay.open{display:block;}
+#detailOverlayClose{position:absolute; top:8px; right:10px; background:none; border:none; color:var(--text-3); font-family:var(--font-mono); font-size:14px; cursor:pointer; z-index:5;}
+#detailOverlayClose:hover{color:var(--amber);}
+.detail-empty{color:var(--text-3); font-size:13px; line-height:1.8; padding:20px 4px;}
+.detail-tag{display:inline-block; font-family:var(--font-display); font-size:10px; letter-spacing:.1em; padding:3px 8px; border-radius:3px; margin-bottom:6px; margin-right:6px; text-transform:uppercase;}
+.detail-name{font-size:18px; font-weight:900; margin:0 0 2px; line-height:1.35;}
+.detail-type{color:var(--text-2); font-size:12px; margin-bottom:14px;}
+.detail-stats{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;}
+.dstat{background:var(--panel-alt); border:1px solid var(--panel-line); border-radius:4px; padding:8px 10px;}
+.dstat .k{font-size:9.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:.08em; font-family:var(--font-display);}
+.dstat .v{font-family:var(--font-mono); font-size:14px; color:var(--text-1); margin-top:3px; font-weight:600;}
+.dstat .v small{color:var(--text-3); font-weight:400; font-size:10.5px;}
+.detail-desc{font-size:12.5px; line-height:1.8; color:var(--text-2); border-top:1px solid var(--panel-line); padding-top:12px;}
+
+#comparePanel{grid-column:1/-1; margin-top:16px;}
+#compareBody{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px;}
+.cmp-card{flex:0 0 190px; background:var(--panel-alt); border:1px solid var(--border); border-radius:5px; padding:12px; position:relative;}
+.cmp-card .cmp-close{position:absolute; top:6px; right:8px; cursor:pointer; color:var(--text-3); font-family:var(--font-mono); font-size:13px; line-height:1; background:none; border:none;}
+.cmp-card .cmp-close:hover{color:var(--amber);}
+.cmp-card .cmp-tag{display:inline-block; width:8px;height:8px;border-radius:2px; margin-right:5px;}
+.cmp-card .cmp-name{font-size:13px; font-weight:700; margin:4px 0 2px; padding-right:16px; line-height:1.35;}
+.cmp-card .cmp-type{font-size:10.5px; color:var(--text-3); margin-bottom:10px;}
+.cmp-card .cmp-row{display:flex; justify-content:space-between; font-size:11px; padding:4px 0; border-top:1px solid var(--panel-line);}
+.cmp-card .cmp-row .k{color:var(--text-3);}
+.cmp-card .cmp-row .v{font-family:var(--font-mono); color:var(--text-1); text-align:right;}
+.cmp-clear-wrap{margin-top:10px;}
+
+footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line); color:var(--text-3); font-size:11px; line-height:1.8;}
+</style>
+</head>
+<body>
+<div class="hud-frame">
+
+  <header class="top">
+    <div class="eyebrow"><span class="dot"></span> ARMOR ENVELOPE · WWII TANK REFERENCE PLOT</div>
+    <h1>二戰戰車<span class="accent">速度</span>／<span class="accent">防護力</span>／<span class="accent">火力</span>比較圖</h1>
+    <p class="sub">從5噸的輕型偵察戰車，到近70噸的重型巨獸——用速度、等效防護力與主砲口徑三個維度，直覺理解「輕型戰車」與「重型戰車」的真正差異。<br><br>本站設計目的是給初學者建立直覺印象，方便入門比較，並非嚴謹的軍事研究工具。圖上比的是紙面規格，不是戰場表現。等效防護力也僅為原始厚度依傾斜角度換算的概略估算，未計入裝甲材質、彈種與實際命中角度等變數。</p>
+    <div class="stat-row">
+      <div class="stat-chip"><div class="k">收錄戰車</div><div class="v"><span id="statCount">--</span> 輛</div></div>
+      <div class="stat-chip"><div class="k">速度跨度</div><div class="v"><span id="statSpeed">--</span></div></div>
+      <div class="stat-chip"><div class="k">防護力跨度</div><div class="v"><span id="statArmor">--</span></div></div>
+      <div class="stat-chip"><div class="k">參戰國</div><div class="v"><span id="statCountries">--</span> 國</div></div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="panel" id="filters">
+      <div class="panel-title">篩選 / FILTER</div>
+      <div class="search-wrap">
+        <input type="text" id="search" placeholder="搜尋戰車名稱…">
+      </div>
+      <div id="groupList"></div>
+      <div class="filter-actions">
+        <button class="btn-mini" id="btnAll">全選</button>
+        <button class="btn-mini" id="btnNone">清空</button>
+      </div>
+
+      <div class="panel-title" style="margin-top:16px;">噸位分級 / CLASS</div>
+      <div id="classList"></div>
+
+      <div class="panel-title" style="margin-top:16px;">年代 / ERA</div>
+      <div id="eraList"></div>
+
+      <div class="panel-title" style="margin-top:16px;">參考線 / REFERENCE</div>
+      <div id="refLayerList"></div>
+
+      <div class="legend-note">
+        <b>圖表判讀：</b><br>
+        橫軸＝公路最大速度<br>
+        縱軸＝車體正面等效防護力（原始厚度換算傾斜角後的估算值）<br>
+        點的大小＝主砲口徑，口徑越大點越大<br>
+        青色虛線為裝甲防護力參考門檻（約可抵禦哪種火砲）<br>
+        琥珀色虛線為速度參考（人類步行／跑步、電動滑板車），皆為粗略估算，僅供建立直覺<br>
+        等效防護力估算方式與傾斜角度可在點選後的詳細卡片查看。
+      </div>
+    </aside>
+
+    <section class="panel" id="chartPanel">
+      <div class="panel-title">速度 × 防護力 散點圖 <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="chartCount"></span></div>
+      <div class="chart-toolbar">
+        <button id="btnBoxZoom" class="toggle-btn" aria-pressed="false">🔲 框選縮放</button>
+        <button id="btnZoomFit" class="toggle-btn">🔍 縮放至可見項目</button>
+        <button id="btnResetZoom" class="toggle-btn">重置縮放</button>
+        <button id="btnLabelMode" class="toggle-btn">名稱：自動</button>
+        <button id="btnFullscreen" class="toggle-btn" aria-pressed="false">⛶ 全螢幕</button>
+      </div>
+      <div id="chartOuter">
+        <div id="ySliderWrap" class="axis-slider axis-slider-y">
+          <div class="slider-track slider-track-y" id="ySliderTrack">
+            <div class="slider-range" id="ySliderRange"></div>
+            <div class="slider-handle" id="ySliderHandleTop"><span class="handle-label handle-label-y" id="yHandleTopLabel"></span></div>
+            <div class="slider-handle" id="ySliderHandleBot"><span class="handle-label handle-label-y" id="yHandleBotLabel"></span></div>
+          </div>
+        </div>
+        <div id="chartMain">
+          <div id="chartContainer">
+            <div id="tooltip"></div>
+            <div id="detailOverlay">
+              <button id="detailOverlayClose">✕</button>
+              <div id="detailOverlayBody"></div>
+            </div>
+          </div>
+          <div id="xSliderWrap" class="axis-slider axis-slider-x">
+            <div class="slider-track slider-track-x" id="xSliderTrack">
+              <div class="slider-range" id="xSliderRange"></div>
+              <div class="slider-handle" id="xSliderHandleL"><span class="handle-label handle-label-x" id="xHandleLLabel"></span></div>
+              <div class="slider-handle" id="xSliderHandleR"><span class="handle-label handle-label-x" id="xHandleRLabel"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-hint">滑鼠滾輪在圖表上可縮放、拖曳可平移，也可直接拖動座標軸旁的拉桿手把調整範圍。想精準聚焦，按「框選縮放」後在圖表上拖曳畫出一個框；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原完整檢視。</div>
+    </section>
+
+    <section class="panel" id="comparePanel">
+      <div class="panel-title">比較清單 / COMPARE <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="compareCount"></span></div>
+      <div id="compareBody">
+        <div class="detail-empty" style="padding:6px 4px;">點選圖表上的戰車，於詳細卡片按「加入比較清單」，即可在此並排比較速度、防護力與火力。</div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    數據為公開資料整理之概略估算值，僅供科普與創作參考。「等效防護力」以「原始裝甲厚度 ÷ cos(傾斜角)」概略估算，用以呈現傾斜裝甲帶來的防護加成，並非真實彈道測試結果，實際防禦力還與裝甲材質、彈種、命中角度等因素有關。輕／中／重型戰車分類主要依循各國戰時官方或後世通用分類，部分車輛（如豹式戰車）官方分類與現代噸位標準有落差，已於詳細卡片中特別註明。主砲口徑不代表穿甲能力，僅供火力量級參考。
+  </footer>
+
+</div>
+
+<script>
+window.GROUPS = {"GERMANY":{"label":"德國","color":"#9CA3AF","order":1},"USSR":{"label":"蘇聯","color":"#E0575C","order":2},"USA":{"label":"美國","color":"#7C9070","order":3},"UK":{"label":"英國","color":"#4A9184","order":4},"JAPAN":{"label":"日本","color":"#D4A24E","order":5},"FRANCE":{"label":"法國","color":"#6B8FC4","order":6},"ITALY":{"label":"義大利","color":"#C97B4A","order":7}};
+window.WEIGHT_CLASS = {"LIGHT":{"label":"輕型戰車","color":"#8FE3C0"},"MEDIUM":{"label":"中型戰車","color":"#FFB000"},"HEAVY":{"label":"重型戰車","color":"#FF4466"}};
+window.ERA_CLASS = {"WW1":{"label":"第一次世界大戰","color":"#B983FF"},"WW2":{"label":"第二次世界大戰","color":"#D99A3C"}};
+window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weightClass":"LIGHT","era":"1934–1941","eraClass":"WW2","speedKmh":40,"frontArmorMm":13,"frontArmorAngleDeg":9,"caliberMm":7.92,"weightT":5.4,"lengthM":4.02,"desc":"德國重整軍備後第一款量產戰車，僅配備雙聯裝機槍、未搭載戰車砲，設計目的是訓練戰車兵與驗證閃電戰戰術，西班牙內戰與波蘭戰役中已明顯性能不足。與二、三、四號戰車一樣，公路速度都收斂在約40km/h附近——這並非巧合，詳見三號戰車說明。"},{"id":2,"name":"Panzer II 二號戰車","country":"GERMANY","weightClass":"LIGHT","era":"1935–1943","eraClass":"WW2","speedKmh":40,"frontArmorMm":14.5,"frontArmorAngleDeg":10,"caliberMm":20,"weightT":8.9,"lengthM":4.81,"desc":"配備20mm機關砲的輕型戰車，在三號、四號戰車量產前撐起德軍裝甲部隊的數量，法國戰役後已明顯過時，後期多改造為偵察車或自走砲底盤。與一、三、四號戰車同樣被限速在約40km/h，是德軍同世代戰車共通的設計選擇。"},{"id":3,"name":"Panzer III 三號戰車","country":"GERMANY","weightClass":"MEDIUM","era":"1939–1943","eraClass":"WW2","speedKmh":40,"frontArmorMm":50,"frontArmorAngleDeg":9,"caliberMm":50,"weightT":22,"lengthM":5.52,"desc":"德軍裝甲師最初設想的主力戰車，設計上專門對付敵方戰車，東線初期面對T-34時火力與裝甲皆顯不足，後期逐漸被四號戰車取代主力地位。有趣的是，一到四號戰車的公路速度都收斂在約40km/h附近——這並非巧合：這幾款戰車共用Maybach引擎家族與相近的變速箱設計，加上德軍工程師發現履帶車輛若不限速，變速箱與傳動系統故障率會大幅攀升，寧可犧牲極速也要換取可靠度（三號戰車原始設計規格其實只要求35km/h，實際成品速度略高但仍受限於此），這與蘇聯BT-7「不惜代價換取速度」的設計哲學形成鮮明對比。"},{"id":4,"name":"Panzer IV 四號戰車","country":"GERMANY","weightClass":"MEDIUM","era":"1936–1945","eraClass":"WW2","speedKmh":42,"frontArmorMm":80,"frontArmorAngleDeg":12,"caliberMm":75,"weightT":25,"lengthM":7.02,"desc":"德軍二戰服役最久、產量最大的主力戰車，從支援步兵的短管型一路升級到反戰車長管型，貫穿整場戰爭，是德軍裝甲部隊真正的骨幹。與一、二、三號戰車同樣收斂在約40km/h上下，是德軍同世代戰車共通的限速設計（詳見三號戰車說明）。"},{"id":5,"name":"Panther 豹式戰車","country":"GERMANY","weightClass":"MEDIUM","era":"1943–1945","eraClass":"WW2","speedKmh":46,"frontArmorMm":80,"frontArmorAngleDeg":55,"caliberMm":75,"weightT":44.8,"lengthM":8.86,"desc":"為回應T-34衝擊而生，大角度傾斜裝甲與高初速75mm長砲身是其兩大標誌，德軍官方仍將其列為「中型戰車」，但44.8噸的戰鬥重量其實已超過同期許多國家的重型戰車，是classification與噸位脫節的經典案例。"},{"id":6,"name":"Tiger I 虎式戰車","country":"GERMANY","weightClass":"HEAVY","era":"1942–1945","eraClass":"WW2","speedKmh":38,"frontArmorMm":100,"frontArmorAngleDeg":9,"caliberMm":88,"weightT":54,"lengthM":8.45,"desc":"裝甲幾乎垂直但極厚，配備令盟軍聞風喪膽的88mm高初速砲，單車擊殺紀錄輝煌，但機械複雜、油耗驚人、產量有限，戰略上難以彌補數量劣勢。"},{"id":7,"name":"Tiger II 虎王戰車","country":"GERMANY","weightClass":"HEAVY","era":"1944–1945","eraClass":"WW2","speedKmh":38,"frontArmorMm":150,"frontArmorAngleDeg":50,"caliberMm":88,"weightT":69.8,"lengthM":10.286,"desc":"集厚重裝甲、大傾斜角與長砲身88mm戰車砲於一身，是二戰服役重量最重的量產戰車之一，理論防護力與火力近乎無敵，但機動性差、故障率高，且產量稀少難以扭轉戰局。"},{"id":8,"name":"T-26","country":"USSR","weightClass":"LIGHT","era":"1931–1941","eraClass":"WW2","speedKmh":30,"frontArmorMm":20,"frontArmorAngleDeg":18,"caliberMm":45,"weightT":10.3,"lengthM":4.62,"desc":"蘇聯兩次大戰間產量最大的輕型戰車，西班牙內戰中表現尚可，但1941年德軍入侵時裝甲與火力已全面落後，大量在戰爭初期被殲滅或棄置。"},{"id":9,"name":"BT-7 快速戰車","country":"USSR","weightClass":"LIGHT","era":"1935–1941","eraClass":"WW2","speedKmh":53,"frontArmorMm":22,"frontArmorAngleDeg":18,"caliberMm":45,"weightT":13.8,"lengthM":5.66,"desc":"「BT」意為「快速戰車」，強調高速突穿追求縱深穿插的騎兵化戰術思想，可換裝輪胎在公路上飆出更高速度，其懸吊設計後來直接影響了T-34的誕生。"},{"id":10,"name":"T-34/76","country":"USSR","weightClass":"MEDIUM","era":"1940–1944","eraClass":"WW2","speedKmh":53,"frontArmorMm":45,"frontArmorAngleDeg":60,"caliberMm":76.2,"weightT":26.5,"lengthM":6.68,"desc":"二戰最具影響力的戰車設計之一，45mm裝甲配合60度傾斜角換算等效防護力接近90mm，加上寬履帶、可靠柴油引擎與強大火力，令1941年遭遇的德軍大為震撼，直接催生了豹式戰車的誕生。"},{"id":11,"name":"T-34/85","country":"USSR","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","speedKmh":53,"frontArmorMm":45,"frontArmorAngleDeg":60,"caliberMm":85,"weightT":32,"lengthM":8.15,"desc":"沿用T-34經典傾斜裝甲車體，換裝三人砲塔與85mm砲以對抗豹式、虎式，火力大幅提升，是蘇聯在數量與品質上首次同時逼近德軍的關鍵型號。"},{"id":12,"name":"KV-1","country":"USSR","weightClass":"HEAVY","era":"1939–1942","eraClass":"WW2","speedKmh":34,"frontArmorMm":75,"frontArmorAngleDeg":15,"caliberMm":76.2,"weightT":47,"lengthM":6.75,"desc":"以蘇聯國防人民委員伏羅希洛夫命名，1941年時德軍現役戰車砲幾乎無法擊穿其正面裝甲，聲勢驚人，但機動性差、變速箱可靠度不佳，後期逐漸被IS系列取代。"},{"id":13,"name":"IS-2 史達林式戰車","country":"USSR","weightClass":"HEAVY","era":"1943–1945","eraClass":"WW2","speedKmh":37,"frontArmorMm":120,"frontArmorAngleDeg":30,"caliberMm":122,"weightT":46,"lengthM":9.9,"desc":"搭載122mm巨砲，單發命中即可重創甚至擊毀虎式戰車，柏林巷戰中作為攻堅利器大量使用，122mm砲備彈量少、射速慢是其主要弱點。"},{"id":14,"name":"M3 Stuart 史都華式戰車","country":"USA","weightClass":"LIGHT","era":"1941–1944","eraClass":"WW2","speedKmh":58,"frontArmorMm":44,"frontArmorAngleDeg":10,"caliberMm":37,"weightT":12.7,"lengthM":4.53,"desc":"美軍與英軍北非戰場早期主力輕型戰車之一，速度快、機械可靠性佳，但37mm主砲面對中型戰車已力不從心，英軍暱稱其為「甜心」（Honey）。"},{"id":15,"name":"M5 Stuart 史都華式戰車","country":"USA","weightClass":"LIGHT","era":"1942–1945","eraClass":"WW2","speedKmh":58,"frontArmorMm":44,"frontArmorAngleDeg":25,"caliberMm":37,"weightT":15.2,"lengthM":4.84,"desc":"M3的改良型，換裝雙凱迪拉克引擎與自動變速箱、正面裝甲角度加大，操作更平順，但主砲火力始終偏弱，二戰後期主要擔任偵察任務。"},{"id":16,"name":"M4 Sherman 雪曼式戰車","country":"USA","weightClass":"MEDIUM","era":"1942–1945","eraClass":"WW2","speedKmh":39,"frontArmorMm":51,"frontArmorAngleDeg":56,"caliberMm":75,"weightT":30.3,"lengthM":6.27,"desc":"美國以「數量與後勤」取勝的代表作，機械可靠、便於大量生產與運輸，二戰中總產量近五萬輛，但75mm主砲與裝甲面對虎式、豹式明顯居於劣勢，盟軍常以數量優勢彌補。"},{"id":17,"name":"M4A3E8 Sherman \"Easy Eight\"","country":"USA","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","speedKmh":42,"frontArmorMm":64,"frontArmorAngleDeg":47,"caliberMm":76,"weightT":33.6,"lengthM":7.54,"desc":"換裝新式水平渦捲彈簧懸吊、加厚裝甲與76mm高初速砲的後期改良型，操控更平穩、火力大幅提升，是韓戰中仍持續服役的雪曼終極型號。"},{"id":18,"name":"M26 Pershing 潘興式戰車","country":"USA","weightClass":"HEAVY","era":"1945","eraClass":"WW2","speedKmh":48,"frontArmorMm":102,"frontArmorAngleDeg":46,"caliberMm":90,"weightT":41.9,"lengthM":8.65,"desc":"美軍為對抗虎式、豹式而研發的新一代戰車，二戰末期才少量投入實戰，其90mm砲與傾斜裝甲已接近戰後主力戰車的雛形，服役初期官方分類為「重型戰車」，戰後才重新歸類為中型戰車。"},{"id":19,"name":"Mk VI 輕型戰車","country":"UK","weightClass":"LIGHT","era":"1936–1942","eraClass":"WW2","speedKmh":56,"frontArmorMm":15,"frontArmorAngleDeg":30,"caliberMm":12.7,"weightT":5.2,"lengthM":3.9,"desc":"英軍戰前主力輕型戰車，僅配備機槍、未搭載戰車砲，主要用於偵察任務，法國戰役與北非戰場初期大量使用，但面對敵方戰車幾乎毫無還手之力。"},{"id":20,"name":"Crusader 巡洋戰車","country":"UK","weightClass":"MEDIUM","era":"1941–1943","eraClass":"WW2","speedKmh":43,"frontArmorMm":51,"frontArmorAngleDeg":18,"caliberMm":57,"weightT":20,"lengthM":5.94,"desc":"英軍「巡洋戰車」系列強調速度與機動優於防護，北非沙漠戰場的主力之一，機械可靠度長期是隱憂，經常因故障而非戰損損失戰車。"},{"id":21,"name":"Cromwell 克倫威爾式戰車","country":"UK","weightClass":"MEDIUM","era":"1943–1945","eraClass":"WW2","speedKmh":64,"frontArmorMm":76,"frontArmorAngleDeg":27,"caliberMm":75,"weightT":27.6,"lengthM":6.35,"desc":"英軍二戰速度最快的量產戰車之一，以高速機動配合偵察與快速突穿見長，諾曼第戰役中大量用於裝甲師先鋒，但75mm砲火力仍不及對手虎式、豹式。"},{"id":22,"name":"Churchill 邱吉爾式戰車","country":"UK","weightClass":"HEAVY","era":"1941–1945","eraClass":"WW2","speedKmh":20,"frontArmorMm":152,"frontArmorAngleDeg":15,"caliberMm":75,"weightT":40,"lengthM":7.44,"desc":"英軍「步兵戰車」系列的代表，設計哲學是以厚重裝甲伴隨步兵推進而非追求速度，正面裝甲厚達152mm，義大利與西歐山地、巷戰中的攻堅表現優異。"},{"id":23,"name":"Sherman Firefly 螢火蟲式戰車","country":"UK","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","speedKmh":39,"frontArmorMm":51,"frontArmorAngleDeg":56,"caliberMm":76.2,"weightT":32.7,"lengthM":7.11,"desc":"英軍將美製雪曼戰車車體換裝自家17磅高初速反戰車砲的緊急應急方案，是盟軍地面部隊少數能在正常交戰距離擊穿虎式正面裝甲的戰車，德軍甚至下令優先集火獵殺，車組員暱稱其長砲管為「戴著面具的雪曼」。"},{"id":24,"name":"Type 95 Ha-Go 九五式輕戰車","country":"JAPAN","weightClass":"LIGHT","era":"1935–1945","eraClass":"WW2","speedKmh":45,"frontArmorMm":12,"frontArmorAngleDeg":9,"caliberMm":37,"weightT":7.4,"lengthM":4.38,"desc":"日本陸軍太平洋戰場最常見的輕型戰車，速度快、產量大，但裝甲極薄，面對美軍戰車與反戰車武器幾乎毫無防護力，叢林與島嶼戰中多用於步兵支援。"},{"id":25,"name":"Type 97 Chi-Ha 九七式中戰車","country":"JAPAN","weightClass":"MEDIUM","era":"1937–1945","eraClass":"WW2","speedKmh":38,"frontArmorMm":25,"frontArmorAngleDeg":20,"caliberMm":47,"weightT":15,"lengthM":5.5,"desc":"日本陸軍二戰主力中戰車，後期「新砲塔」型換裝47mm高初速砲改善反戰車能力，但整體裝甲思維停留在1930年代水準，太平洋戰場後期面對美軍雪曼已明顯過時。"},{"id":26,"name":"Type 3 Chi-Nu 三式中戰車","country":"JAPAN","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","speedKmh":38,"frontArmorMm":50,"frontArmorAngleDeg":20,"caliberMm":75,"weightT":18.8,"lengthM":5.73,"desc":"日本陸軍二戰末期研發、換裝75mm野砲改造主砲的最終量產型中戰車，火力終於追上同期盟軍標準，但產量稀少且多數未及投入實戰便迎來戰爭結束。"},{"id":27,"name":"Mark IV 戰車","country":"UK","weightClass":"HEAVY","era":"1917–1918","eraClass":"WW1","speedKmh":6,"frontArmorMm":12,"frontArmorAngleDeg":0,"caliberMm":57,"weightT":28.4,"lengthM":8.05,"desc":"史上第一款大規模投入實戰、對戰局產生實質影響的戰車，經典菱形車體是為了跨越壕溝與鐵絲網而設計。「男性型」搭載兩門57mm（6磅）艦砲、「女性型」則僅配機槍，1917年康布雷戰役中近400輛集中使用首次展現戰車的戰術價值，但時速僅約6km/h，比人步行快不了多少。"},{"id":28,"name":"Renault FT","country":"FRANCE","weightClass":"LIGHT","era":"1917–1918","eraClass":"WW1","speedKmh":7.7,"frontArmorMm":16,"frontArmorAngleDeg":5,"caliberMm":37,"weightT":6.5,"lengthM":4.1,"desc":"史上第一款採用「可360度旋轉砲塔＋車體其餘部分分離」現代化配置的戰車，奠定了往後一百年幾乎所有戰車的基本設計範式。體型小、產量超過3000輛，一戰後仍被多國沿用數十年，堪稱戰車史上最具影響力的單一設計。"},{"id":29,"name":"A7V","country":"GERMANY","weightClass":"HEAVY","era":"1918","eraClass":"WW1","speedKmh":15,"frontArmorMm":30,"frontArmorAngleDeg":0,"caliberMm":57,"weightT":33,"lengthM":7.34,"desc":"德意志帝國一戰唯一量產的戰車型號，僅生產約20輛，箱型車體、裝甲比同期英法戰車更厚，車組員多達18人。1918年首次戰車對戰車交戰的維萊布勒托訥戰役中即為其參戰車型，但產量稀少對戰局影響有限。"},{"id":30,"name":"Whippet 惠比特式中戰車","country":"UK","weightClass":"MEDIUM","era":"1917–1918","eraClass":"WW1","speedKmh":13.4,"frontArmorMm":14,"frontArmorAngleDeg":0,"caliberMm":7.7,"weightT":14,"lengthM":6.09,"desc":"英軍為彌補菱形重戰車速度過慢而研發的「中戰車」，速度是Mark IV的兩倍以上，設計目的是在步兵戰車突破戰線後負責快速穿插與擴大戰果，可視為現代巡洋戰車與騎兵戰車概念的先驅，僅配備機槍、未搭載戰車砲。"},{"id":31,"name":"Matilda II 瑪蒂爾達II式戰車","country":"UK","weightClass":"HEAVY","era":"1939–1945","eraClass":"WW2","speedKmh":24,"frontArmorMm":78,"frontArmorAngleDeg":0,"caliberMm":40,"weightT":26.5,"lengthM":5.61,"desc":"暱稱「沙漠女王」，1940–41年北非戰場前期德軍現役反戰車砲幾乎打不穿其正面裝甲，德軍被迫將88mm高射砲拉去平射反戰車，意外開啟了88砲反戰車的傳奇生涯（後來也成為虎式戰車主砲血統源頭）。屬英軍「步兵戰車」系列，設計哲學是以厚重裝甲伴隨步兵推進，速度極慢、40mm主砲後期火力明顯不足。"},{"id":32,"name":"Maus 鼠式戰車","country":"GERMANY","weightClass":"HEAVY","era":"1944–1945（原型車，未量產）","eraClass":"WW2","speedKmh":13,"frontArmorMm":200,"frontArmorAngleDeg":52,"caliberMm":128,"weightT":188,"lengthM":10.2,"desc":"史上最重的戰車，重達188噸，配備128mm主砲，理論上幾乎無法被當時任何武器擊穿。然而僅完成2輛原型車，從未實戰部署，過度笨重導致大多數橋樑無法通行、機動性近乎癱瘓，是「規格表上無敵、戰場上無用」的極端範例，放進圖表僅供對照參考。"},{"id":33,"name":"L3/35 快速戰車","country":"ITALY","weightClass":"LIGHT","era":"1935–1943","eraClass":"WW2","speedKmh":42,"frontArmorMm":13.5,"frontArmorAngleDeg":0,"caliberMm":8,"weightT":3.2,"lengthM":3.17,"desc":"義大利陸軍產量最大的裝甲車輛，本質上是雙聯裝機槍的小型履帶車，未搭載任何戰車砲，裝甲薄到步槍彈藥就有威脅，北非與東線戰場中面對盟軍與蘇軍戰車幾乎毫無自保能力，是「數量多但戰力低」的典型代表。"},{"id":34,"name":"M13/40 中戰車","country":"ITALY","weightClass":"MEDIUM","era":"1940–1943","eraClass":"WW2","speedKmh":32,"frontArmorMm":30,"frontArmorAngleDeg":0,"caliberMm":47,"weightT":14,"lengthM":4.92,"desc":"義大利陸軍二戰主力中戰車，鉚接裝甲工藝落後（中彈時鉚釘容易崩落成二次破片傷及車內乘員），汽油引擎馬力也明顯不足，北非戰場中面對英軍瑪蒂爾達、十字軍等戰車經常居於下風，可靠度不佳更雪上加霜。"},{"id":35,"name":"P40 重戰車","country":"ITALY","weightClass":"MEDIUM","era":"1943（義大利投降後多由德軍接收使用）","eraClass":"WW2","speedKmh":40,"frontArmorMm":50,"frontArmorAngleDeg":0,"caliberMm":75,"weightT":26,"lengthM":5.53,"desc":"義大利二戰末期研發、火力裝甲終於追上同期水準的最終型號，但量產進度緩慢，1943年義大利投降時僅完成少量車體，多數成品後來由德軍接收使用，未能以義大利軍隊身分真正大規模參戰。"}];
+</script>
+<script>
+(function(){
+  'use strict';
+  var GROUPS = window.GROUPS;
+  var WEIGHT_CLASS = window.WEIGHT_CLASS;
+  var ERA_CLASS = window.ERA_CLASS;
+  var DATA = window.DATA.slice().sort(function(a,b){ return b.caliberMm - a.caliberMm; }); // draw big bubbles first
+
+  // ---------------- derived stat ----------------
+  function effArmor(d){
+    return d.frontArmorMm / Math.cos(d.frontArmorAngleDeg * Math.PI / 180);
+  }
+
+  // Some tanks (e.g. T-34/76 vs T-34/85, or Sherman vs Firefly) share the
+  // exact same hull, so speed and effective armor land on the identical
+  // pixel — one dot completely hides the other regardless of zoom level
+  // (that's why the sidebar count and the visible dot count can disagree).
+  // Give exact-coordinate siblings a small FIXED pixel nudge, applied after
+  // the real scale position is computed, so both stay visible and clickable
+  // at every zoom level without altering the underlying data or tooltip.
+  // Several tanks sit close enough together (same or near-identical speed
+  // and effective-armor values, e.g. T-34/76 vs T-34/85, or just visually
+  // crowded, e.g. Tiger I vs M4 Sherman) that their bubbles overlap or
+  // fully hide one another regardless of zoom level. Rather than only
+  // handling exact coordinate matches, run a small pairwise "relaxation"
+  // pass once at load time — using a fixed reference plot size — and bake
+  // the resulting nudges in as constant pixel offsets. They're applied
+  // after the real scale position is computed, so the underlying data,
+  // tooltip and detail card values are completely unaffected.
+  var overlapOffsetById = {};
+  (function computeOverlapOffsets(){
+    var CALIBER_MAX = d3.max(DATA, function(d){ return d.caliberMm; });
+    function approxRadius(caliber){ return 1 + 24 * Math.sqrt(caliber / CALIBER_MAX); } // mirrors the chart's rScale (range 1–25)
+    var REF_W = 1300, REF_H = 488, REF_SPEED_MAX = 70, REF_ARMOR_MAX = 360;
+    var pts = DATA.map(function(d){
+      return {
+        id: d.id,
+        x: (d.speedKmh / REF_SPEED_MAX) * REF_W,
+        y: REF_H - (effArmor(d) / REF_ARMOR_MAX) * REF_H,
+        r: approxRadius(d.caliberMm)
+      };
+    });
+    var gap = 4;
+    for(var iter = 0; iter < 80; iter++){
+      for(var i = 0; i < pts.length; i++){
+        for(var j = i + 1; j < pts.length; j++){
+          var a = pts[i], b = pts[j];
+          var dx = b.x - a.x, dy = b.y - a.y;
+          var dist = Math.hypot(dx, dy);
+          var minDist = a.r + b.r + gap;
+          if(dist < minDist){
+            var ux, uy;
+            if(dist < 0.001){
+              // exact same starting point: dx/dy give no direction to push
+              // apart, so pick a deterministic pseudo-random one instead
+              var ang = (i * 0.618 + j * 1.618) * Math.PI;
+              ux = Math.cos(ang); uy = Math.sin(ang);
+              dist = 0.001;
+            } else {
+              ux = dx / dist; uy = dy / dist;
+            }
+            var push = (minDist - dist) / 2;
+            a.x -= ux * push; a.y -= uy * push;
+            b.x += ux * push; b.y += uy * push;
+          }
+        }
+      }
+    }
+    DATA.forEach(function(d, idx){
+      var p = pts[idx];
+      var ox = p.x - (d.speedKmh / REF_SPEED_MAX) * REF_W;
+      var oy = p.y - (REF_H - (effArmor(d) / REF_ARMOR_MAX) * REF_H);
+      if(Math.abs(ox) > 0.4 || Math.abs(oy) > 0.4){
+        overlapOffsetById[d.id] = { dx: ox, dy: oy };
+      }
+    });
+  })();
+
+  // ---------------- formatting helpers ----------------
+  function fmtSpeed(kmh){ return Math.round(kmh).toLocaleString('en-US') + ' km/h'; }
+  function fmtMm(mm){ return Math.round(mm).toLocaleString('en-US') + ' mm'; }
+  function fmtT(t){ return t.toLocaleString('en-US',{maximumFractionDigits:1}) + ' t'; }
+  function fmtM(m){ return m.toLocaleString('en-US',{maximumFractionDigits:2}) + ' m'; }
+  function estimateLabelWidth(text, fontSize){
+    var w = 0;
+    for(var i = 0; i < text.length; i++){
+      var c = text.charCodeAt(i);
+      var isWide = (c >= 0x2E80 && c <= 0x9FFF) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFF00 && c <= 0xFFEF) || (c >= 0x3000 && c <= 0x303F);
+      w += fontSize * (isWide ? 1.0 : 0.62);
+    }
+    return w;
+  }
+
+  // ---------------- state ----------------
+  var state = {
+    activeGroups: new Set(Object.keys(GROUPS)),
+    activeClasses: new Set(Object.keys(WEIGHT_CLASS)),
+    activeEras: new Set(Object.keys(ERA_CLASS)),
+    search: '',
+    selectedId: null,
+    boxZoomMode: false,
+    labelMode: 'auto', // 'auto' | 'show' | 'hide'
+    fullscreen: false,
+    compareIds: new Set(),
+    showArmorRefs: true,
+    showSpeedRefs: true
+  };
+
+  function isVisible(d){
+    if(!state.activeGroups.has(d.country)) return false;
+    if(!state.activeClasses.has(d.weightClass)) return false;
+    if(!state.activeEras.has(d.eraClass)) return false;
+    if(state.search){
+      var q = state.search.toLowerCase();
+      var hay = d.name.toLowerCase();
+      if(hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  }
+  function isChartVisible(d){ return isVisible(d); }
+
+  // ---------------- header stats ----------------
+  (function initHeaderStats(){
+    document.getElementById('statCount').textContent = DATA.length;
+    var minSpd = d3.min(DATA, function(d){ return d.speedKmh; });
+    var maxSpd = d3.max(DATA, function(d){ return d.speedKmh; });
+    var minArm = d3.min(DATA, effArmor);
+    var maxArm = d3.max(DATA, effArmor);
+    document.getElementById('statSpeed').textContent = fmtSpeed(minSpd) + ' – ' + fmtSpeed(maxSpd);
+    document.getElementById('statArmor').textContent = '~' + Math.round(minArm) + ' – ' + Math.round(maxArm) + ' mm';
+    document.getElementById('statCountries').textContent = Object.keys(GROUPS).length;
+  })();
+
+  // ---------------- filter panel: country toggles ----------------
+  var groupListEl = document.getElementById('groupList');
+  Object.keys(GROUPS).sort(function(a,b){ return GROUPS[a].order - GROUPS[b].order; }).forEach(function(key){
+    var g = GROUPS[key];
+    var count = DATA.filter(function(d){ return d.country === key; }).length;
+    var row = document.createElement('label');
+    row.className = 'group-row';
+    row.innerHTML =
+      '<input type="checkbox" checked data-group="' + key + '">' +
+      '<span class="swatch" style="background:' + g.color + '"></span>' +
+      '<span class="lbl">' + g.label + '</span>' +
+      '<span class="cnt">' + count + '</span>';
+    groupListEl.appendChild(row);
+  });
+  groupListEl.addEventListener('change', function(e){
+    var cb = e.target;
+    if(cb && cb.dataset && cb.dataset.group){
+      if(cb.checked) state.activeGroups.add(cb.dataset.group);
+      else state.activeGroups.delete(cb.dataset.group);
+      refreshAll();
+    }
+  });
+  document.getElementById('btnAll').addEventListener('click', function(){
+    state.activeGroups = new Set(Object.keys(GROUPS));
+    groupListEl.querySelectorAll('input').forEach(function(i){ i.checked = true; });
+    refreshAll();
+  });
+  document.getElementById('btnNone').addEventListener('click', function(){
+    state.activeGroups = new Set();
+    groupListEl.querySelectorAll('input').forEach(function(i){ i.checked = false; });
+    refreshAll();
+  });
+  document.getElementById('search').addEventListener('input', function(e){
+    state.search = e.target.value.trim();
+    refreshAll();
+  });
+
+  // ---------------- filter panel: weight class toggles ----------------
+  var classListEl = document.getElementById('classList');
+  Object.keys(WEIGHT_CLASS).forEach(function(key){
+    var c = WEIGHT_CLASS[key];
+    var count = DATA.filter(function(d){ return d.weightClass === key; }).length;
+    var row = document.createElement('label');
+    row.className = 'group-row';
+    row.innerHTML =
+      '<input type="checkbox" checked data-class="' + key + '">' +
+      '<span class="swatch" style="background:' + c.color + '"></span>' +
+      '<span class="lbl">' + c.label + '</span>' +
+      '<span class="cnt">' + count + '</span>';
+    classListEl.appendChild(row);
+  });
+  classListEl.addEventListener('change', function(e){
+    var cb = e.target;
+    if(cb && cb.dataset && cb.dataset.class){
+      if(cb.checked) state.activeClasses.add(cb.dataset.class);
+      else state.activeClasses.delete(cb.dataset.class);
+      refreshAll();
+    }
+  });
+
+  // ---------------- filter panel: era (WW1 / WW2) toggles ----------------
+  var eraListEl = document.getElementById('eraList');
+  Object.keys(ERA_CLASS).forEach(function(key){
+    var c = ERA_CLASS[key];
+    var count = DATA.filter(function(d){ return d.eraClass === key; }).length;
+    var row = document.createElement('label');
+    row.className = 'group-row';
+    row.innerHTML =
+      '<input type="checkbox" checked data-era="' + key + '">' +
+      '<span class="swatch" style="background:' + c.color + '"></span>' +
+      '<span class="lbl">' + c.label + '</span>' +
+      '<span class="cnt">' + count + '</span>';
+    eraListEl.appendChild(row);
+  });
+  eraListEl.addEventListener('change', function(e){
+    var cb = e.target;
+    if(cb && cb.dataset && cb.dataset.era){
+      if(cb.checked) state.activeEras.add(cb.dataset.era);
+      else state.activeEras.delete(cb.dataset.era);
+      refreshAll();
+    }
+  });
+
+  // ---------------- filter panel: reference-line layer toggles ----------------
+  var REF_LAYER_META = [
+    { key: 'armor', label: '裝甲防護力參考', color: '#7FB8AE', stateKey: 'showArmorRefs' },
+    { key: 'speed', label: '速度參考', color: '#D99A3C', stateKey: 'showSpeedRefs' }
+  ];
+  var refLayerListEl = document.getElementById('refLayerList');
+  REF_LAYER_META.forEach(function(m){
+    var row = document.createElement('label');
+    row.className = 'group-row';
+    row.innerHTML =
+      '<input type="checkbox" checked data-reflayer="' + m.key + '">' +
+      '<span class="swatch" style="background:' + m.color + '"></span>' +
+      '<span class="lbl">' + m.label + '</span>';
+    refLayerListEl.appendChild(row);
+  });
+  refLayerListEl.addEventListener('change', function(e){
+    var cb = e.target;
+    if(cb && cb.dataset && cb.dataset.reflayer){
+      var meta = REF_LAYER_META.find(function(m){ return m.key === cb.dataset.reflayer; });
+      if(meta){
+        state[meta.stateKey] = cb.checked;
+        if(refreshRefLinesOnChart) refreshRefLinesOnChart();
+      }
+    }
+  });
+
+  // ---------------- toolbar ----------------
+  var btnBoxZoom = document.getElementById('btnBoxZoom');
+  var btnZoomFit = document.getElementById('btnZoomFit');
+  var btnResetZoom = document.getElementById('btnResetZoom');
+  var btnLabelMode = document.getElementById('btnLabelMode');
+  var btnFullscreen = document.getElementById('btnFullscreen');
+
+  btnZoomFit.addEventListener('click', zoomToFit);
+  btnBoxZoom.addEventListener('click', function(){ setBoxZoomMode(!state.boxZoomMode); });
+  btnResetZoom.addEventListener('click', function(){ if(resetChartViewRef) resetChartViewRef(); });
+
+  var LABEL_MODE_TEXT = { auto: '名稱：自動', show: '名稱：顯示', hide: '名稱：隱藏' };
+  var LABEL_MODE_NEXT = { auto: 'show', show: 'hide', hide: 'auto' };
+  btnLabelMode.addEventListener('click', function(){
+    state.labelMode = LABEL_MODE_NEXT[state.labelMode];
+    btnLabelMode.textContent = LABEL_MODE_TEXT[state.labelMode];
+    btnLabelMode.classList.toggle('active', state.labelMode !== 'auto');
+    if(refreshLabelsOnChart) refreshLabelsOnChart();
+  });
+
+  function setFullscreen(on){
+    state.fullscreen = on;
+    document.body.classList.toggle('chart-fullscreen', on);
+    btnFullscreen.classList.toggle('active', on);
+    btnFullscreen.setAttribute('aria-pressed', on);
+    btnFullscreen.textContent = on ? '⛶ 退出全螢幕' : '⛶ 全螢幕';
+    requestAnimationFrame(function(){ buildChart(); });
+  }
+  btnFullscreen.addEventListener('click', function(){ setFullscreen(!state.fullscreen); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && state.fullscreen) setFullscreen(false);
+  });
+
+  function setBoxZoomMode(on){
+    state.boxZoomMode = on;
+    btnBoxZoom.classList.toggle('active', on);
+    btnBoxZoom.setAttribute('aria-pressed', on);
+    if(brushLayerSel) brushLayerSel.classed('active', on);
+  }
+
+  // ---------------- chart ----------------
+  var chartContainer = document.getElementById('chartContainer');
+  var tooltip = document.getElementById('tooltip');
+  var ySliderWrap = document.getElementById('ySliderWrap');
+  var ySliderTrack = document.getElementById('ySliderTrack');
+  var ySliderRange = document.getElementById('ySliderRange');
+  var yHandleTop = document.getElementById('ySliderHandleTop');
+  var yHandleBot = document.getElementById('ySliderHandleBot');
+  var yHandleTopLabel = document.getElementById('yHandleTopLabel');
+  var yHandleBotLabel = document.getElementById('yHandleBotLabel');
+  var xSliderWrap = document.getElementById('xSliderWrap');
+  var xSliderTrack = document.getElementById('xSliderTrack');
+  var xSliderRange = document.getElementById('xSliderRange');
+  var xHandleL = document.getElementById('xSliderHandleL');
+  var xHandleR = document.getElementById('xSliderHandleR');
+  var xHandleLLabel = document.getElementById('xHandleLLabel');
+  var xHandleRLabel = document.getElementById('xHandleRLabel');
+
+  var svg, gRoot, gPoints, gCrosshair;
+  var xScale, yScale, rScale;
+  var applyValueBoxRef = null, resetChartViewRef = null;
+  var refreshRefLinesOnChart = null;
+  var refreshLabelsOnChart = null;
+  var brushBehavior = null, brushLayerSel = null;
+  var refreshSelectionOnChart = null;
+  var margin = { top: 26, right: 18, bottom: 46, left: 60 };
+
+  var SPEED_MIN = 0, SPEED_MAX = 70;
+  var ARMOR_MIN = 0, ARMOR_MAX = 360;
+
+  function xTickLabel(v){ return Math.round(v); }
+  function yTickLabel(v){ return Math.round(v); }
+
+  // Reference lines: give the raw mm/km-h numbers real-world meaning.
+  // Approximate thresholds only — actual penetration depends on range,
+  // ammo type, armor quality and impact angle far beyond what a single
+  // number can capture; treat these as rough orientation, not ballistic fact.
+  var ARMOR_REF_LINES = [
+    { mm: 15,  label: '~15mm・可抵禦步槍／機槍彈藥' },
+    { mm: 45,  label: '~45mm・約可抵禦37mm戰防砲（如PaK 36）' },
+    { mm: 60,  label: '~60mm・約可抵禦45–50mm戰車砲' },
+    { mm: 90,  label: '~90mm・約可抵禦75mm戰車砲（如KwK40）' },
+    { mm: 130, label: '~130mm・約可抵禦88mm戰車砲（虎式 KwK36）' },
+    { mm: 180, label: '~180mm・約可抵禦88mm長砲身戰車砲（虎王 KwK43）' }
+  ];
+  var SPEED_REF_LINES = [
+    { kmh: 4,  label: '人類步行 ~4 km/h' },
+    { kmh: 10, label: '人類跑步 ~10 km/h' },
+    { kmh: 25, label: '城市電動滑板車速限 ~25 km/h' }
+  ];
+
+  function buildChart(){
+    chartContainer.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var width = chartContainer.clientWidth;
+    var isSmall = width < 620;
+    margin.right = isSmall ? 12 : 18;
+    var innerW = Math.max(280, width - margin.left - margin.right);
+    var height = state.fullscreen
+      ? Math.max(320, chartContainer.clientHeight || (window.innerHeight - 180))
+      : (isSmall ? 460 : 560);
+    var innerH = height - margin.top - margin.bottom;
+
+    ySliderWrap.style.paddingTop = margin.top + 'px';
+    ySliderWrap.style.paddingBottom = margin.bottom + 'px';
+    ySliderTrack.style.height = innerH + 'px';
+    xSliderWrap.style.paddingLeft = margin.left + 'px';
+    xSliderWrap.style.paddingRight = margin.right + 'px';
+    xSliderTrack.style.width = innerW + 'px';
+
+    svg = d3.select(chartContainer).insert('svg', '#tooltip')
+      .attr('width', width).attr('height', height)
+      .attr('viewBox', '0 0 ' + width + ' ' + height);
+
+    var clipId = 'plotClip';
+    svg.append('defs').append('clipPath').attr('id', clipId)
+      .append('rect').attr('width', innerW).attr('height', innerH);
+
+    gRoot = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    xScale = d3.scaleLinear().domain([SPEED_MIN, SPEED_MAX]).range([0, innerW]);
+    yScale = d3.scaleLinear().domain([ARMOR_MIN, ARMOR_MAX]).range([innerH, 0]);
+    rScale = d3.scaleSqrt().domain([0, d3.max(DATA, function(d){ return d.caliberMm; })]).range([1, 25]);
+
+    var clip = gRoot.append('g').attr('clip-path', 'url(#' + clipId + ')');
+
+    var bgRect = clip.append('rect')
+      .attr('class', 'zoom-capture')
+      .attr('width', innerW).attr('height', innerH)
+      .attr('fill', 'transparent')
+      .style('pointer-events', 'all');
+
+    var gRefH = clip.append('g').attr('class', 'ref-h');
+    var gRefV = clip.append('g').attr('class', 'ref-v');
+
+    var armorLineSel = gRefH.selectAll('line.armor-ref')
+      .data(state.showArmorRefs ? ARMOR_REF_LINES : [])
+      .join('line')
+      .attr('class', 'armor-ref band-line')
+      .attr('x1', 0).attr('x2', innerW);
+    var armorLabelSel = isSmall ? null : gRefH.selectAll('text.armor-ref-lbl')
+      .data(state.showArmorRefs ? ARMOR_REF_LINES : [])
+      .join('text')
+      .attr('class', 'armor-ref-lbl band-label')
+      .attr('x', innerW - 6).attr('text-anchor', 'end')
+      .text(function(d){ return d.label; });
+
+    var speedLineSel = gRefV.selectAll('line.speed-ref')
+      .data(state.showSpeedRefs ? SPEED_REF_LINES : [])
+      .join('line')
+      .attr('class', 'speed-ref mach-line')
+      .attr('y1', 0).attr('y2', innerH);
+    var speedLabelSel = gRefV.selectAll('text.speed-ref-lbl')
+      .data(state.showSpeedRefs ? SPEED_REF_LINES : [])
+      .join('text')
+      .attr('class', 'speed-ref-lbl mach-label')
+      .attr('y', 10)
+      .text(function(d){ return d.label; });
+
+    function refreshRefLines(){
+      armorLineSel = gRefH.selectAll('line.armor-ref').data(state.showArmorRefs ? ARMOR_REF_LINES : []).join('line').attr('class', 'armor-ref band-line').attr('x1', 0).attr('x2', innerW);
+      armorLabelSel = isSmall ? null : gRefH.selectAll('text.armor-ref-lbl').data(state.showArmorRefs ? ARMOR_REF_LINES : []).join('text').attr('class', 'armor-ref-lbl band-label').attr('x', innerW - 6).attr('text-anchor', 'end').text(function(d){ return d.label; });
+      speedLineSel = gRefV.selectAll('line.speed-ref').data(state.showSpeedRefs ? SPEED_REF_LINES : []).join('line').attr('class', 'speed-ref mach-line').attr('y1', 0).attr('y2', innerH);
+      speedLabelSel = gRefV.selectAll('text.speed-ref-lbl').data(state.showSpeedRefs ? SPEED_REF_LINES : []).join('text').attr('class', 'speed-ref-lbl mach-label').attr('y', 10).text(function(d){ return d.label; });
+      redraw();
+    }
+    refreshRefLinesOnChart = refreshRefLines;
+
+    gPoints = clip.append('g').attr('class', 'points');
+    gCrosshair = clip.append('g').attr('class', 'crosshair-group');
+
+    var gAxisX = gRoot.append('g').attr('class', 'axis axis-x').attr('transform', 'translate(0,' + innerH + ')');
+    var gAxisY = gRoot.append('g').attr('class', 'axis axis-y');
+    var xAxisLabel = gRoot.append('text').attr('class', 'axis-label')
+      .attr('x', innerW).attr('y', innerH + 38).attr('text-anchor', 'end')
+      .text('公路最高速度 (km/h) →');
+    var yAxisLabel = gRoot.append('text').attr('class', 'axis-label')
+      .attr('transform', 'rotate(-90)').attr('x', 0).attr('y', -44).attr('text-anchor', 'end')
+      .text('↑ 車體正面等效防護力 (mm)');
+
+    var chX = gCrosshair.append('line').attr('class', 'crosshair chx');
+    var chY = gCrosshair.append('line').attr('class', 'crosshair chy');
+
+    var ptSel = gPoints.selectAll('circle.pt')
+      .data(DATA, function(d){ return d.id; })
+      .join('circle')
+      .attr('class', 'pt')
+      .attr('r', function(d){ return rScale(d.caliberMm); })
+      .attr('fill', function(d){ return GROUPS[d.country].color; })
+      .attr('fill-opacity', function(d){ return isChartVisible(d) ? 0.85 : 0.05; })
+      .attr('pointer-events', function(d){ return isChartVisible(d) ? 'auto' : 'none'; })
+      .attr('stroke', '#12100D')
+      .attr('stroke-width', 1)
+      .on('mouseenter', function(event, d){
+        showTooltip(event, d);
+        moveCrosshair(chX, chY, curX(d), curY(d), innerW, innerH);
+      })
+      .on('mousemove', function(event){ positionTooltip(event); })
+      .on('mouseleave', function(){
+        hideTooltip();
+        if(state.selectedId === null){ chX.attr('opacity',0); chY.attr('opacity',0); }
+      })
+      .on('click', function(event, d){
+        state.selectedId = d.id;
+        refreshAll();
+      });
+
+    var selRing = gPoints.append('circle').attr('class','pt-ring').attr('id','selRing');
+    var labelSel = gPoints.selectAll('text.pt-label')
+      .data(DATA, function(d){ return d.id; })
+      .join('text')
+      .attr('class', 'pt-label')
+      .text(function(d){ return d.name; })
+      .attr('opacity', 0);
+
+    var curXScale = xScale, curYScale = yScale;
+    function curX(d){
+      var o = overlapOffsetById[d.id];
+      return curXScale(d.speedKmh) + (o ? o.dx : 0);
+    }
+    function curY(d){
+      var o = overlapOffsetById[d.id];
+      return curYScale(effArmor(d)) + (o ? o.dy : 0);
+    }
+
+    function positionSelection(){
+      if(state.selectedId !== null){
+        var sd = DATA.find(function(d){ return d.id === state.selectedId; });
+        if(sd){
+          moveCrosshair(chX, chY, curX(sd), curY(sd), innerW, innerH);
+          chX.attr('opacity',.9); chY.attr('opacity',.9);
+          selRing.attr('cx', curX(sd)).attr('cy', curY(sd)).attr('r', rScale(sd.caliberMm) + 5).attr('opacity', 1);
+          return;
+        }
+      }
+      selRing.attr('opacity', 0);
+      chX.attr('opacity', 0); chY.attr('opacity', 0);
+    }
+    refreshSelectionOnChart = positionSelection;
+
+    function defaultView(){ return { x0: 0, x1: innerW, y0: 0, y1: innerH }; }
+    var view = defaultView();
+    var MIN_FRAC = 1/100000;
+    clampView();
+
+    function clampView(){
+      var w = view.x1 - view.x0, h = view.y1 - view.y0;
+      var minW = innerW * MIN_FRAC, minH = innerH * MIN_FRAC;
+      if(w < minW){ var cx=(view.x0+view.x1)/2; view.x0=cx-minW/2; view.x1=cx+minW/2; w=minW; }
+      if(h < minH){ var cy=(view.y0+view.y1)/2; view.y0=cy-minH/2; view.y1=cy+minH/2; h=minH; }
+      if(w >= innerW){ view.x0 = 0; view.x1 = innerW; }
+      else {
+        if(view.x0 < 0){ view.x1 -= view.x0; view.x0 = 0; }
+        if(view.x1 > innerW){ view.x0 -= (view.x1 - innerW); view.x1 = innerW; }
+      }
+      if(h >= innerH){ view.y0 = 0; view.y1 = innerH; }
+      else {
+        if(view.y0 < 0){ view.y1 -= view.y0; view.y0 = 0; }
+        if(view.y1 > innerH){ view.y0 -= (view.y1 - innerH); view.y1 = innerH; }
+      }
+    }
+
+    function updateScalesFromView(){
+      curXScale = xScale.copy().domain([ xScale.invert(view.x0), xScale.invert(view.x1) ]);
+      curYScale = yScale.copy().domain([ yScale.invert(view.y1), yScale.invert(view.y0) ]);
+    }
+
+    function updateSliderUI(){
+      var lx = Math.max(0, Math.min(innerW, view.x0));
+      var rx = Math.max(0, Math.min(innerW, view.x1));
+      xHandleL.style.left = lx + 'px';
+      xHandleR.style.left = rx + 'px';
+      xSliderRange.style.left = lx + 'px';
+      xSliderRange.style.width = Math.max(0, rx - lx) + 'px';
+      xHandleLLabel.textContent = fmtSpeed(curXScale.domain()[0]);
+      xHandleRLabel.textContent = fmtSpeed(curXScale.domain()[1]);
+
+      var ty = Math.max(0, Math.min(innerH, view.y0));
+      var by = Math.max(0, Math.min(innerH, view.y1));
+      yHandleTop.style.top = ty + 'px';
+      yHandleBot.style.top = by + 'px';
+      ySliderRange.style.top = ty + 'px';
+      ySliderRange.style.height = Math.max(0, by - ty) + 'px';
+      var yd = curYScale.domain();
+      yHandleTopLabel.textContent = fmtMm(yd[1]);
+      yHandleBotLabel.textContent = fmtMm(yd[0]);
+    }
+
+    function redraw(){
+      updateScalesFromView();
+
+      gAxisX.call(d3.axisBottom(curXScale).ticks(isSmall?5:8).tickFormat(xTickLabel).tickSize(4));
+      gAxisY.call(d3.axisLeft(curYScale).ticks(isSmall?5:8).tickFormat(yTickLabel).tickSize(4));
+
+      var yDomainNow = curYScale.domain();
+      armorLineSel
+        .attr('y1', function(d){ return curYScale(d.mm); })
+        .attr('y2', function(d){ return curYScale(d.mm); })
+        .attr('opacity', function(d){ return (d.mm >= yDomainNow[0] && d.mm <= yDomainNow[1]) ? 1 : 0; });
+      if(armorLabelSel){
+        armorLabelSel
+          .attr('y', function(d){ return curYScale(d.mm) - 3; })
+          .attr('opacity', function(d){ return (d.mm >= yDomainNow[0] && d.mm <= yDomainNow[1]) ? 1 : 0; });
+      }
+      var xDomainNow = curXScale.domain();
+      speedLineSel
+        .attr('x1', function(d){ return curXScale(d.kmh); })
+        .attr('x2', function(d){ return curXScale(d.kmh); })
+        .attr('opacity', function(d){ return (d.kmh >= xDomainNow[0] && d.kmh <= xDomainNow[1]) ? 1 : 0; });
+      speedLabelSel
+        .attr('x', function(d){ return curXScale(d.kmh) + 3; })
+        .attr('opacity', function(d){ return (d.kmh >= xDomainNow[0] && d.kmh <= xDomainNow[1]) ? 1 : 0; });
+
+      ptSel.attr('cx', function(d){ return curX(d); }).attr('cy', function(d){ return curY(d); });
+
+      var zoomX = innerW / Math.max(1, (view.x1 - view.x0));
+      var zoomY = innerH / Math.max(1, (view.y1 - view.y0));
+      var LABEL_ZOOM_THRESHOLD = 1.05;
+      var showLabels;
+      if(state.labelMode === 'show') showLabels = true;
+      else if(state.labelMode === 'hide') showLabels = false;
+      else showLabels = Math.min(zoomX, zoomY) >= LABEL_ZOOM_THRESHOLD;
+
+      var labelVisible = {};
+      if(showLabels){
+        var LFS = 10.5;
+        var candidates = [];
+        DATA.forEach(function(d){
+          if(!isChartVisible(d)) return;
+          candidates.push({
+            d: d, x: curX(d), y: curY(d) - rScale(d.caliberMm) - 6,
+            w: estimateLabelWidth(d.name, LFS), h: LFS + 3
+          });
+        });
+        candidates.sort(function(a, b){
+          if(a.d.id === state.selectedId) return -1;
+          if(b.d.id === state.selectedId) return 1;
+          return b.d.caliberMm - a.d.caliberMm;
+        });
+        var placed = [];
+        var PAD = 2;
+        candidates.forEach(function(c){
+          var box = { x0: c.x - c.w/2 - PAD, x1: c.x + c.w/2 + PAD, y0: c.y - c.h - PAD, y1: c.y + PAD };
+          var hit = placed.some(function(b){
+            return !(box.x1 < b.x0 || box.x0 > b.x1 || box.y1 < b.y0 || box.y0 > b.y1);
+          });
+          labelVisible[c.d.id] = !hit;
+          if(!hit) placed.push(box);
+        });
+      }
+      labelSel
+        .attr('x', function(d){ return curX(d); })
+        .attr('y', function(d){ return curY(d) - rScale(d.caliberMm) - 6; })
+        .attr('opacity', function(d){ return labelVisible[d.id] ? 1 : 0; });
+
+      positionSelection();
+      updateSliderUI();
+    }
+
+    var animFrame = null;
+    function animateViewTo(target, duration){
+      if(animFrame) cancelAnimationFrame(animFrame);
+      var from = { x0: view.x0, x1: view.x1, y0: view.y0, y1: view.y1 };
+      var t0 = performance.now();
+      duration = duration || 400;
+      function step(now){
+        var tt = Math.min(1, (now - t0) / duration);
+        var e = 1 - Math.pow(1 - tt, 3);
+        view.x0 = from.x0 + (target.x0 - from.x0) * e;
+        view.x1 = from.x1 + (target.x1 - from.x1) * e;
+        view.y0 = from.y0 + (target.y0 - from.y0) * e;
+        view.y1 = from.y1 + (target.y1 - from.y1) * e;
+        redraw();
+        if(tt < 1) animFrame = requestAnimationFrame(step);
+        else animFrame = null;
+      }
+      animFrame = requestAnimationFrame(step);
+    }
+
+    function applyValueBox(vx0, vx1, vy0, vy1){
+      var px0 = xScale(Math.min(vx0, vx1)), px1 = xScale(Math.max(vx0, vx1));
+      var pyA = yScale(Math.min(vy0, vy1)), pyB = yScale(Math.max(vy0, vy1));
+      var py0 = Math.min(pyA, pyB), py1 = Math.max(pyA, pyB);
+      var padX = Math.max((px1 - px0) * 0.12, 2);
+      var padY = Math.max((py1 - py0) * 0.12, 2);
+      var target = { x0: px0 - padX, x1: px1 + padX, y0: py0 - padY, y1: py1 + padY };
+      var saved = { x0: view.x0, x1: view.x1, y0: view.y0, y1: view.y1 };
+      view.x0 = target.x0; view.x1 = target.x1; view.y0 = target.y0; view.y1 = target.y1;
+      clampView();
+      target = { x0: view.x0, x1: view.x1, y0: view.y0, y1: view.y1 };
+      view.x0 = saved.x0; view.x1 = saved.x1; view.y0 = saved.y0; view.y1 = saved.y1;
+      animateViewTo(target, 450);
+    }
+    applyValueBoxRef = applyValueBox;
+    resetChartViewRef = function(){ animateViewTo(defaultView(), 350); };
+
+    svg.on('wheel', function(event){
+      if(state.boxZoomMode) return;
+      event.preventDefault();
+      var pt = d3.pointer(event, gRoot.node());
+      var mx = Math.max(0, Math.min(innerW, pt[0]));
+      var my = Math.max(0, Math.min(innerH, pt[1]));
+      var factor = Math.exp(-event.deltaY * 0.0022);
+      var bx = view.x0 + (mx / innerW) * (view.x1 - view.x0);
+      var by = view.y0 + (my / innerH) * (view.y1 - view.y0);
+      var newW = (view.x1 - view.x0) / factor;
+      var newH = (view.y1 - view.y0) / factor;
+      var fx = (bx - view.x0) / (view.x1 - view.x0);
+      var fy = (by - view.y0) / (view.y1 - view.y0);
+      view.x0 = bx - fx * newW; view.x1 = view.x0 + newW;
+      view.y0 = by - fy * newH; view.y1 = view.y0 + newH;
+      clampView();
+      redraw();
+    }, { passive: false });
+
+    bgRect.call(d3.drag()
+      .filter(function(event){ return !state.boxZoomMode && !event.button; })
+      .on('drag', function(event){
+        var sx = (view.x1 - view.x0) / innerW;
+        var sy = (view.y1 - view.y0) / innerH;
+        view.x0 -= event.dx * sx; view.x1 -= event.dx * sx;
+        view.y0 -= event.dy * sy; view.y1 -= event.dy * sy;
+        clampView();
+        redraw();
+      }));
+
+    var brushG = clip.append('g').attr('class', 'brush-layer brush');
+    brushBehavior = d3.brush()
+      .extent([[0,0],[innerW,innerH]])
+      .on('end', function(event){
+        if(!event.selection) return;
+        var sel = event.selection;
+        var x0v = curXScale.invert(sel[0][0]), x1v = curXScale.invert(sel[1][0]);
+        var yTopV = curYScale.invert(sel[0][1]), yBotV = curYScale.invert(sel[1][1]);
+        brushBehavior.move(brushG, null);
+        setBoxZoomMode(false);
+        applyValueBox(x0v, x1v, yBotV, yTopV);
+      });
+    brushG.call(brushBehavior);
+    brushLayerSel = brushG;
+    brushLayerSel.classed('active', state.boxZoomMode);
+
+    var MIN_HANDLE_GAP = 6;
+    function wireSliderHandle(handleEl, axis, which){
+      handleEl.onpointerdown = function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        handleEl.setPointerCapture(ev.pointerId);
+        var startClientX = ev.clientX, startClientY = ev.clientY;
+        var startPos = axis === 'x' ? (which === 'l' ? view.x0 : view.x1) : (which === 'top' ? view.y0 : view.y1);
+        var moved = false;
+        function onMove(e){
+          var dx = e.clientX - startClientX, dy = e.clientY - startClientY;
+          if(!moved && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+          moved = true;
+          if(axis === 'x'){
+            var px = Math.max(0, Math.min(innerW, startPos + dx));
+            var gapX = Math.min(MIN_HANDLE_GAP, Math.max(0.5, view.x1 - view.x0));
+            if(which === 'l'){ view.x0 = Math.min(px, view.x1 - gapX); }
+            else { view.x1 = Math.max(px, view.x0 + gapX); }
+          } else {
+            var py = Math.max(0, Math.min(innerH, startPos + dy));
+            var gapY = Math.min(MIN_HANDLE_GAP, Math.max(0.5, view.y1 - view.y0));
+            if(which === 'top'){ view.y0 = Math.min(py, view.y1 - gapY); }
+            else { view.y1 = Math.max(py, view.y0 + gapY); }
+          }
+          redraw();
+        }
+        function onUp(){
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+        }
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+      };
+    }
+    wireSliderHandle(xHandleL, 'x', 'l');
+    wireSliderHandle(xHandleR, 'x', 'r');
+    wireSliderHandle(yHandleTop, 'y', 'top');
+    wireSliderHandle(yHandleBot, 'y', 'bot');
+
+    refreshLabelsOnChart = redraw;
+
+    redraw();
+    applyChartFilters();
+  }
+
+  function moveCrosshair(chX, chY, x, y, innerW, innerH){
+    chX.attr('x1', x).attr('x2', x).attr('y1', 0).attr('y2', innerH).attr('opacity', .7);
+    chY.attr('x1', 0).attr('x2', innerW).attr('y1', y).attr('y2', y).attr('opacity', .7);
+  }
+
+  function zoomToFit(){
+    if(!applyValueBoxRef) return;
+    var items = DATA.filter(isChartVisible);
+    if(items.length === 0) return;
+    var xVals = items.map(function(d){ return d.speedKmh; });
+    var yVals = items.map(effArmor);
+    applyValueBoxRef(
+      Math.min.apply(null, xVals), Math.max.apply(null, xVals),
+      Math.min.apply(null, yVals), Math.max.apply(null, yVals)
+    );
+  }
+
+  function showTooltip(event, d){
+    tooltip.innerHTML =
+      '<div class="tt-name">' + d.name + '</div>' +
+      '<div class="tt-row">速度 <span>' + fmtSpeed(d.speedKmh) + '</span></div>' +
+      '<div class="tt-row">等效防護力 <span>~' + Math.round(effArmor(d)) + ' mm</span></div>' +
+      '<div class="tt-row">主砲口徑 <span>' + fmtMm(d.caliberMm) + '</span></div>';
+    tooltip.style.opacity = 1;
+    positionTooltip(event);
+  }
+  function positionTooltip(event){
+    var rect = chartContainer.getBoundingClientRect();
+    var x = event.clientX - rect.left + 14;
+    var y = event.clientY - rect.top - 10;
+    if(x > rect.width - 180) x = event.clientX - rect.left - 200;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  }
+  function hideTooltip(){ tooltip.style.opacity = 0; }
+
+  function applyChartFilters(){
+    if(!gPoints) return;
+    gPoints.selectAll('circle.pt')
+      .transition().duration(150)
+      .attr('fill-opacity', function(d){ return isChartVisible(d) ? 0.85 : 0.05; })
+      .attr('pointer-events', function(d){ return isChartVisible(d) ? 'auto' : 'none'; });
+    document.getElementById('chartCount').textContent =
+      '(顯示 ' + DATA.filter(isChartVisible).length + ' / ' + DATA.length + ' 輛)';
+  }
+
+  // ---------------- detail overlay ----------------
+  function buildDetailHTML(d){
+    var g = GROUPS[d.country];
+    var wc = WEIGHT_CLASS[d.weightClass];
+    var inCompare = state.compareIds.has(d.id);
+    var eff = effArmor(d);
+    return '<span class="detail-tag" style="background:' + g.color + '22;color:' + g.color + ';border:1px solid ' + g.color + '55;">' + g.label + '</span>' +
+      '<span class="detail-tag" style="background:' + wc.color + '22;color:' + wc.color + ';border:1px solid ' + wc.color + '55;">' + wc.label + '</span>' +
+      '<h3 class="detail-name">' + d.name + '</h3>' +
+      '<div class="detail-type">' + d.era + '</div>' +
+      '<div class="detail-stats">' +
+        '<div class="dstat"><div class="k">公路最高速度</div><div class="v">' + fmtSpeed(d.speedKmh) + '</div></div>' +
+        '<div class="dstat"><div class="k">等效防護力(估算)</div><div class="v">~' + Math.round(eff) + ' mm<br><small>原始 ' + fmtMm(d.frontArmorMm) + ' @ ' + d.frontArmorAngleDeg + '°傾斜</small></div></div>' +
+        '<div class="dstat"><div class="k">主砲口徑</div><div class="v">' + fmtMm(d.caliberMm) + '</div></div>' +
+        '<div class="dstat"><div class="k">戰鬥重量</div><div class="v">' + fmtT(d.weightT) + '</div></div>' +
+      '</div>' +
+      '<div class="dstat" style="margin-bottom:14px;"><div class="k">車體全長（含砲身）</div><div class="v">' + fmtM(d.lengthM) + '</div></div>' +
+      '<div class="detail-desc">' + d.desc + '</div>' +
+      '<div class="filter-actions" style="margin-top:14px;">' +
+        '<button class="btn-mini detail-cmp-toggle">' + (inCompare ? '✕ 移出比較清單' : '＋ 加入比較清單') + '</button>' +
+      '</div>';
+  }
+
+  function renderDetail(){
+    var overlay = document.getElementById('detailOverlay');
+    var overlayBody = document.getElementById('detailOverlayBody');
+    if(state.selectedId === null){
+      overlay.classList.remove('open');
+      return;
+    }
+    var d = DATA.find(function(x){ return x.id === state.selectedId; });
+    if(!d) return;
+    overlayBody.innerHTML = buildDetailHTML(d);
+    overlay.classList.add('open');
+    document.querySelectorAll('.detail-cmp-toggle').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(state.compareIds.has(d.id)) state.compareIds.delete(d.id);
+        else state.compareIds.add(d.id);
+        refreshAll();
+      });
+    });
+  }
+  document.getElementById('detailOverlayClose').addEventListener('click', function(){
+    document.getElementById('detailOverlay').classList.remove('open');
+  });
+
+  // ---------------- compare panel ----------------
+  function renderCompare(){
+    var body = document.getElementById('compareBody');
+    var ids = Array.from(state.compareIds);
+    document.getElementById('compareCount').textContent = ids.length ? '(' + ids.length + ' 輛)' : '';
+    if(ids.length === 0){
+      body.innerHTML = '<div class="detail-empty" style="padding:6px 4px;">點選圖表上的戰車，於詳細卡片按「加入比較清單」，即可在此並排比較速度、防護力與火力。</div>';
+      return;
+    }
+    var items = ids.map(function(id){ return DATA.find(function(d){ return d.id === id; }); }).filter(Boolean);
+    var cards = items.map(function(d){
+      var g = GROUPS[d.country];
+      var wc = WEIGHT_CLASS[d.weightClass];
+      return '<div class="cmp-card">' +
+        '<button class="cmp-close" data-id="' + d.id + '">✕</button>' +
+        '<div><span class="cmp-tag" style="background:' + g.color + '"></span><span style="font-size:10px;color:var(--text-3);">' + g.label + ' · ' + wc.label + '</span></div>' +
+        '<div class="cmp-name">' + d.name + '</div>' +
+        '<div class="cmp-type">' + d.era + '</div>' +
+        '<div class="cmp-row"><span class="k">速度</span><span class="v">' + fmtSpeed(d.speedKmh) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">等效防護力</span><span class="v">~' + Math.round(effArmor(d)) + ' mm</span></div>' +
+        '<div class="cmp-row"><span class="k">主砲口徑</span><span class="v">' + fmtMm(d.caliberMm) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">戰鬥重量</span><span class="v">' + fmtT(d.weightT) + '</span></div>' +
+      '</div>';
+    }).join('');
+    body.innerHTML = cards + '<div class="cmp-clear-wrap"><button class="btn-mini" id="btnCompareClear" style="height:100%;">清空比較</button></div>';
+    body.querySelectorAll('.cmp-close').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.compareIds.delete(Number(btn.dataset.id));
+        refreshAll();
+      });
+    });
+    var clearBtn = document.getElementById('btnCompareClear');
+    if(clearBtn){
+      clearBtn.addEventListener('click', function(){
+        state.compareIds = new Set();
+        refreshAll();
+      });
+    }
+  }
+
+  // ---------------- master refresh ----------------
+  function refreshAll(){
+    applyChartFilters();
+    if(refreshSelectionOnChart) refreshSelectionOnChart();
+    renderDetail();
+    renderCompare();
+    // keep the sidebar counts/rows in sync is unnecessary here since
+    // group/class rows show static totals, not filtered counts
+  }
+
+  // ---------------- init + resize ----------------
+  buildChart();
+  renderDetail();
+  renderCompare();
+
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(buildChart, 180);
+  });
+})();
+
+</script>
+</body>
+</html>
