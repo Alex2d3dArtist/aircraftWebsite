@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>UC鋼彈機體比較圖：推重比／出力／全高</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+:root{
+  --bg:#12100D;
+  --panel:#1B1815;
+  --panel-alt:#242019;
+  --panel-line:#2E291F;
+  --border:#3A3327;
+  --text-1:#EDE7DC;
+  --text-2:#AFA48F;
+  --text-3:#726B5C;
+  --amber:#D99A3C;
+  --amber-dim:rgba(217,154,60,.35);
+  --cyan:#7FB8AE;
+  --good:#8FBF7A;
+  --font-display:'Chakra Petch',sans-serif;
+  --font-body:'Noto Sans TC',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(217,154,60,.06), transparent 45%),
+    radial-gradient(ellipse at 90% 0%, rgba(127,184,174,.05), transparent 40%),
+    var(--bg);
+  color:var(--text-1);
+  font-family:var(--font-body);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--amber);color:#12100D;}
+
+.hud-frame{position:relative; max-width:1400px; margin:0 auto; padding:20px 20px 60px;}
+
+header.top{
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:linear-gradient(180deg, var(--panel-alt), var(--panel));
+  padding:22px 24px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+header.top::after{
+  content:'';
+  position:absolute; left:0; right:0; top:0; height:2px;
+  background:linear-gradient(90deg, transparent, var(--amber), transparent);
+  animation:sweep 6s linear infinite;
+}
+@keyframes sweep{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+.eyebrow{
+  font-family:var(--font-display); font-size:11px; letter-spacing:.28em; color:var(--amber);
+  text-transform:uppercase; display:flex; align-items:center; gap:8px; margin-bottom:10px;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+h1{font-family:var(--font-body); font-weight:900; font-size:clamp(22px,4vw,34px); margin:0 0 8px;}
+h1 .accent{color:var(--amber);}
+header .sub{color:var(--text-2); font-size:14px; max-width:760px; line-height:1.7; margin:0 0 18px;}
+.stat-row{display:flex; flex-wrap:wrap; gap:10px;}
+.stat-chip{border:1px solid var(--border); background:rgba(255,255,255,.02); border-radius:4px; padding:8px 14px; min-width:120px;}
+.stat-chip .k{font-size:10px;color:var(--text-3);letter-spacing:.12em;text-transform:uppercase;font-family:var(--font-display);}
+.stat-chip .v{font-family:var(--font-mono);font-size:16px;color:var(--text-1);font-weight:600;margin-top:2px;}
+.stat-chip .v span{color:var(--amber);}
+
+.layout{display:grid; grid-template-columns:240px 1fr; grid-template-areas:"filters chart"; gap:16px; align-items:start;}
+@media (max-width:1080px){ .layout{grid-template-columns:1fr; grid-template-areas:"filters" "chart";} }
+
+.panel{border:1px solid var(--border); background:var(--panel); border-radius:6px; padding:16px;}
+.panel-title{
+  font-family:var(--font-display); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--text-2);
+  margin:0 0 12px; padding-bottom:8px; border-bottom:1px solid var(--panel-line);
+  display:flex; justify-content:space-between; align-items:center;
+}
+
+#filters{grid-area:filters;}
+.search-wrap{position:relative; margin-bottom:14px;}
+#search{width:100%; background:var(--panel-alt); border:1px solid var(--border); color:var(--text-1); border-radius:4px; padding:9px 10px; font-family:var(--font-body); font-size:13px; outline:none;}
+#search:focus{border-color:var(--amber);}
+#search::placeholder{color:var(--text-3);}
+
+.group-row{display:flex; align-items:center; gap:9px; padding:7px 4px; border-radius:4px; cursor:pointer; user-select:none; font-size:13px; transition:background .15s;}
+.group-row:hover{background:var(--panel-alt);}
+.group-row input{accent-color:var(--amber); width:14px;height:14px; cursor:pointer;}
+.swatch{width:10px;height:10px;border-radius:2px;flex:none;}
+.group-row .lbl{flex:1; color:var(--text-1);}
+.group-row .cnt{font-family:var(--font-mono); color:var(--text-3); font-size:11px;}
+.filter-actions{display:flex; gap:8px; margin-top:12px;}
+.btn-mini{flex:1; background:var(--panel-alt); border:1px solid var(--border); color:var(--text-2); font-family:var(--font-display); font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:7px 6px; border-radius:4px; cursor:pointer;}
+.btn-mini:hover{border-color:var(--amber); color:var(--amber);}
+.legend-note{margin-top:16px; padding-top:14px; border-top:1px solid var(--panel-line); font-size:11.5px; color:var(--text-3); line-height:1.7;}
+.legend-note b{color:var(--text-2);}
+
+#chartPanel{grid-area:chart; min-width:0;}
+.chart-toolbar{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;}
+.toggle-btn{background:var(--panel-alt); border:1px solid var(--border); color:var(--text-2); font-family:var(--font-display); font-size:10.5px; letter-spacing:.06em; padding:7px 12px; border-radius:4px; cursor:pointer; transition:all .15s;}
+.toggle-btn:hover{border-color:var(--amber); color:var(--amber);}
+.toggle-btn.active{background:rgba(217,154,60,.14); border-color:var(--amber); color:var(--amber); box-shadow:0 0 0 1px var(--amber) inset;}
+
+#chartOuter{display:flex; align-items:stretch; gap:6px;}
+#chartMain{flex:1; min-width:0;}
+.axis-slider{flex:none; display:flex;}
+.axis-slider-y{flex-direction:column; width:64px; box-sizing:content-box;}
+.axis-slider-x{flex-direction:column; margin-top:10px; box-sizing:content-box;}
+.slider-track{position:relative; background:var(--panel-alt); border:1px solid var(--panel-line); border-radius:3px;}
+.slider-track-y{width:6px; flex:none; margin-left:auto; margin-right:6px;}
+.slider-track-x{height:6px; width:100%;}
+.slider-range{position:absolute; background:rgba(217,154,60,.35); border-radius:3px;}
+.slider-track-y .slider-range{left:0; right:0;}
+.slider-track-x .slider-range{top:0; bottom:0;}
+.slider-handle{position:absolute; width:15px; height:15px; border-radius:50%; background:var(--amber); border:2px solid #12100D; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.5); touch-action:none; z-index:5;}
+.slider-handle:hover, .slider-handle:active{background:#EAB35F;}
+.slider-track-y .slider-handle{left:50%; transform:translate(-50%,-50%);}
+.slider-track-x .slider-handle{top:50%; transform:translate(-50%,-50%);}
+.handle-label{position:absolute; font-family:var(--font-mono); font-size:9px; color:var(--amber); white-space:nowrap; pointer-events:none; background:#12100D; padding:1px 4px; border-radius:2px; border:1px solid var(--amber-dim);}
+.handle-label-x{top:-22px; left:50%; transform:translateX(-50%);}
+.handle-label-y{right:20px; left:auto; top:50%; transform:translateY(-50%);}
+
+body.chart-fullscreen{overflow:hidden;}
+body.chart-fullscreen #chartPanel{position:fixed; inset:0; z-index:1000; margin:0; border-radius:0; display:flex; flex-direction:column; overflow:auto;}
+body.chart-fullscreen #chartOuter{flex:1; min-height:0;}
+body.chart-fullscreen #chartMain{display:flex; flex-direction:column; min-height:0;}
+body.chart-fullscreen #chartContainer{flex:1; min-height:0; overflow:hidden;}
+body.chart-fullscreen .chart-hint{display:none;}
+
+#chartContainer{width:100%; position:relative;}
+#chartContainer svg{width:100%; height:auto; display:block; overflow:visible;}
+.axis path,.axis line{stroke:var(--border);}
+.axis text{fill:var(--text-3); font-family:var(--font-mono); font-size:10.5px;}
+.axis-label{fill:var(--text-2); font-family:var(--font-display); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;}
+.band-line{stroke:var(--cyan); stroke-opacity:.28; stroke-dasharray:2 4;}
+.band-label{fill:var(--cyan); fill-opacity:.75; font-family:var(--font-mono); font-size:9.5px;}
+.mach-line{stroke:var(--amber); stroke-opacity:.3; stroke-dasharray:2 4;}
+.mach-label{fill:var(--amber); fill-opacity:.85; font-family:var(--font-mono); font-size:9.5px;}
+.pt{cursor:pointer;}
+.pt-ring{fill:none; stroke:var(--amber); stroke-width:2px; pointer-events:none; opacity:0;}
+.crosshair{stroke:var(--text-2); stroke-width:1px; stroke-dasharray:3 3; opacity:0; pointer-events:none;}
+.pt-label{font-family:var(--font-mono); font-size:10.5px; fill:var(--text-1); text-anchor:middle; paint-order:stroke; stroke:#12100D; stroke-width:3px; stroke-linejoin:round; pointer-events:none; transition:opacity .15s;}
+.zoom-capture{cursor:grab;}
+.zoom-capture:active{cursor:grabbing;}
+.brush-layer{display:none;}
+.brush-layer.active{display:block;}
+.brush .selection{fill:rgba(217,154,60,.14); stroke:var(--amber); stroke-width:1.5px; stroke-dasharray:5 3;}
+.brush .overlay{cursor:crosshair !important;}
+.brush .handle{display:none;}
+
+#tooltip{position:absolute; pointer-events:none; z-index:50; background:#181410; border:1px solid var(--amber-dim); border-radius:4px; padding:8px 10px; font-size:12px; color:var(--text-1); opacity:0; transition:opacity .12s; box-shadow:0 8px 24px rgba(0,0,0,.5); max-width:220px;}
+#tooltip .tt-name{font-weight:700; margin-bottom:4px;}
+#tooltip .tt-row{font-family:var(--font-mono); font-size:11px; color:var(--text-2);}
+#tooltip .tt-row span{color:var(--amber);}
+.chart-hint{font-size:11px; color:var(--text-3); margin-top:8px; line-height:1.6;}
+
+#detailOverlay{position:absolute; top:10px; right:10px; width:270px; max-height:calc(100% - 20px); overflow-y:auto; z-index:60; background:rgba(24,20,16,.97); border:1px solid var(--border); border-radius:6px; padding:14px; display:none; box-shadow:0 12px 32px rgba(0,0,0,.55);}
+#detailOverlay.open{display:block;}
+#detailOverlayClose{position:absolute; top:8px; right:10px; background:none; border:none; color:var(--text-3); font-family:var(--font-mono); font-size:14px; cursor:pointer; z-index:5;}
+#detailOverlayClose:hover{color:var(--amber);}
+.detail-empty{color:var(--text-3); font-size:13px; line-height:1.8; padding:20px 4px;}
+.detail-tag{display:inline-block; font-family:var(--font-display); font-size:10px; letter-spacing:.1em; padding:3px 8px; border-radius:3px; margin-bottom:6px; margin-right:6px; text-transform:uppercase;}
+.detail-name{font-size:18px; font-weight:900; margin:0 0 2px; line-height:1.35;}
+.detail-type{color:var(--text-2); font-size:12px; margin-bottom:14px;}
+.detail-stats{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;}
+.dstat{background:var(--panel-alt); border:1px solid var(--panel-line); border-radius:4px; padding:8px 10px;}
+.dstat .k{font-size:9.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:.08em; font-family:var(--font-display);}
+.dstat .v{font-family:var(--font-mono); font-size:14px; color:var(--text-1); margin-top:3px; font-weight:600;}
+.dstat .v small{color:var(--text-3); font-weight:400; font-size:10.5px;}
+.detail-desc{font-size:12.5px; line-height:1.8; color:var(--text-2); border-top:1px solid var(--panel-line); padding-top:12px;}
+
+#comparePanel{grid-column:1/-1; margin-top:16px;}
+#compareBody{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px;}
+.cmp-card{flex:0 0 190px; background:var(--panel-alt); border:1px solid var(--border); border-radius:5px; padding:12px; position:relative;}
+.cmp-card .cmp-close{position:absolute; top:6px; right:8px; cursor:pointer; color:var(--text-3); font-family:var(--font-mono); font-size:13px; line-height:1; background:none; border:none;}
+.cmp-card .cmp-close:hover{color:var(--amber);}
+.cmp-card .cmp-tag{display:inline-block; width:8px;height:8px;border-radius:2px; margin-right:5px;}
+.cmp-card .cmp-name{font-size:13px; font-weight:700; margin:4px 0 2px; padding-right:16px; line-height:1.35;}
+.cmp-card .cmp-type{font-size:10.5px; color:var(--text-3); margin-bottom:10px;}
+.cmp-card .cmp-row{display:flex; justify-content:space-between; font-size:11px; padding:4px 0; border-top:1px solid var(--panel-line);}
+.cmp-card .cmp-row .k{color:var(--text-3);}
+.cmp-card .cmp-row .v{font-family:var(--font-mono); color:var(--text-1); text-align:right;}
+.cmp-clear-wrap{margin-top:10px;}
+
+footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line); color:var(--text-3); font-size:11px; line-height:1.8;}
+</style>
+</head>
+<body>
+<div class="hud-frame">
+
+  <header class="top">
+    <div class="eyebrow"><span class="dot"></span> UC MOBILE SUIT SPEC ENVELOPE · REFERENCE PLOT</div>
+    <h1>UC鋼彈機體<span class="accent">推重比</span>／<span class="accent">出力</span>／<span class="accent">全高</span>比較圖</h1>
+    <p class="sub">從一年戰爭的量產薩克、鋼彈，到0096年代的獨角獸與新安洲——用推重比、發電機出力與全高三個維度，直覺理解不同世代MS的性能演進，也把MA放進同一張圖，直接看清機動兵器與機動戰士之間近乎荒謬的量級差距。<br><br>本站設計目的是給初學者建立直覺印象，方便入門比較，並非嚴謹的考據工具。<b>全部25台機體之推力／重量／出力／全高數據，皆逐一查證自 MechaBay（mechabay.com）</b>，整理自MAHQ與官方設定資料；僅鋼坦克、多姆兩台因官方推力數值從缺（原文標註「未知」）予以割捨。虛構設定本身在不同資料源（TV版、小說、模型說明書）之間仍可能有出入，且部分機體招牌招式（如獨角獸的「毀滅模式」）官方文字明確寫成「提升至無法測量的程度」，本表僅能呈現其基礎型態的查證數字。</p>
+    <div class="stat-row">
+      <div class="stat-chip"><div class="k">收錄機體</div><div class="v"><span id="statCount">--</span> 台</div></div>
+      <div class="stat-chip"><div class="k">推重比跨度</div><div class="v"><span id="statTwr">--</span></div></div>
+      <div class="stat-chip"><div class="k">出力跨度</div><div class="v"><span id="statOutput">--</span></div></div>
+      <div class="stat-chip"><div class="k">陣營</div><div class="v"><span id="statFactions">--</span> 方</div></div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <aside class="panel" id="filters">
+      <div class="panel-title">篩選 / FILTER</div>
+      <div class="search-wrap">
+        <input type="text" id="search" placeholder="搜尋機體或駕駛員名稱…">
+      </div>
+      <div id="groupList"></div>
+      <div class="filter-actions">
+        <button class="btn-mini" id="btnAll">全選</button>
+        <button class="btn-mini" id="btnNone">清空</button>
+      </div>
+
+      <div class="panel-title" style="margin-top:16px;">年代 / ERA</div>
+      <div id="eraList"></div>
+
+      <div class="panel-title" style="margin-top:16px;">機體種類 / TYPE</div>
+      <div id="typeList"></div>
+
+      <div class="panel-title" style="margin-top:16px;">參考線 / REFERENCE</div>
+      <div id="refLayerList"></div>
+
+      <div class="legend-note">
+        <b>圖表判讀：</b><br>
+        橫軸＝推重比（推力 ÷ 全備重量，可切換對數／線性）<br>
+        縱軸＝發電機出力 kW（可切換對數／線性）<br>
+        點的大小＝機體全高，越高大點越大<br>
+        顏色＝所屬陣營，形狀邊框可分辨MS／MA<br>
+        琥珀色虛線為推重比參考（真實客機、戰鬥機、火箭、穿越機、空對空飛彈對照），皆為粗略估算，僅供建立直覺——把飛彈那條線跟本表所有MS對照一下，也許能理解為什麼劇中浮游砲、飛彈這類小型高速兵器對推重比普遍偏低的MS本體依然構成致命威脅<br>
+        數字為公開設定資料整理之概略估算值，詳細武裝與駕駛員可在點選後的卡片查看。
+      </div>
+    </aside>
+
+    <section class="panel" id="chartPanel">
+      <div class="panel-title">推重比 × 出力 散點圖 <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="chartCount"></span></div>
+      <div class="chart-toolbar">
+        <button id="toggleXScale" class="toggle-btn" aria-pressed="false">推重比：對數</button>
+        <button id="toggleYScale" class="toggle-btn" aria-pressed="false">出力：對數</button>
+        <button id="btnBoxZoom" class="toggle-btn" aria-pressed="false">🔲 框選縮放</button>
+        <button id="btnZoomFit" class="toggle-btn">🔍 縮放至可見項目</button>
+        <button id="btnResetZoom" class="toggle-btn">重置縮放</button>
+        <button id="btnLabelMode" class="toggle-btn">名稱：自動</button>
+        <button id="btnFullscreen" class="toggle-btn" aria-pressed="false">⛶ 全螢幕</button>
+      </div>
+      <div id="chartOuter">
+        <div id="ySliderWrap" class="axis-slider axis-slider-y">
+          <div class="slider-track slider-track-y" id="ySliderTrack">
+            <div class="slider-range" id="ySliderRange"></div>
+            <div class="slider-handle" id="ySliderHandleTop"><span class="handle-label handle-label-y" id="yHandleTopLabel"></span></div>
+            <div class="slider-handle" id="ySliderHandleBot"><span class="handle-label handle-label-y" id="yHandleBotLabel"></span></div>
+          </div>
+        </div>
+        <div id="chartMain">
+          <div id="chartContainer">
+            <div id="tooltip"></div>
+            <div id="detailOverlay">
+              <button id="detailOverlayClose">✕</button>
+              <div id="detailOverlayBody"></div>
+            </div>
+          </div>
+          <div id="xSliderWrap" class="axis-slider axis-slider-x">
+            <div class="slider-track slider-track-x" id="xSliderTrack">
+              <div class="slider-range" id="xSliderRange"></div>
+              <div class="slider-handle" id="xSliderHandleL"><span class="handle-label handle-label-x" id="xHandleLLabel"></span></div>
+              <div class="slider-handle" id="xSliderHandleR"><span class="handle-label handle-label-x" id="xHandleRLabel"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-hint">滑鼠滾輪在圖表上可縮放、拖曳可平移，也可直接拖動座標軸旁的拉桿手把調整範圍。想精準聚焦，按「框選縮放」後在圖表上拖曳畫出一個框；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原完整檢視；推重比／出力都可各自切換對數或線性尺度。</div>
+    </section>
+
+    <section class="panel" id="comparePanel">
+      <div class="panel-title">比較清單 / COMPARE <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="compareCount"></span></div>
+      <div id="compareBody">
+        <div class="detail-empty" style="padding:6px 4px;">點選圖表上的機體，於詳細卡片按「加入比較清單」，即可在此並排比較推重比、出力與全高。</div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    數據來源：<a href="https://mechabay.com" target="_blank" rel="noopener" style="color:var(--amber);">MechaBay</a>（mechabay.com），一個整理自MAHQ與官方設定資料的鋼彈機體資料庫，25台機體之推力、重量、出力、全高均逐一查證。「推重比」為「推進器總推力 ÷ 全備重量」概略計算值。虛構設定資料本身在電視版、小說、模型說明書等不同來源間仍可能存在出入，本站僅取查證到的數字，重點在呈現「量級差異」的直覺印象，並非嚴謹考據。
+  </footer>
+
+</div>
+
+<script>
+window.GROUPS = {"EARTH_FED":{"label":"地球聯邦軍","color":"#5B8DBF","order":1},"ZEON":{"label":"吉翁公國軍","color":"#C0524A","order":2},"TITANS":{"label":"迪坦斯","color":"#8B7355","order":3},"AEUG":{"label":"艾ゥーゴ","color":"#6FAE7D","order":4},"NEO_ZEON":{"label":"新吉翁殘黨","color":"#B06BC9","order":5}};
+window.ERA_CLASS = {"UC0079":{"label":"U.C.0079 一年戰爭","color":"#D99A3C","order":1},"UC0080":{"label":"U.C.0080-0083","color":"#7FB8AE","order":2},"UC0087":{"label":"U.C.0087-0088 （Z鋼彈時期）","color":"#8B9FD4","order":3},"UC0093":{"label":"U.C.0088-0093 （逆襲的夏亞前後）","color":"#C97B9E","order":4},"UC0096":{"label":"U.C.0096以後","color":"#9BC46A","order":5}};
+window.UNIT_TYPE = {"MS":{"label":"機動戰士 (MS)","color":"#7FB8AE"},"MA":{"label":"機動要塞／機動兵器 (MA)","color":"#E0575C"}};
+window.DATA = [{"id":1,"name":"RX-78-2 鋼彈","faction":"EARTH_FED","unitType":"MS","era":"UC0079","heightM":18,"weightT":60,"thrustKg":55599,"outputKw":1380,"pilot":"阿姆羅・雷","armament":"光束步槍、光束軍刀、火神砲、盾牌","desc":"地球聯邦軍以吉翁MS技術為基礎、結合自家強項光束兵器打造的第一台鋼彈型MS，是後續所有鋼彈型機體的原點。查證後的推重比其實只有0.93，理論上單靠自身推力還無法在地球重力下垂直起飛，鋼彈系列MS要飛行仍得依賴G裝甲、核心助推器這類外掛裝備。"},{"id":2,"name":"RX-77-2 鋼加農","faction":"EARTH_FED","unitType":"MS","era":"UC0079","heightM":17.5,"weightT":70,"thrustKg":51800,"outputKw":1380,"pilot":"卡祐・馬拓其、林纳克斯","armament":"雙聯裝240mm加農砲、光束步槍、火神砲","desc":"鋼彈開發計畫V作戰三台試作機之一，捨棄部分格鬥性能換取強大的火力支援能力，肩部240mm加農砲可對地面部隊提供壓制射擊，是三台試作機中定位最偏向「重砲兵」的一台。"},{"id":3,"name":"RGM-79 吉姆","faction":"EARTH_FED","unitType":"MS","era":"UC0079","heightM":18,"weightT":58.8,"thrustKg":55480,"outputKw":1250,"pilot":"量產機（一般士兵）","armament":"光束噴槍、光束軍刀、盾牌","desc":"以鋼彈技術為基礎簡化而成的第一款量產型鋼彈型MS，性能較RX-78-2略為縮水，但足以扭轉聯邦軍在MS數量與品質上的雙重劣勢。官方數據顯示其推重比0.94，跟元祖鋼彈幾乎同一個級距，並非想像中差距懸殊。"},{"id":4,"name":"MS-06F 量產型薩克II","faction":"ZEON","unitType":"MS","era":"UC0079","heightM":17.5,"weightT":74.5,"thrustKg":43000,"outputKw":976,"pilot":"量產機（一般士兵）","armament":"120mm機關槍、280mm薩克巴祖卡、熱能戰斧、盾牌","desc":"吉翁公國軍的招牌量產機，簡潔可靠的設計加上龐大產量，一手撐起了吉翁在一年戰爭前期的壓倒性優勢，是全系列衍生型號最多的機體之一。"},{"id":5,"name":"MS-06S 夏亞專用薩克II","faction":"ZEON","unitType":"MS","era":"UC0079","heightM":17.5,"weightT":75.2,"thrustKg":55900,"outputKw":976,"pilot":"夏亞・阿茲納布爾","armament":"120mm機關槍、280mm薩克巴祖卡、熱能戰斧、盾牌","desc":"夏亞座機的原型，官方設定明確記載主推進器推力經過個人調校後比一般F型提升約三成，「這台紅色薩克感覺快了三倍」的名台詞從此成為系列傳說，推重比也明顯高於一般量產型薩克。（本表推力數字依官方文字敘述的提升幅度換算）"},{"id":6,"name":"MS-07B 古夫","faction":"ZEON","unitType":"MS","era":"UC0079","heightM":18.7,"weightT":75.4,"thrustKg":40700,"outputKw":1034,"pilot":"蘭巴・拉爾等王牌駕駛員","armament":"熱能鞭、熱能軍刀、75mm機關槍、盾牌","desc":"薩克後繼的陸戰用高性能MS，格鬥性能與裝甲均優於薩克，是吉翁軍中王牌駕駛員偏好的座機之一，蘭巴・拉爾率隊駕駛本機給聯邦軍帶來不小的震撼，本表中推重比敬陪末座（0.54）反而印證了它「重裝甲、犧牲部分推力」的設計取捨。"},{"id":7,"name":"MS-14A 蓋爾古格","faction":"ZEON","unitType":"MS","era":"UC0079","heightM":19.2,"weightT":73.3,"thrustKg":61500,"outputKw":1440,"pilot":"精銳駕駛員","armament":"光束步槍、光束軍刀、盾牌","desc":"吉翁公國在戰爭末期端出的高性能量產機，終於在光束兵器與整體性能上正面追平鋼彈，若能更早量產，一年戰爭的走向或許會有所不同——生不逢時是這台機體最大的遺憾。"},{"id":8,"name":"MSM-07 茲寇克","faction":"ZEON","unitType":"MS","era":"UC0079","heightM":18.4,"weightT":96.4,"thrustKg":83000,"outputKw":2480,"pilot":"水中攻擊部隊","armament":"雙聯裝百式威力精粒子砲、鐵爪、240mm火箭發射器","desc":"吉翁水陸兩用MS系列的代表作，強化的鐵爪可直接撕裂敵方裝甲，在水中戰鬥力極為凶悍，索羅門及後續多場海上／太空要塞攻防戰中都是聯邦軍頭痛的對手，本表中出力2480kW在0079年代已屬前段班。"},{"id":9,"name":"MA-08 畢格・扎姆","faction":"ZEON","unitType":"MA","era":"UC0079","heightM":59.6,"weightT":1936,"thrustKg":580800,"outputKw":140000,"pilot":"多茲爾・扎比","armament":"I力場產生器、大型精粒子砲、28門對空精粒子砲、飛彈爪","desc":"吉翁扎比家族次子多茲爾的座機，配備四具各35,000kW的巨型融合反應爐、合計出力高達14萬kW，是本表全部27台機體中出力數字最誇張的一台。龐大的I力場幾乎能無視當時所有實體兵器攻擊，索羅門攻防戰中憑一機之力大量擊墜聯邦軍艦隊。但推重比只有0.3，是全表最低——這台「移動要塞」的設計哲學從頭到尾就不是為了靈活機動。"},{"id":10,"name":"MAN-08 艾爾梅斯","faction":"ZEON","unitType":"MA","era":"UC0079","heightM":47.7,"weightT":291.8,"thrustKg":645200,"outputKw":14200,"pilot":"拉拉・亞","armament":"雙聯裝精粒子砲、12具psycommu控制浮游砲","desc":"專為強化人拉拉・亞打造的psycommu系統MA，靠意念操控大量浮游砲進行全方位攻擊。雖然體型龐大歸類為MA，但查證後的推重比高達2.21——是本表除新吉翁外全機體中數一數二靈活的一台，完全顛覆「MA=笨重」的刻板印象，也呼應拉拉在劇中被形容為飄逸靈動的駕駛風格。"},{"id":11,"name":"RX-78NT-1 阿雷克斯","faction":"EARTH_FED","unitType":"MS","era":"UC0080","heightM":18.5,"weightT":72.5,"thrustKg":132000,"outputKw":1420,"pilot":"大衛・巴斯克、貝爾納德・蒙西哈","armament":"光束步槍、光束軍刀、90mm加特林機砲、火神砲","desc":"被稱為「終極鋼彈」的高性能試作機，加裝崔斯坦（Chobham）裝甲提升防禦力的同時仍保有優異機動性，查證後推重比達1.82，在0080年代的機體裡表現相當突出，在《0080 口袋裡的戰爭》中由少年駕駛員意外啟動，牽扯出一場悲劇性的局部戰爭。"},{"id":12,"name":"RX-78GP01 白色獨角獸","faction":"EARTH_FED","unitType":"MS","era":"UC0080","heightM":18,"weightT":65,"thrustKg":108000,"outputKw":1790,"pilot":"科威・拉爾","armament":"光束步槍、光束軍刀、90mm機關槍、盾牌","desc":"鋼彈開發計畫（GP計畫）的標準型試作機，機體較輕、機動性優異，是驗證新一代鋼彈型MS基礎性能的原點機體，後續衍生出多種強化裝備型態（如GP01Fb「全推進」型，推力更進一步提升到23萬kg級）。"},{"id":13,"name":"RX-78GP02A 物理學家","faction":"EARTH_FED","unitType":"MS","era":"UC0080","heightM":18.5,"weightT":83,"thrustKg":155200,"outputKw":1860,"pilot":"科威・拉爾（測試駕駛）","armament":"核子火箭筒（限定使用）、光束軍刀、火神砲","desc":"GP計畫中負責搭載核武的特化試作機，龐大的核子火箭筒賦予其毀滅性的單發火力，其存在本身牽動了U.C.世界觀中核武器管制的敏感神經，是GP系列中話題性最高的一台。"},{"id":14,"name":"MS-18E 坎普夫","faction":"ZEON","unitType":"MS","era":"UC0080","heightM":18.2,"weightT":78.5,"thrustKg":159000,"outputKw":1550,"pilot":"米哈伊爾・卡明斯基（獨眼小隊）","armament":"雙聯裝散彈槍、突擊步槍、電擊鞭、多具突擊火箭筒","desc":"一年戰爭末期吉翁緊急拼裝出的高速特化MS，捨棄多餘裝甲換取極致推重比（查證後高達2.03G），是《0080 口袋裡的戰爭》中令NT-1阿雷克斯一度陷入苦戰的強敵，機體渾身掛滿武裝、活像一隻武裝到牙齒的刺蝟。"},{"id":15,"name":"MSZ-006 Z鋼彈","faction":"AEUG","unitType":"MS","era":"UC0087","heightM":19.85,"weightT":62.3,"thrustKg":112600,"outputKw":2020,"pilot":"卡繆・維丹","armament":"光束步槍、光束軍刀、超級高效能炮","desc":"可變形為戰鬥機模式「浮游炮式」的劃時代鋼彈型機體，變形機構大幅提升高速戰鬥彈性，是艾ゥーゴ對抗迪坦斯的旗艦機體，官方標註推重比達1.7G，是Z鋼彈系列中的性能標竿。"},{"id":16,"name":"MSN-00100 百式","faction":"AEUG","unitType":"MS","era":"UC0087","heightM":19.2,"weightT":54.5,"thrustKg":74400,"outputKw":1850,"pilot":"夏亞・阿茲納布爾","armament":"光束步槍、光束軍刀、巨型光束軍刀","desc":"通體金色塗裝的高機動MS，夏亞在艾ゥーゴ時期的座機，輕量化機身帶來優異推重比（1.37G），「金色是勇者的顏色」一語成為系列經典台詞。"},{"id":17,"name":"PMX-003 吉・奧","faction":"TITANS","unitType":"MS","era":"UC0087","heightM":24.8,"weightT":86.3,"thrustKg":135400,"outputKw":1840,"pilot":"帕普提馬斯・希洛克","armament":"主推進器精粒子砲、光束軍刀、鋼絲纜索爪","desc":"迪坦斯高層希洛克的個人專用機，體型高大厚重（頭頂高度近25公尺），設定上出力數字「表面上不到2000kW，實際內建的是戰艦級反應爐」，官方甚至暗示公開數據可能是刻意隱瞞的假情報。格鬥與火力兼備，是Z鋼彈系列中最具壓迫感的反派機體之一。"},{"id":18,"name":"AMX-004 丘貝雷","faction":"NEO_ZEON","unitType":"MS","era":"UC0087","heightM":18.9,"weightT":57.2,"thrustKg":61600,"outputKw":1820,"pilot":"哈曼・卡恩","armament":"雙聯裝光束槍／軍刀、psycommu浮游砲","desc":"專為強化人哈曼・卡恩量身打造的高機動MS，輕巧的機身配合大量浮游砲構成綿密的全方位攻擊網，充分展現新人類專用機「以巧馭重」的設計哲學。艾爾梅斯的技術後代，也是後續丘貝雷Mk-II、量產型的原型機。"},{"id":19,"name":"RX-93 v鋼彈","faction":"EARTH_FED","unitType":"MS","era":"UC0093","heightM":22,"weightT":63,"thrustKg":97800,"outputKw":2980,"pilot":"阿姆羅・雷","armament":"光束步槍、光束軍刀、新型超級巴祖卡、鰭型浮游砲（Fin Funnel）","desc":"阿姆羅集大成的最終座機，搭載psycoframe技術驅動的鰭型浮游砲，是史上第一台配備浮游砲的鋼彈型機體。其基礎設計取自從元祖鋼彈到ZZ鋼彈歷代平均數值再加上最新技術更新而成，象徵新人類專用機技術發展的一個階段性頂點。"},{"id":20,"name":"MSN-04 沙薩比","faction":"NEO_ZEON","unitType":"MS","era":"UC0093","heightM":25.6,"weightT":71.2,"thrustKg":133000,"outputKw":3960,"pilot":"夏亞・阿茲納布爾","armament":"巨型光束突擊步槍、散射精粒子砲、6具psycommu浮游砲","desc":"夏亞的最終座機，頭頂高度25.6公尺是本表MS類機體中數一數二高大的，但查證後全備重量其實只有71.2噸，並不算特別重，出力3960kW則是相當驚人的數字。與輕巧的v鋼彈在《逆襲的夏亞》中形成整部作品最核心的正反對照。"},{"id":21,"name":"AMS-119 基拉・多加","faction":"NEO_ZEON","unitType":"MS","era":"UC0093","heightM":20,"weightT":50.8,"thrustKg":54000,"outputKw":2160,"pilot":"量產機（新吉翁士兵）","armament":"光束機關槍、電擊鞭、光束軍刀／戰斧","desc":"新吉翁殘黨的主力量產機，延續吉翁系機體一貫的可靠性能，是《逆襲的夏亞》地面與太空戰鬥中最常見的敵方機體，本表中噸位最輕（50.8噸），是名副其實的「輕裝上陣」量產兵。"},{"id":22,"name":"MSN-03 亞克特・多加","faction":"NEO_ZEON","unitType":"MS","era":"UC0093","heightM":21,"weightT":64.6,"thrustKg":82000,"outputKw":3340,"pilot":"基涅伊・加斯","armament":"psycommu浮游砲、光束步槍、熱能小刀","desc":"基拉・多加基礎上為強化人駕駛員客製的psycommu對應機型，性能較一般量產機大幅提升，官方描述稱其性能在新吉翁殘黨中僅次於沙薩比，是名副其實的次王牌座機。"},{"id":23,"name":"RX-0 獨角獸鋼彈","faction":"EARTH_FED","unitType":"MS","era":"UC0096","heightM":19.7,"weightT":42.7,"thrustKg":142600,"outputKw":3480,"pilot":"巴納吉・林克斯","armament":"光束麥格農、光束軍刀、新型超級巴祖卡","desc":"搭載拉普拉斯之盒鑰匙全身psycoframe技術的實驗機。本表數字為「獨角獸模式」（一般型態）的官方查證值，覺醒後轉換的「毀滅模式」出力與推力，官方設定原文明確寫成「提升至無法測量的程度」——沒有具體數字，這點本身就很有意思：毀滅模式的誇張表現是刻意設計成「破表」而非給定具體數值。"},{"id":24,"name":"MSN-06S 新安洲","faction":"NEO_ZEON","unitType":"MS","era":"UC0096","heightM":22.6,"weightT":56.9,"thrustKg":128600,"outputKw":3240,"pilot":"弗爾・伏朗托（夏亞疑似分身）","armament":"光束步槍、雙持光束戰斧、盾牌","desc":"「傳人（Sleeves）」旗艦駕駛員弗爾・伏朗托的座機，官方設定原文明確寫「速度是基拉・多加的三倍」，直接呼應夏亞當年那台「快三倍」的紅色薩克——弗爾・伏朗托「夏亞轉世」的身分暗示，連機體命名邏輯都刻意致敬。查證後推重比達2.26，是本表MS類機體中數一數二靈活的。"},{"id":25,"name":"NZ-999 新吉翁","faction":"NEO_ZEON","unitType":"MA","era":"UC0096","heightM":116,"weightT":324.3,"thrustKg":28827500,"outputKw":35660,"pilot":"弗爾・伏朗托","armament":"大型精粒子砲、大口徑高能精粒子砲、psycho-shard產生器、大量線控浮游砲","desc":"「傳人」的最終決戰兵器，本體高達116公尺、以新安洲作為核心駕駛艙，是系列史上數一數二龐大的MA。官方查證的推力數字高達2,882萬公斤，換算推重比接近89G——這個數字誇張到近乎荒謬，本表故意保留不做美化，正好呼應psycho-shard這套「已經超出常人理解範疇」的設定本身。"}];
+</script>
+<script>
+(function(){
+  'use strict';
+  var GROUPS = window.GROUPS;
+  var ERA_CLASS = window.ERA_CLASS;
+  var UNIT_TYPE = window.UNIT_TYPE;
+  var DATA = window.DATA.slice().sort(function(a,b){ return b.heightM - a.heightM; }); // draw big bubbles first
+
+  // ---------------- derived stat ----------------
+  function twr(d){ return d.thrustKg / (d.weightT * 1000); } // 推重比
+
+  // ---------------- formatting helpers ----------------
+  function fmtTwr(v){ return v.toLocaleString('en-US',{maximumFractionDigits:2}); }
+  function fmtKw(v){ return Math.round(v).toLocaleString('en-US') + ' kW'; }
+  function fmtT(t){ return t.toLocaleString('en-US',{maximumFractionDigits:1}) + ' t'; }
+  function fmtM(m){ return m.toLocaleString('en-US',{maximumFractionDigits:2}) + ' m'; }
+  function fmtKg(kg){ return Math.round(kg).toLocaleString('en-US') + ' kg'; }
+  function estimateLabelWidth(text, fontSize){
+    var w = 0;
+    for(var i = 0; i < text.length; i++){
+      var c = text.charCodeAt(i);
+      var isWide = (c >= 0x2E80 && c <= 0x9FFF) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFF00 && c <= 0xFFEF) || (c >= 0x3000 && c <= 0x303F);
+      w += fontSize * (isWide ? 1.0 : 0.62);
+    }
+    return w;
+  }
+
+  // Some units land close enough together in twr/output space that their
+  // bubbles overlap or fully hide one another. Run a small pairwise
+  // "relaxation" pass once at load time — using a fixed reference plot
+  // size — and bake the resulting nudges in as constant pixel offsets.
+  // Applied after the real scale position is computed, so the underlying
+  // data, tooltip and detail card values are completely unaffected.
+  var overlapOffsetById = {};
+  (function computeOverlapOffsets(){
+    var HEIGHT_MAX = d3.max(DATA, function(d){ return d.heightM; });
+    function approxRadius(h){ return 1 + 14 * Math.sqrt(h / HEIGHT_MAX); }
+    var REF_W = 1300, REF_H = 488;
+    var REF_X_MAX = 100, REF_Y_MAX = 150000;
+    var pts = DATA.map(function(d){
+      return {
+        id: d.id,
+        x: (twr(d) / REF_X_MAX) * REF_W,
+        y: REF_H - (d.outputKw / REF_Y_MAX) * REF_H,
+        r: approxRadius(d.heightM)
+      };
+    });
+    var gap = 4;
+    for(var iter = 0; iter < 80; iter++){
+      for(var i = 0; i < pts.length; i++){
+        for(var j = i + 1; j < pts.length; j++){
+          var a = pts[i], b = pts[j];
+          var dx = b.x - a.x, dy = b.y - a.y;
+          var dist = Math.hypot(dx, dy);
+          var minDist = a.r + b.r + gap;
+          if(dist < minDist){
+            var ux, uy;
+            if(dist < 0.001){
+              var ang = (i * 0.618 + j * 1.618) * Math.PI;
+              ux = Math.cos(ang); uy = Math.sin(ang);
+              dist = 0.001;
+            } else {
+              ux = dx / dist; uy = dy / dist;
+            }
+            var push = (minDist - dist) / 2;
+            a.x -= ux * push; a.y -= uy * push;
+            b.x += ux * push; b.y += uy * push;
+          }
+        }
+      }
+    }
+    DATA.forEach(function(d, idx){
+      var p = pts[idx];
+      var ox = p.x - (twr(d) / REF_X_MAX) * REF_W;
+      var oy = p.y - (REF_H - (d.outputKw / REF_Y_MAX) * REF_H);
+      if(Math.abs(ox) > 0.4 || Math.abs(oy) > 0.4){
+        overlapOffsetById[d.id] = { dx: ox, dy: oy };
+      }
+    });
+  })();
+
+  // ---------------- state ----------------
+  var state = {
+    activeGroups: new Set(Object.keys(GROUPS)),
+    activeEras: new Set(Object.keys(ERA_CLASS)),
+    activeTypes: new Set(Object.keys(UNIT_TYPE)),
+    search: '',
+    selectedId: null,
+    detailClosed: false,
+    boxZoomMode: false,
+    labelMode: 'auto', // 'auto' | 'show' | 'hide'
+    fullscreen: false,
+    compareIds: new Set(),
+    xMode: 'log', // 'log' | 'linear'
+    yMode: 'log',
+    showTwrRefs: true
+  };
+
+  function isVisible(d){
+    if(!state.activeGroups.has(d.faction)) return false;
+    if(!state.activeEras.has(d.era)) return false;
+    if(!state.activeTypes.has(d.unitType)) return false;
+    if(state.search){
+      var q = state.search.toLowerCase();
+      var hay = (d.name + ' ' + (d.pilot||'')).toLowerCase();
+      if(hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  }
+  function isChartVisible(d){ return isVisible(d); }
+
+  // ---------------- header stats ----------------
+  (function initHeaderStats(){
+    document.getElementById('statCount').textContent = DATA.length;
+    var minTwr = d3.min(DATA, twr), maxTwr = d3.max(DATA, twr);
+    var minOut = d3.min(DATA, function(d){ return d.outputKw; });
+    var maxOut = d3.max(DATA, function(d){ return d.outputKw; });
+    document.getElementById('statTwr').textContent = fmtTwr(minTwr) + ' – ' + fmtTwr(maxTwr);
+    document.getElementById('statOutput').textContent = fmtKw(minOut) + ' – ' + fmtKw(maxOut);
+    document.getElementById('statFactions').textContent = Object.keys(GROUPS).length;
+  })();
+
+  // ---------------- filter panel: faction toggles ----------------
+  var groupListEl = document.getElementById('groupList');
+  function renderGroupList(){
+    groupListEl.innerHTML = '';
+    Object.keys(GROUPS).sort(function(a,b){ return GROUPS[a].order - GROUPS[b].order; }).forEach(function(key){
+      var g = GROUPS[key];
+      var count = DATA.filter(function(d){ return d.faction === key; }).length;
+      var row = document.createElement('label');
+      row.className = 'group-row';
+      var checked = state.activeGroups.has(key) ? 'checked' : '';
+      row.innerHTML =
+        '<input type="checkbox" ' + checked + ' data-group="' + key + '">' +
+        '<span class="swatch" style="background:' + g.color + '"></span>' +
+        '<span class="lbl">' + g.label + '</span>' +
+        '<span class="cnt">' + count + '</span>';
+      groupListEl.appendChild(row);
+    });
+  }
+  renderGroupList();
+  groupListEl.addEventListener('change', function(e){
+    var cb = e.target;
+    if(cb && cb.dataset && cb.dataset.group){
+      if(cb.checked) state.activeGroups.add(cb.dataset.group);
+      else state.activeGroups.delete(cb.dataset.group);
+      refreshAll();
+    }
+  });
+  document.getElementById('btnAll').addEventListener('click', function(){
+    state.activeGroups = new Set(Object.keys(GROUPS));
+    groupListEl.querySelectorAll('input').forEach(function(i){ i.checked = true; });
+    refreshAll();
+  });
+  document.getElementById('btnNone').addEventListener('click', function(){
+    state.activeGroups = new Set();
+    groupListEl.querySelectorAll('input').forEach(function(i){ i.checked = false; });
+    refreshAll();
+  });
+  document.getElementById('search').addEventListener('input', function(e){
+    state.search = e.target.value.trim();
+    refreshAll();
+  });
+
+  // ---------------- filter panel: era toggles ----------------
+  var eraListEl = document.getElementById('eraList');
+  Object.keys(ERA_CLASS).sort(function(a,b){ return ERA_CLASS[a].order - ERA_CLASS[b].order; }).forEach(function(key){
+    var c = ERA_CLASS[key];
+    var count = DATA.filter(function(d){ return d.era === key; }).length;
+    var row = document.createElement('label');
+    row.className = 'group-row';
+    row.innerHTML =
+      '<input type="checkbox" checked data-era="' + key + '">' +
+      '<span class="swatch" style="background:' + c.color + '"></span>' +
+      '<span class="lbl">' + c.label + '</span>' +
+      '<span class="cnt">' + count + '</span>';
+    eraListEl.appendChild(row);
+  });
+  eraListEl.addEventListener('change', function(e){
+    var cb = e.target;
+    if(cb && cb.dataset && cb.dataset.era){
+      if(cb.checked) state.activeEras.add(cb.dataset.era);
+      else state.activeEras.delete(cb.dataset.era);
+      refreshAll();
+    }
+  });
+
+  // ---------------- filter panel: unit type toggles ----------------
+  var typeListEl = document.getElementById('typeList');
+  Object.keys(UNIT_TYPE).forEach(function(key){
+    var c = UNIT_TYPE[key];
+    var count = DATA.filter(function(d){ return d.unitType === key; }).length;
+    var row = document.createElement('label');
+    row.className = 'group-row';
+    row.innerHTML =
+      '<input type="checkbox" checked data-type="' + key + '">' +
+      '<span class="swatch" style="background:' + c.color + '"></span>' +
+      '<span class="lbl">' + c.label + '</span>' +
+      '<span class="cnt">' + count + '</span>';
+    typeListEl.appendChild(row);
+  });
+  typeListEl.addEventListener('change', function(e){
+    var cb = e.target;
+    if(cb && cb.dataset && cb.dataset.type){
+      if(cb.checked) state.activeTypes.add(cb.dataset.type);
+      else state.activeTypes.delete(cb.dataset.type);
+      refreshAll();
+    }
+  });
+
+  // ---------------- filter panel: reference-line toggle ----------------
+  var refLayerListEl = document.getElementById('refLayerList');
+  if(refLayerListEl){
+    var row = document.createElement('label');
+    row.className = 'group-row';
+    row.innerHTML =
+      '<input type="checkbox" checked data-reflayer="twr">' +
+      '<span class="swatch" style="background:#D99A3C"></span>' +
+      '<span class="lbl">推重比參考（真實兵器對照）</span>';
+    refLayerListEl.appendChild(row);
+    refLayerListEl.addEventListener('change', function(e){
+      var cb = e.target;
+      if(cb && cb.dataset && cb.dataset.reflayer === 'twr'){
+        state.showTwrRefs = cb.checked;
+        if(refreshRefLinesOnChart) refreshRefLinesOnChart();
+      }
+    });
+  }
+
+  // ---------------- toolbar ----------------
+  var btnXScale = document.getElementById('toggleXScale');
+  var btnYScale = document.getElementById('toggleYScale');
+  var btnBoxZoom = document.getElementById('btnBoxZoom');
+  var btnZoomFit = document.getElementById('btnZoomFit');
+  var btnResetZoom = document.getElementById('btnResetZoom');
+  var btnLabelMode = document.getElementById('btnLabelMode');
+  var btnFullscreen = document.getElementById('btnFullscreen');
+
+  var getCurrentValueRange = null;
+  var pendingXRange = null, pendingYRange = null;
+
+  btnXScale.addEventListener('click', function(){
+    if(getCurrentValueRange){
+      var r = getCurrentValueRange();
+      pendingXRange = [r.xMin, r.xMax];
+      pendingYRange = [r.yMin, r.yMax];
+    }
+    state.xMode = state.xMode === 'log' ? 'linear' : 'log';
+    btnXScale.textContent = '推重比：' + (state.xMode === 'log' ? '對數' : '線性');
+    btnXScale.classList.toggle('active', state.xMode === 'linear');
+    btnXScale.setAttribute('aria-pressed', state.xMode === 'linear');
+    buildChart();
+  });
+  btnYScale.addEventListener('click', function(){
+    if(getCurrentValueRange){
+      var r = getCurrentValueRange();
+      pendingXRange = [r.xMin, r.xMax];
+      pendingYRange = [r.yMin, r.yMax];
+    }
+    state.yMode = state.yMode === 'log' ? 'linear' : 'log';
+    btnYScale.textContent = '出力：' + (state.yMode === 'log' ? '對數' : '線性');
+    btnYScale.classList.toggle('active', state.yMode === 'linear');
+    btnYScale.setAttribute('aria-pressed', state.yMode === 'linear');
+    buildChart();
+  });
+
+  btnZoomFit.addEventListener('click', zoomToFit);
+  btnBoxZoom.addEventListener('click', function(){ setBoxZoomMode(!state.boxZoomMode); });
+  btnResetZoom.addEventListener('click', function(){ if(resetChartViewRef) resetChartViewRef(); });
+
+  var LABEL_MODE_TEXT = { auto: '名稱：自動', show: '名稱：顯示', hide: '名稱：隱藏' };
+  var LABEL_MODE_NEXT = { auto: 'show', show: 'hide', hide: 'auto' };
+  btnLabelMode.addEventListener('click', function(){
+    state.labelMode = LABEL_MODE_NEXT[state.labelMode];
+    btnLabelMode.textContent = LABEL_MODE_TEXT[state.labelMode];
+    btnLabelMode.classList.toggle('active', state.labelMode !== 'auto');
+    if(refreshLabelsOnChart) refreshLabelsOnChart();
+  });
+
+  function setFullscreen(on){
+    state.fullscreen = on;
+    document.body.classList.toggle('chart-fullscreen', on);
+    btnFullscreen.classList.toggle('active', on);
+    btnFullscreen.setAttribute('aria-pressed', on);
+    btnFullscreen.textContent = on ? '⛶ 退出全螢幕' : '⛶ 全螢幕';
+    requestAnimationFrame(function(){ buildChart(); });
+  }
+  btnFullscreen.addEventListener('click', function(){ setFullscreen(!state.fullscreen); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && state.fullscreen) setFullscreen(false);
+  });
+
+  function setBoxZoomMode(on){
+    state.boxZoomMode = on;
+    btnBoxZoom.classList.toggle('active', on);
+    btnBoxZoom.setAttribute('aria-pressed', on);
+    if(brushLayerSel) brushLayerSel.classed('active', on);
+  }
+
+  // ---------------- chart ----------------
+  var chartContainer = document.getElementById('chartContainer');
+  var tooltip = document.getElementById('tooltip');
+  var ySliderWrap = document.getElementById('ySliderWrap');
+  var ySliderTrack = document.getElementById('ySliderTrack');
+  var ySliderRange = document.getElementById('ySliderRange');
+  var yHandleTop = document.getElementById('ySliderHandleTop');
+  var yHandleBot = document.getElementById('ySliderHandleBot');
+  var yHandleTopLabel = document.getElementById('yHandleTopLabel');
+  var yHandleBotLabel = document.getElementById('yHandleBotLabel');
+  var xSliderWrap = document.getElementById('xSliderWrap');
+  var xSliderTrack = document.getElementById('xSliderTrack');
+  var xSliderRange = document.getElementById('xSliderRange');
+  var xHandleL = document.getElementById('xSliderHandleL');
+  var xHandleR = document.getElementById('xSliderHandleR');
+  var xHandleLLabel = document.getElementById('xHandleLLabel');
+  var xHandleRLabel = document.getElementById('xHandleRLabel');
+
+  var svg, gRoot, gPoints, gCrosshair;
+  var xScale, yScale, rScale;
+  var applyValueBoxRef = null, resetChartViewRef = null;
+  var refreshRefLinesOnChart = null;
+  var refreshLabelsOnChart = null;
+  var brushBehavior = null, brushLayerSel = null;
+  var refreshSelectionOnChart = null;
+  var margin = { top: 26, right: 18, bottom: 46, left: 64 };
+
+  var TWR_MIN = 0, TWR_MAX = 100, TWR_LOG_MIN = 0.2;
+  var OUT_MIN = 0, OUT_MAX = 150000, OUT_LOG_MIN = 500;
+
+  function xTickLabel(v){ return v >= 10 ? Math.round(v) : v.toLocaleString('en-US',{maximumFractionDigits:1}); }
+
+  // Real-world thrust-to-weight reference points — gives the abstract twr
+  // number something concrete to anchor against. Approximate, commonly
+  // cited figures only; actual values vary by loadout/fuel state/source.
+  var TWR_REF_LINES = [
+    { twr: 0.26, label1: '波音747客機起飛 ~0.26', label2: '（靠機翼升力，非純推力）' },
+    { twr: 1,    label1: '推重比=1', label2: '理論垂直起飛／懸停門檻' },
+    { twr: 1.1,  label1: 'F-16戰鬥機', label2: '全開後燃器 ~1.1' },
+    { twr: 1.2,  label1: '土星五號登月火箭', label2: '發射瞬間 ~1.2' },
+    { twr: 6,    label1: '穿越機（FPV）', label2: '自由式甜蜜點 ~6' },
+    { twr: 21,   label1: 'AIM-9響尾蛇飛彈', label2: '發射瞬間 ~21' }
+  ];
+  function yTickLabel(v){
+    if(v >= 1000) return (v/1000).toLocaleString('en-US',{maximumFractionDigits:1}) + 'k';
+    return Math.round(v);
+  }
+  // Adaptive log-scale ticks: 1-2-5-per-decade pattern when it fits the
+  // available pixel space, falling back to whole decades, and finally
+  // thinning decades themselves for very wide domains. Avoids the classic
+  // "every 1-9 multiple of every decade" overlap mess of naive log axes.
+  function niceLogTicks(lo, hi, pxSpan){
+    if(lo <= 0) lo = 1e-9;
+    if(hi <= lo) return [lo];
+    var kLo = Math.floor(Math.log(lo) / Math.LN10);
+    var kHi = Math.ceil(Math.log(hi) / Math.LN10);
+    var mult125 = [], decadesOnly = [];
+    for(var k = kLo; k <= kHi; k++){
+      [1,2,5].forEach(function(m){
+        var v = m * Math.pow(10, k);
+        if(v >= lo && v <= hi) mult125.push(v);
+      });
+      var vd = Math.pow(10, k);
+      if(vd >= lo && vd <= hi) decadesOnly.push(vd);
+    }
+    var minGapPx = 28;
+    var maxTicks = Math.max(2, Math.floor(pxSpan / minGapPx));
+    if(mult125.length <= maxTicks) return mult125;
+    if(decadesOnly.length <= maxTicks) return decadesOnly;
+    var step = Math.ceil(decadesOnly.length / maxTicks);
+    return decadesOnly.filter(function(v, i){ return i % step === 0; });
+  }
+
+  function buildChart(){
+    chartContainer.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var width = chartContainer.clientWidth;
+    var isSmall = width < 620;
+    margin.right = isSmall ? 12 : 18;
+    var innerW = Math.max(280, width - margin.left - margin.right);
+    var height = state.fullscreen
+      ? Math.max(320, chartContainer.clientHeight || (window.innerHeight - 180))
+      : (isSmall ? 460 : 560);
+    var innerH = height - margin.top - margin.bottom;
+
+    ySliderWrap.style.paddingTop = margin.top + 'px';
+    ySliderWrap.style.paddingBottom = margin.bottom + 'px';
+    ySliderTrack.style.height = innerH + 'px';
+    xSliderWrap.style.paddingLeft = margin.left + 'px';
+    xSliderWrap.style.paddingRight = margin.right + 'px';
+    xSliderTrack.style.width = innerW + 'px';
+
+    svg = d3.select(chartContainer).insert('svg', '#tooltip')
+      .attr('width', width).attr('height', height)
+      .attr('viewBox', '0 0 ' + width + ' ' + height);
+
+    var clipId = 'plotClip';
+    svg.append('defs').append('clipPath').attr('id', clipId)
+      .append('rect').attr('width', innerW).attr('height', innerH);
+
+    gRoot = svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+    if(state.xMode === 'linear'){
+      xScale = d3.scaleLinear().domain([TWR_MIN, TWR_MAX]).range([0, innerW]);
+    } else {
+      xScale = d3.scaleLog().domain([TWR_LOG_MIN, TWR_MAX]).range([0, innerW]);
+    }
+    if(state.yMode === 'linear'){
+      yScale = d3.scaleLinear().domain([OUT_MIN, OUT_MAX]).range([innerH, 0]);
+    } else {
+      yScale = d3.scaleLog().domain([OUT_LOG_MIN, OUT_MAX]).range([innerH, 0]);
+    }
+    rScale = d3.scaleSqrt().domain([0, d3.max(DATA, function(d){ return d.heightM; })]).range([1, 15]);
+
+    var clip = gRoot.append('g').attr('clip-path', 'url(#' + clipId + ')');
+
+    var bgRect = clip.append('rect')
+      .attr('class', 'zoom-capture')
+      .attr('width', innerW).attr('height', innerH)
+      .attr('fill', 'transparent')
+      .style('pointer-events', 'all');
+
+    var gRefV = clip.append('g').attr('class', 'ref-v');
+
+    function buildTwrLabelTspans(sel){
+      sel.each(function(d){
+        var t = d3.select(this);
+        t.selectAll('tspan').remove();
+        t.append('tspan').attr('x', 0).attr('dy', 0).text(d.label1);
+        t.append('tspan').attr('x', 0).attr('dy', '1.15em').text(d.label2);
+      });
+    }
+
+    var twrLineSel = gRefV.selectAll('line.twr-ref')
+      .data(state.showTwrRefs ? TWR_REF_LINES : [])
+      .join('line')
+      .attr('class', 'twr-ref mach-line')
+      .attr('y1', 0).attr('y2', innerH);
+    var twrLabelSel = gRefV.selectAll('text.twr-ref-lbl')
+      .data(state.showTwrRefs ? TWR_REF_LINES : [])
+      .join('text')
+      .attr('class', 'twr-ref-lbl mach-label');
+    buildTwrLabelTspans(twrLabelSel);
+
+    function refreshRefLines(){
+      twrLineSel = gRefV.selectAll('line.twr-ref').data(state.showTwrRefs ? TWR_REF_LINES : []).join('line').attr('class', 'twr-ref mach-line').attr('y1', 0).attr('y2', innerH);
+      twrLabelSel = gRefV.selectAll('text.twr-ref-lbl').data(state.showTwrRefs ? TWR_REF_LINES : []).join('text').attr('class', 'twr-ref-lbl mach-label');
+      buildTwrLabelTspans(twrLabelSel);
+      redraw();
+    }
+    refreshRefLinesOnChart = refreshRefLines;
+
+    gPoints = clip.append('g').attr('class', 'points');
+    gCrosshair = clip.append('g').attr('class', 'crosshair-group');
+
+    var gAxisX = gRoot.append('g').attr('class', 'axis axis-x').attr('transform', 'translate(0,' + innerH + ')');
+    var gAxisY = gRoot.append('g').attr('class', 'axis axis-y');
+    var xAxisLabel = gRoot.append('text').attr('class', 'axis-label')
+      .attr('x', innerW).attr('y', innerH + 38).attr('text-anchor', 'end');
+    var yAxisLabel = gRoot.append('text').attr('class', 'axis-label')
+      .attr('transform', 'rotate(-90)').attr('x', 0).attr('y', -48).attr('text-anchor', 'end');
+    function updateAxisLabels(){
+      xAxisLabel.text('推重比 (' + (state.xMode === 'linear' ? '線性尺度' : '對數尺度') + ') →');
+      yAxisLabel.text('↑ 發電機出力 kW (' + (state.yMode === 'linear' ? '線性尺度' : '對數尺度') + ')');
+    }
+    updateAxisLabels();
+
+    var chX = gCrosshair.append('line').attr('class', 'crosshair chx');
+    var chY = gCrosshair.append('line').attr('class', 'crosshair chy');
+
+    var ptSel = gPoints.selectAll('circle.pt')
+      .data(DATA, function(d){ return d.id; })
+      .join('circle')
+      .attr('class', 'pt')
+      .attr('r', function(d){ return rScale(d.heightM); })
+      .attr('fill', function(d){ return GROUPS[d.faction].color; })
+      .attr('stroke', function(d){ return d.unitType === 'MA' ? '#FFE08A' : '#12100D'; })
+      .attr('stroke-width', function(d){ return d.unitType === 'MA' ? 2.5 : 1; })
+      .attr('fill-opacity', function(d){ return isChartVisible(d) ? 0.85 : 0.05; })
+      .attr('pointer-events', function(d){ return isChartVisible(d) ? 'auto' : 'none'; })
+      .on('mouseenter', function(event, d){
+        showTooltip(event, d);
+        moveCrosshair(chX, chY, curX(d), curY(d), innerW, innerH);
+      })
+      .on('mousemove', function(event){ positionTooltip(event); })
+      .on('mouseleave', function(){
+        hideTooltip();
+        if(state.selectedId === null){ chX.attr('opacity',0); chY.attr('opacity',0); }
+      })
+      .on('click', function(event, d){
+        state.selectedId = d.id;
+        state.detailClosed = false;
+        refreshAll();
+      });
+
+    var selRing = gPoints.append('circle').attr('class','pt-ring').attr('id','selRing');
+    var labelSel = gPoints.selectAll('text.pt-label')
+      .data(DATA, function(d){ return d.id; })
+      .join('text')
+      .attr('class', 'pt-label')
+      .text(function(d){ return d.name; })
+      .attr('opacity', 0);
+
+    var curXScale = xScale, curYScale = yScale;
+    function curX(d){
+      var o = overlapOffsetById[d.id];
+      return curXScale(twr(d)) + (o ? o.dx : 0);
+    }
+    function curY(d){
+      var o = overlapOffsetById[d.id];
+      return curYScale(d.outputKw) + (o ? o.dy : 0);
+    }
+
+    function positionSelection(){
+      if(state.selectedId !== null){
+        var sd = DATA.find(function(d){ return d.id === state.selectedId; });
+        if(sd){
+          moveCrosshair(chX, chY, curX(sd), curY(sd), innerW, innerH);
+          chX.attr('opacity',.9); chY.attr('opacity',.9);
+          selRing.attr('cx', curX(sd)).attr('cy', curY(sd)).attr('r', rScale(sd.heightM) + 5).attr('opacity', 1);
+          return;
+        }
+      }
+      selRing.attr('opacity', 0);
+      chX.attr('opacity', 0); chY.attr('opacity', 0);
+    }
+    refreshSelectionOnChart = positionSelection;
+
+    function defaultView(){ return { x0: 0, x1: innerW, y0: 0, y1: innerH }; }
+    var view = defaultView();
+    var MIN_FRAC = 1/100000;
+
+    if(pendingXRange){
+      var pxv0 = xScale(Math.max(pendingXRange[0], state.xMode==='log'?TWR_LOG_MIN:TWR_MIN));
+      var pxv1 = xScale(Math.max(pendingXRange[1], state.xMode==='log'?TWR_LOG_MIN:TWR_MIN));
+      view.x0 = Math.min(pxv0, pxv1); view.x1 = Math.max(pxv0, pxv1);
+      pendingXRange = null;
+    }
+    if(pendingYRange){
+      var pyv0 = yScale(Math.max(pendingYRange[0], state.yMode==='log'?OUT_LOG_MIN:OUT_MIN));
+      var pyv1 = yScale(Math.max(pendingYRange[1], state.yMode==='log'?OUT_LOG_MIN:OUT_MIN));
+      view.y0 = Math.min(pyv0, pyv1); view.y1 = Math.max(pyv0, pyv1);
+      pendingYRange = null;
+    }
+    clampView();
+
+    function clampView(){
+      var w = view.x1 - view.x0, h = view.y1 - view.y0;
+      var minW = innerW * MIN_FRAC, minH = innerH * MIN_FRAC;
+      if(w < minW){ var cx=(view.x0+view.x1)/2; view.x0=cx-minW/2; view.x1=cx+minW/2; w=minW; }
+      if(h < minH){ var cy=(view.y0+view.y1)/2; view.y0=cy-minH/2; view.y1=cy+minH/2; h=minH; }
+      if(w >= innerW){ view.x0 = 0; view.x1 = innerW; }
+      else {
+        if(view.x0 < 0){ view.x1 -= view.x0; view.x0 = 0; }
+        if(view.x1 > innerW){ view.x0 -= (view.x1 - innerW); view.x1 = innerW; }
+      }
+      if(h >= innerH){ view.y0 = 0; view.y1 = innerH; }
+      else {
+        if(view.y0 < 0){ view.y1 -= view.y0; view.y0 = 0; }
+        if(view.y1 > innerH){ view.y0 -= (view.y1 - innerH); view.y1 = innerH; }
+      }
+    }
+
+    function updateScalesFromView(){
+      curXScale = xScale.copy().domain([ xScale.invert(view.x0), xScale.invert(view.x1) ]);
+      curYScale = yScale.copy().domain([ yScale.invert(view.y1), yScale.invert(view.y0) ]);
+    }
+
+    // Exposes what data range is currently on screen, in real units — used
+    // by the log/linear toggle buttons so switching the ruler doesn't also
+    // jump you to a different part of the chart.
+    getCurrentValueRange = function(){
+      var xv0 = curXScale.invert(0), xv1 = curXScale.invert(innerW);
+      var yv0 = curYScale.invert(0), yv1 = curYScale.invert(innerH);
+      return {
+        xMin: Math.min(xv0, xv1), xMax: Math.max(xv0, xv1),
+        yMin: Math.min(yv0, yv1), yMax: Math.max(yv0, yv1)
+      };
+    };
+
+    function updateSliderUI(){
+      var lx = Math.max(0, Math.min(innerW, view.x0));
+      var rx = Math.max(0, Math.min(innerW, view.x1));
+      xHandleL.style.left = lx + 'px';
+      xHandleR.style.left = rx + 'px';
+      xSliderRange.style.left = lx + 'px';
+      xSliderRange.style.width = Math.max(0, rx - lx) + 'px';
+      xHandleLLabel.textContent = fmtTwr(curXScale.domain()[0]);
+      xHandleRLabel.textContent = fmtTwr(curXScale.domain()[1]);
+
+      var ty = Math.max(0, Math.min(innerH, view.y0));
+      var by = Math.max(0, Math.min(innerH, view.y1));
+      yHandleTop.style.top = ty + 'px';
+      yHandleBot.style.top = by + 'px';
+      ySliderRange.style.top = ty + 'px';
+      ySliderRange.style.height = Math.max(0, by - ty) + 'px';
+      var yd = curYScale.domain();
+      yHandleTopLabel.textContent = fmtKw(yd[1]);
+      yHandleBotLabel.textContent = fmtKw(yd[0]);
+    }
+
+    function redraw(){
+      updateScalesFromView();
+
+      var xTicksNow = state.xMode === 'linear' ? curXScale.ticks(isSmall?5:8) : niceLogTicks(curXScale.domain()[0], curXScale.domain()[1], innerW);
+      var yTicksNow = state.yMode === 'linear' ? curYScale.ticks(isSmall?5:8) : niceLogTicks(curYScale.domain()[0], curYScale.domain()[1], innerH);
+      gAxisX.call(d3.axisBottom(curXScale).tickValues(xTicksNow).tickFormat(xTickLabel).tickSize(4));
+      gAxisY.call(d3.axisLeft(curYScale).tickValues(yTicksNow).tickFormat(yTickLabel).tickSize(4));
+
+      var xDomainNow = curXScale.domain();
+      twrLineSel
+        .attr('x1', function(d){ return curXScale(d.twr); })
+        .attr('x2', function(d){ return curXScale(d.twr); })
+        .attr('opacity', function(d){ return (d.twr >= xDomainNow[0] && d.twr <= xDomainNow[1]) ? 1 : 0; });
+
+      // Row-stack the two-line labels so lines sitting close together on
+      // screen don't print on top of each other — sort by pixel position,
+      // then greedily place each on the lowest row that's still clear of
+      // every label already placed there.
+      var TWR_ROW_H = 24, TWR_LFS = 9.5;
+      var twrVisible = TWR_REF_LINES.filter(function(d){ return d.twr >= xDomainNow[0] && d.twr <= xDomainNow[1]; });
+      var twrPositioned = twrVisible.map(function(d){
+        var w = Math.max(estimateLabelWidth(d.label1, TWR_LFS), estimateLabelWidth(d.label2, TWR_LFS));
+        return { d: d, x: curXScale(d.twr) + 3, w: w };
+      }).sort(function(a, b){ return a.x - b.x; });
+      var rows = []; // each entry: rightmost occupied x so far on that row
+      var rowOf = {};
+      twrPositioned.forEach(function(p){
+        var r = 0;
+        while(rows[r] !== undefined && p.x < rows[r] + 6) r++;
+        rows[r] = p.x + p.w;
+        rowOf[p.d.twr] = r;
+      });
+      twrLabelSel
+        .attr('x', function(d){ return curXScale(d.twr) + 3; })
+        .attr('y', function(d){ return 10 + (rowOf[d.twr] || 0) * TWR_ROW_H; })
+        .each(function(d){
+          d3.select(this).selectAll('tspan').attr('x', curXScale(d.twr) + 3);
+        })
+        .attr('opacity', function(d){ return (d.twr >= xDomainNow[0] && d.twr <= xDomainNow[1]) ? 1 : 0; });
+
+      ptSel.attr('cx', function(d){ return curX(d); }).attr('cy', function(d){ return curY(d); });
+
+      var zoomX = innerW / Math.max(1, (view.x1 - view.x0));
+      var zoomY = innerH / Math.max(1, (view.y1 - view.y0));
+      var LABEL_ZOOM_THRESHOLD = 1.1;
+      var showLabels;
+      if(state.labelMode === 'show') showLabels = true;
+      else if(state.labelMode === 'hide') showLabels = false;
+      else showLabels = Math.min(zoomX, zoomY) >= LABEL_ZOOM_THRESHOLD;
+
+      var labelVisible = {};
+      if(showLabels){
+        var LFS = 10.5;
+        var candidates = [];
+        DATA.forEach(function(d){
+          if(!isChartVisible(d)) return;
+          candidates.push({
+            d: d, x: curX(d), y: curY(d) - rScale(d.heightM) - 6,
+            w: estimateLabelWidth(d.name, LFS), h: LFS + 3
+          });
+        });
+        candidates.sort(function(a, b){
+          if(a.d.id === state.selectedId) return -1;
+          if(b.d.id === state.selectedId) return 1;
+          return b.d.heightM - a.d.heightM;
+        });
+        var placed = [];
+        var PAD = 2;
+        candidates.forEach(function(c){
+          var box = { x0: c.x - c.w/2 - PAD, x1: c.x + c.w/2 + PAD, y0: c.y - c.h - PAD, y1: c.y + PAD };
+          var hit = placed.some(function(b){
+            return !(box.x1 < b.x0 || box.x0 > b.x1 || box.y1 < b.y0 || box.y0 > b.y1);
+          });
+          labelVisible[c.d.id] = !hit;
+          if(!hit) placed.push(box);
+        });
+      }
+      labelSel
+        .attr('x', function(d){ return curX(d); })
+        .attr('y', function(d){ return curY(d) - rScale(d.heightM) - 6; })
+        .attr('opacity', function(d){ return labelVisible[d.id] ? 1 : 0; });
+
+      positionSelection();
+      updateSliderUI();
+    }
+
+    var animFrame = null;
+    function animateViewTo(target, duration){
+      if(animFrame) cancelAnimationFrame(animFrame);
+      var from = { x0: view.x0, x1: view.x1, y0: view.y0, y1: view.y1 };
+      var t0 = performance.now();
+      duration = duration || 400;
+      function step(now){
+        var tt = Math.min(1, (now - t0) / duration);
+        var e = 1 - Math.pow(1 - tt, 3);
+        view.x0 = from.x0 + (target.x0 - from.x0) * e;
+        view.x1 = from.x1 + (target.x1 - from.x1) * e;
+        view.y0 = from.y0 + (target.y0 - from.y0) * e;
+        view.y1 = from.y1 + (target.y1 - from.y1) * e;
+        redraw();
+        if(tt < 1) animFrame = requestAnimationFrame(step);
+        else animFrame = null;
+      }
+      animFrame = requestAnimationFrame(step);
+    }
+
+    function applyValueBox(vx0, vx1, vy0, vy1){
+      var px0 = xScale(Math.min(vx0, vx1)), px1 = xScale(Math.max(vx0, vx1));
+      var pyA = yScale(Math.min(vy0, vy1)), pyB = yScale(Math.max(vy0, vy1));
+      var py0 = Math.min(pyA, pyB), py1 = Math.max(pyA, pyB);
+      var padX = Math.max((px1 - px0) * 0.12, 2);
+      var padY = Math.max((py1 - py0) * 0.12, 2);
+      var target = { x0: px0 - padX, x1: px1 + padX, y0: py0 - padY, y1: py1 + padY };
+      var saved = { x0: view.x0, x1: view.x1, y0: view.y0, y1: view.y1 };
+      view.x0 = target.x0; view.x1 = target.x1; view.y0 = target.y0; view.y1 = target.y1;
+      clampView();
+      target = { x0: view.x0, x1: view.x1, y0: view.y0, y1: view.y1 };
+      view.x0 = saved.x0; view.x1 = saved.x1; view.y0 = saved.y0; view.y1 = saved.y1;
+      animateViewTo(target, 450);
+    }
+    applyValueBoxRef = applyValueBox;
+    resetChartViewRef = function(){ animateViewTo(defaultView(), 350); };
+
+    svg.on('wheel', function(event){
+      if(state.boxZoomMode) return;
+      event.preventDefault();
+      var pt = d3.pointer(event, gRoot.node());
+      var mx = Math.max(0, Math.min(innerW, pt[0]));
+      var my = Math.max(0, Math.min(innerH, pt[1]));
+      var factor = Math.exp(-event.deltaY * 0.0022);
+      var bx = view.x0 + (mx / innerW) * (view.x1 - view.x0);
+      var by = view.y0 + (my / innerH) * (view.y1 - view.y0);
+      var newW = (view.x1 - view.x0) / factor;
+      var newH = (view.y1 - view.y0) / factor;
+      var fx = (bx - view.x0) / (view.x1 - view.x0);
+      var fy = (by - view.y0) / (view.y1 - view.y0);
+      view.x0 = bx - fx * newW; view.x1 = view.x0 + newW;
+      view.y0 = by - fy * newH; view.y1 = view.y0 + newH;
+      clampView();
+      redraw();
+    }, { passive: false });
+
+    bgRect.call(d3.drag()
+      .filter(function(event){ return !state.boxZoomMode && !event.button; })
+      .on('drag', function(event){
+        var sx = (view.x1 - view.x0) / innerW;
+        var sy = (view.y1 - view.y0) / innerH;
+        view.x0 -= event.dx * sx; view.x1 -= event.dx * sx;
+        view.y0 -= event.dy * sy; view.y1 -= event.dy * sy;
+        clampView();
+        redraw();
+      }));
+
+    var brushG = clip.append('g').attr('class', 'brush-layer brush');
+    brushBehavior = d3.brush()
+      .extent([[0,0],[innerW,innerH]])
+      .on('end', function(event){
+        if(!event.selection) return;
+        var sel = event.selection;
+        var x0v = curXScale.invert(sel[0][0]), x1v = curXScale.invert(sel[1][0]);
+        var yTopV = curYScale.invert(sel[0][1]), yBotV = curYScale.invert(sel[1][1]);
+        brushBehavior.move(brushG, null);
+        setBoxZoomMode(false);
+        applyValueBox(x0v, x1v, yBotV, yTopV);
+      });
+    brushG.call(brushBehavior);
+    brushLayerSel = brushG;
+    brushLayerSel.classed('active', state.boxZoomMode);
+
+    var MIN_HANDLE_GAP = 6;
+    function wireSliderHandle(handleEl, axis, which){
+      handleEl.onpointerdown = function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        handleEl.setPointerCapture(ev.pointerId);
+        var startClientX = ev.clientX, startClientY = ev.clientY;
+        var startPos = axis === 'x' ? (which === 'l' ? view.x0 : view.x1) : (which === 'top' ? view.y0 : view.y1);
+        var moved = false;
+        function onMove(e){
+          var dx = e.clientX - startClientX, dy = e.clientY - startClientY;
+          if(!moved && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+          moved = true;
+          if(axis === 'x'){
+            var px = Math.max(0, Math.min(innerW, startPos + dx));
+            var gapX = Math.min(MIN_HANDLE_GAP, Math.max(0.5, view.x1 - view.x0));
+            if(which === 'l'){ view.x0 = Math.min(px, view.x1 - gapX); }
+            else { view.x1 = Math.max(px, view.x0 + gapX); }
+          } else {
+            var py = Math.max(0, Math.min(innerH, startPos + dy));
+            var gapY = Math.min(MIN_HANDLE_GAP, Math.max(0.5, view.y1 - view.y0));
+            if(which === 'top'){ view.y0 = Math.min(py, view.y1 - gapY); }
+            else { view.y1 = Math.max(py, view.y0 + gapY); }
+          }
+          redraw();
+        }
+        function onUp(){
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+        }
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+      };
+    }
+    wireSliderHandle(xHandleL, 'x', 'l');
+    wireSliderHandle(xHandleR, 'x', 'r');
+    wireSliderHandle(yHandleTop, 'y', 'top');
+    wireSliderHandle(yHandleBot, 'y', 'bot');
+
+    refreshLabelsOnChart = redraw;
+
+    redraw();
+    applyChartFilters();
+  }
+
+  function moveCrosshair(chX, chY, x, y, innerW, innerH){
+    chX.attr('x1', x).attr('x2', x).attr('y1', 0).attr('y2', innerH).attr('opacity', .7);
+    chY.attr('x1', 0).attr('x2', innerW).attr('y1', y).attr('y2', y).attr('opacity', .7);
+  }
+
+  function zoomToFit(){
+    if(!applyValueBoxRef) return;
+    var items = DATA.filter(isChartVisible);
+    if(items.length === 0) return;
+    var xVals = items.map(twr);
+    var yVals = items.map(function(d){ return d.outputKw; });
+    applyValueBoxRef(
+      Math.min.apply(null, xVals), Math.max.apply(null, xVals),
+      Math.min.apply(null, yVals), Math.max.apply(null, yVals)
+    );
+  }
+
+  function showTooltip(event, d){
+    tooltip.innerHTML =
+      '<div class="tt-name">' + d.name + '</div>' +
+      '<div class="tt-row">推重比 <span>' + fmtTwr(twr(d)) + '</span></div>' +
+      '<div class="tt-row">出力 <span>' + fmtKw(d.outputKw) + '</span></div>' +
+      '<div class="tt-row">全高 <span>' + fmtM(d.heightM) + '</span></div>';
+    tooltip.style.opacity = 1;
+    positionTooltip(event);
+  }
+  function positionTooltip(event){
+    var rect = chartContainer.getBoundingClientRect();
+    var x = event.clientX - rect.left + 14;
+    var y = event.clientY - rect.top - 10;
+    if(x > rect.width - 180) x = event.clientX - rect.left - 200;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  }
+  function hideTooltip(){ tooltip.style.opacity = 0; }
+
+  function applyChartFilters(){
+    if(!gPoints) return;
+    gPoints.selectAll('circle.pt')
+      .transition().duration(150)
+      .attr('fill-opacity', function(d){ return isChartVisible(d) ? 0.85 : 0.05; })
+      .attr('pointer-events', function(d){ return isChartVisible(d) ? 'auto' : 'none'; });
+    document.getElementById('chartCount').textContent =
+      '(顯示 ' + DATA.filter(isChartVisible).length + ' / ' + DATA.length + ' 台)';
+  }
+
+  // ---------------- detail overlay ----------------
+  function buildDetailHTML(d){
+    var g = GROUPS[d.faction];
+    var ut = UNIT_TYPE[d.unitType];
+    var era = ERA_CLASS[d.era];
+    var inCompare = state.compareIds.has(d.id);
+    return '<span class="detail-tag" style="background:' + g.color + '22;color:' + g.color + ';border:1px solid ' + g.color + '55;">' + g.label + '</span>' +
+      '<span class="detail-tag" style="background:' + ut.color + '22;color:' + ut.color + ';border:1px solid ' + ut.color + '55;">' + ut.label + '</span>' +
+      '<h3 class="detail-name">' + d.name + '</h3>' +
+      '<div class="detail-type">' + era.label + ' · 駕駛員：' + d.pilot + '</div>' +
+      '<div class="detail-stats">' +
+        '<div class="dstat"><div class="k">推重比(估算)</div><div class="v">' + fmtTwr(twr(d)) + '<br><small>推力 ' + fmtKg(d.thrustKg) + '</small></div></div>' +
+        '<div class="dstat"><div class="k">發電機出力</div><div class="v">' + fmtKw(d.outputKw) + '</div></div>' +
+        '<div class="dstat"><div class="k">全高</div><div class="v">' + fmtM(d.heightM) + '</div></div>' +
+        '<div class="dstat"><div class="k">全備重量</div><div class="v">' + fmtT(d.weightT) + '</div></div>' +
+      '</div>' +
+      '<div class="dstat" style="margin-bottom:14px;"><div class="k">主要武裝</div><div class="v" style="font-size:12px;line-height:1.5;">' + d.armament + '</div></div>' +
+      '<div class="detail-desc">' + d.desc + '</div>' +
+      '<div class="filter-actions" style="margin-top:14px;">' +
+        '<button class="btn-mini detail-cmp-toggle">' + (inCompare ? '✕ 移出比較清單' : '＋ 加入比較清單') + '</button>' +
+      '</div>';
+  }
+
+  function renderDetail(){
+    var overlay = document.getElementById('detailOverlay');
+    var overlayBody = document.getElementById('detailOverlayBody');
+    if(state.selectedId === null || state.detailClosed){
+      overlay.classList.remove('open');
+      return;
+    }
+    var d = DATA.find(function(x){ return x.id === state.selectedId; });
+    if(!d) return;
+    overlayBody.innerHTML = buildDetailHTML(d);
+    overlay.classList.add('open');
+    document.querySelectorAll('.detail-cmp-toggle').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if(state.compareIds.has(d.id)) state.compareIds.delete(d.id);
+        else state.compareIds.add(d.id);
+        refreshAll();
+      });
+    });
+  }
+  document.getElementById('detailOverlayClose').addEventListener('click', function(){
+    state.detailClosed = true;
+    document.getElementById('detailOverlay').classList.remove('open');
+  });
+
+  // ---------------- compare panel ----------------
+  function renderCompare(){
+    var body = document.getElementById('compareBody');
+    var ids = Array.from(state.compareIds);
+    document.getElementById('compareCount').textContent = ids.length ? '(' + ids.length + ' 台)' : '';
+    if(ids.length === 0){
+      body.innerHTML = '<div class="detail-empty" style="padding:6px 4px;">點選圖表上的機體，於詳細卡片按「加入比較清單」，即可在此並排比較推重比、出力與全高。</div>';
+      return;
+    }
+    var items = ids.map(function(id){ return DATA.find(function(d){ return d.id === id; }); }).filter(Boolean);
+    var cards = items.map(function(d){
+      var g = GROUPS[d.faction];
+      var ut = UNIT_TYPE[d.unitType];
+      return '<div class="cmp-card">' +
+        '<button class="cmp-close" data-id="' + d.id + '">✕</button>' +
+        '<div><span class="cmp-tag" style="background:' + g.color + '"></span><span style="font-size:10px;color:var(--text-3);">' + g.label + ' · ' + ut.label + '</span></div>' +
+        '<div class="cmp-name">' + d.name + '</div>' +
+        '<div class="cmp-type">' + d.pilot + '</div>' +
+        '<div class="cmp-row"><span class="k">推重比</span><span class="v">' + fmtTwr(twr(d)) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">出力</span><span class="v">' + fmtKw(d.outputKw) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">全高</span><span class="v">' + fmtM(d.heightM) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">重量</span><span class="v">' + fmtT(d.weightT) + '</span></div>' +
+      '</div>';
+    }).join('');
+    body.innerHTML = cards + '<div class="cmp-clear-wrap"><button class="btn-mini" id="btnCompareClear" style="height:100%;">清空比較</button></div>';
+    body.querySelectorAll('.cmp-close').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state.compareIds.delete(Number(btn.dataset.id));
+        refreshAll();
+      });
+    });
+    var clearBtn = document.getElementById('btnCompareClear');
+    if(clearBtn){
+      clearBtn.addEventListener('click', function(){
+        state.compareIds = new Set();
+        refreshAll();
+      });
+    }
+  }
+
+  // ---------------- master refresh ----------------
+  function refreshAll(){
+    applyChartFilters();
+    if(refreshSelectionOnChart) refreshSelectionOnChart();
+    renderDetail();
+    renderCompare();
+  }
+
+  // ---------------- init + resize ----------------
+  buildChart();
+  renderDetail();
+  renderCompare();
+
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(buildChart, 180);
+  });
+})();
+
+</script>
+</body>
+</html>
