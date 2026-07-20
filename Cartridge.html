@@ -86,7 +86,6 @@
     all:unset;cursor:pointer;
     padding:9px 12px;border-radius:4px;font-size:13.5px;
     border:1px solid var(--line);color:var(--text-dim);
-    transition:all .15s;
   }
   .mode-select button:hover{border-color:var(--brass);color:var(--text);}
   .mode-select button.active{
@@ -101,8 +100,8 @@
   .extreme-toggle span{font-size:12.5px;color:#f0a89f;line-height:1.4;}
   .switch{position:relative;width:38px;height:20px;flex-shrink:0;margin-left:10px;}
   .switch input{opacity:0;width:0;height:0;}
-  .slider-tog{position:absolute;cursor:pointer;inset:0;background:#3a3f47;border-radius:20px;transition:.2s;}
-  .slider-tog:before{content:"";position:absolute;height:14px;width:14px;left:3px;top:3px;background:#ccc;border-radius:50%;transition:.2s;}
+  .slider-tog{position:absolute;cursor:pointer;inset:0;background:#3a3f47;border-radius:20px;}
+  .slider-tog:before{content:"";position:absolute;height:14px;width:14px;left:3px;top:3px;background:#ccc;border-radius:50%;}
   input:checked + .slider-tog{background:var(--extreme);}
   input:checked + .slider-tog:before{transform:translateX(18px);background:#fff;}
   #bbToggle:checked + .slider-tog{background:var(--bb);}
@@ -165,9 +164,8 @@
     color:var(--brass-bright);
     font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;
     letter-spacing:.03em;cursor:pointer;
-    transition:background .12s, transform .1s;
   }
-  .bullet-chip:hover, .bullet-chip.active{background:rgba(224,189,127,.3);transform:translateY(-1px);}
+  .bullet-chip:hover, .bullet-chip.active{background:rgba(224,189,127,.3);}
   .chip-extra{margin-top:6px;font-size:11px;color:var(--text-dim);line-height:1.5;}
   #chipPopover{
     position:fixed;z-index:50;max-width:240px;
@@ -492,8 +490,8 @@ function render(){
       enter=>{
         const grp = enter.append('g').attr('class','bar').attr('transform', d=>`translate(${x(d.id)},0)`);
         grp.append('rect')
-          .attr('y', height-margin.bottom)
-          .attr('height', 0)
+          .attr('y', d=>y(d[currentMode]))
+          .attr('height', d=>(height-margin.bottom)-y(d[currentMode]))
           .attr('width', x.bandwidth())
           .attr('rx', 3)
           .attr('fill', d=>resolveColor(CAT_COLOR[d.cat]))
@@ -520,14 +518,10 @@ function render(){
           .attr('y', height-margin.bottom-10)
           .text(d=>modeDef.fmt(d[currentMode]));
         grp.on('click', (ev,d)=>togglePin(d));
-        grp.transition().duration(320)
-          .select('rect')
-          .attr('y', d=>y(d[currentMode]))
-          .attr('height', d=>(height-margin.bottom)-y(d[currentMode]));
         return grp;
       },
       update=>update,
-      exit=>exit.transition().duration(200).style('opacity',0).remove()
+      exit=>exit.remove()
     );
 
   // pinned outline
