@@ -109,6 +109,7 @@
   /* Main */
   main{flex:1;padding:20px;min-width:0;}
   .chart-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:8px;}
+  .title-group{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
   .chart-header h2{margin:0;font-size:16px;color:var(--text);}
   .chart-header .unit{font-size:12px;color:var(--text-dim);}
   .chart-wrap{
@@ -126,8 +127,8 @@
   .axis-baseline{stroke:var(--line);stroke-width:1.5px;}
   .pinned-outline{stroke:var(--brass-bright);stroke-width:2.5px;fill:none;}
   .focus-btn{
-    all:unset;cursor:pointer;padding:8px 14px;border-radius:5px;font-size:13px;
-    background:var(--brass);color:#1b1500;font-weight:700;margin-right:8px;
+    all:unset;cursor:pointer;padding:4px 12px;border-radius:5px;font-size:12px;
+    background:var(--brass);color:#1b1500;font-weight:700;
   }
   .focus-btn.ghost{background:none;border:1px solid var(--line);color:var(--text-dim);}
   .compare-callout{fill:var(--brass-bright);font-family:'JetBrains Mono',monospace;font-weight:700;}
@@ -234,10 +235,12 @@
 
   <main>
     <div class="chart-header">
-      <h2 id="chartTitle">依 焦耳（槍口動能） 由小到大排列</h2>
+      <div class="title-group">
+        <h2 id="chartTitle">依 焦耳（槍口動能） 由小到大排列</h2>
+        <button id="focusBtn" class="focus-btn" style="visibility:hidden"></button>
+      </div>
       <span class="unit" id="chartUnit">單位：J</span>
     </div>
-    <div id="focusBanner"></div>
     <div class="chart-wrap">
       <svg id="chart"></svg>
     </div>
@@ -315,6 +318,7 @@ D.forEach(d=>{
   const wlb = d.weight/1000/0.453592;
   const din = d.diam/25.4;
   d.sd = wlb / (din*din);
+  d.momentum = d.weight * d.vel;
 });
 
 const CAT_COLOR = {pistol:'var(--pistol)', smg:'var(--smg)', rifle:'var(--rifle)', sniper:'var(--sniper)', am:'var(--am)', shotgun:'var(--shotgun)', extreme:'var(--extreme)', bb:'var(--bb)'};
@@ -338,6 +342,7 @@ const MODES = [
   {key:'weight', label:'彈頭重量', unit:'g', fmt:v=>v.toFixed(1)},
   {key:'vel', label:'初速', unit:'m/s', fmt:v=>Math.round(v).toLocaleString()},
   {key:'sd', label:'截面密度', unit:'（無因次）', fmt:v=>v.toFixed(3)},
+  {key:'momentum', label:'動量（後座力簡化參考）', unit:'g·m/s', fmt:v=>Math.round(v).toLocaleString()},
 ];
 
 const WEIGHT_REFS = [
@@ -557,17 +562,13 @@ function render(){
 }
 
 function renderFocusBanner(){
-  const el = document.getElementById('focusBanner');
-  el.innerHTML = '';
+  const btn = document.getElementById('focusBtn');
   if(pinned.length===2){
-    const btn = document.createElement('button');
-    btn.className = 'focus-btn';
+    btn.style.visibility = 'visible';
     btn.textContent = focusMode ? '← 返回完整圖表' : '🔍 並排比較這兩個';
     btn.onclick = toggleFocus;
-    el.appendChild(btn);
-    el.style.margin = '4px 0 10px';
   } else {
-    el.style.margin = '0';
+    btn.style.visibility = 'hidden';
   }
 }
 
@@ -606,6 +607,7 @@ function renderTray(){
       <div class="stat-row"><span>彈頭重量</span><span>${d.weight.toFixed(1)} g</span></div>
       <div class="stat-row"><span>初速</span><span>${Math.round(d.vel)} m/s</span></div>
       <div class="stat-row"><span>截面密度</span><span>${d.sd.toFixed(3)}</span></div>
+      <div class="stat-row"><span>動量（後座力參考）</span><span>${Math.round(d.momentum).toLocaleString()} g·m/s</span></div>
       <div class="chip-row">
         <span class="chip-label">常見彈頭類型：</span>
         ${d.tags.map(code=>`<span class="bullet-chip" data-code="${code}">${code} ${BULLET_GLOSSARY[code]?.short||''}</span>`).join('')}
