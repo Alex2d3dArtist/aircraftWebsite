@@ -64,6 +64,12 @@ header.top::after{
 }
 .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good);animation:blink 2s ease-in-out infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.lang-toggle{
+  margin-left:auto; background:var(--panel-alt); border:1px solid var(--amber-dim); color:var(--amber);
+  font-family:var(--font-display); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  padding:5px 11px; border-radius:4px; cursor:pointer; flex:none;
+}
+.lang-toggle:hover{background:rgba(217,154,60,.14);}
 h1{font-family:var(--font-body); font-weight:900; font-size:clamp(22px,4vw,34px); margin:0 0 8px;}
 h1 .accent{color:var(--amber);}
 header .sub{color:var(--text-2); font-size:14px; max-width:760px; line-height:1.7; margin:0 0 18px;}
@@ -195,58 +201,60 @@ footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line)
 <div class="hud-frame">
 
   <header class="top">
-    <div class="eyebrow"><span class="dot"></span> ARMOR ENVELOPE · WWII TANK REFERENCE PLOT</div>
-    <h1>二戰戰車<span class="accent">速度</span>／<span class="accent">防護力</span>／<span class="accent">火力</span>比較圖</h1>
-    <p class="sub">從5噸的輕型偵察戰車，到近70噸的重型巨獸——用速度、等效防護力與主砲口徑三個維度，直覺理解「輕型戰車」與「重型戰車」的真正差異。<br><br>本站設計目的是給初學者建立直覺印象，方便入門比較，並非嚴謹的軍事研究工具。圖上比的是紙面規格，不是戰場表現。等效防護力也僅為原始厚度依傾斜角度換算的概略估算，未計入裝甲材質、彈種與實際命中角度等變數。</p>
+    <div class="eyebrow"><span class="dot"></span> ARMOR ENVELOPE · WWII TANK REFERENCE PLOT
+      <button id="btnLang" class="lang-toggle">EN</button>
+    </div>
+    <h1 data-i18n="title">二戰戰車<span class="accent">速度</span>／<span class="accent">防護力</span>／<span class="accent">火力</span>比較圖</h1>
+    <p class="sub"><span data-i18n="subtitle1">從5噸的輕型偵察戰車，到近70噸的重型巨獸——用速度、等效防護力與主砲口徑三個維度，直覺理解「輕型戰車」與「重型戰車」的真正差異。</span><br><br><span data-i18n="subtitle2">本站設計目的是給初學者建立直覺印象，方便入門比較，並非嚴謹的軍事研究工具。圖上比的是紙面規格，不是戰場表現。等效防護力也僅為原始厚度依傾斜角度換算的概略估算，未計入裝甲材質、彈種與實際命中角度等變數。</span></p>
     <div class="stat-row">
-      <div class="stat-chip"><div class="k">收錄戰車</div><div class="v"><span id="statCount">--</span> 輛</div></div>
-      <div class="stat-chip"><div class="k">速度跨度</div><div class="v"><span id="statSpeed">--</span></div></div>
-      <div class="stat-chip"><div class="k">防護力跨度</div><div class="v"><span id="statArmor">--</span></div></div>
-      <div class="stat-chip"><div class="k">參戰國</div><div class="v"><span id="statCountries">--</span> 國</div></div>
+      <div class="stat-chip"><div class="k" data-i18n="statCountLabel">收錄戰車</div><div class="v"><span id="statCount">--</span> <span data-i18n="unitItems">輛</span></div></div>
+      <div class="stat-chip"><div class="k" data-i18n="statSpeedLabel">速度跨度</div><div class="v"><span id="statSpeed">--</span></div></div>
+      <div class="stat-chip"><div class="k" data-i18n="statArmorLabel">防護力跨度</div><div class="v"><span id="statArmor">--</span></div></div>
+      <div class="stat-chip"><div class="k" data-i18n="statCountriesLabel">參戰國</div><div class="v"><span id="statCountries">--</span> <span data-i18n="unitCountries">國</span></div></div>
     </div>
   </header>
 
   <div class="layout">
 
     <aside class="panel" id="filters">
-      <div class="panel-title">篩選 / FILTER</div>
+      <div class="panel-title" data-i18n="filterTitle">篩選 / FILTER</div>
       <div class="search-wrap">
-        <input type="text" id="search" placeholder="搜尋戰車名稱…">
+        <input type="text" id="search" data-i18n-placeholder="searchPlaceholder" placeholder="搜尋戰車名稱…">
       </div>
       <div id="groupList"></div>
       <div class="filter-actions">
-        <button class="btn-mini" id="btnAll">全選</button>
-        <button class="btn-mini" id="btnNone">清空</button>
+        <button class="btn-mini" id="btnAll" data-i18n="selectAll">全選</button>
+        <button class="btn-mini" id="btnNone" data-i18n="selectNone">清空</button>
       </div>
 
-      <div class="panel-title" style="margin-top:16px;">噸位分級 / CLASS</div>
+      <div class="panel-title" style="margin-top:16px;" data-i18n="classTitle">噸位分級 / CLASS</div>
       <div id="classList"></div>
 
-      <div class="panel-title" style="margin-top:16px;">年代 / ERA</div>
+      <div class="panel-title" style="margin-top:16px;" data-i18n="eraTitle">年代 / ERA</div>
       <div id="eraList"></div>
 
-      <div class="panel-title" style="margin-top:16px;">參考線 / REFERENCE</div>
+      <div class="panel-title" style="margin-top:16px;" data-i18n="refTitle">參考線 / REFERENCE</div>
       <div id="refLayerList"></div>
 
       <div class="legend-note">
-        <b>圖表判讀：</b><br>
-        橫軸＝公路最大速度<br>
-        縱軸＝車體正面等效防護力（原始厚度換算傾斜角後的估算值）<br>
-        點的大小＝主砲口徑，口徑越大點越大<br>
-        青色虛線為裝甲防護力參考門檻（約可抵禦哪種火砲）<br>
-        琥珀色虛線為速度參考（人類步行／跑步、電動滑板車），皆為粗略估算，僅供建立直覺<br>
-        等效防護力估算方式與傾斜角度可在點選後的詳細卡片查看。
+        <b data-i18n="chartLegendTitle">圖表判讀：</b><br>
+        <span data-i18n="chartLegend1">橫軸＝公路最大速度</span><br>
+        <span data-i18n="chartLegend2">縱軸＝車體正面等效防護力（原始厚度換算傾斜角後的估算值）</span><br>
+        <span data-i18n="chartLegend3">點的大小＝主砲口徑，口徑越大點越大</span><br>
+        <span data-i18n="chartLegend4">青色虛線為裝甲防護力參考門檻（約可抵禦哪種火砲）</span><br>
+        <span data-i18n="chartLegend5">琥珀色虛線為速度參考（人類步行／跑步、電動滑板車），皆為粗略估算，僅供建立直覺</span><br>
+        <span data-i18n="chartLegend6">等效防護力估算方式與傾斜角度可在點選後的詳細卡片查看。</span>
       </div>
     </aside>
 
     <section class="panel" id="chartPanel">
-      <div class="panel-title">速度 × 防護力 散點圖 <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="chartCount"></span></div>
+      <div class="panel-title"><span data-i18n="chartTitle">速度 × 防護力 散點圖</span> <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="chartCount"></span></div>
       <div class="chart-toolbar">
-        <button id="btnBoxZoom" class="toggle-btn" aria-pressed="false">🔲 框選縮放</button>
-        <button id="btnZoomFit" class="toggle-btn">🔍 縮放至可見項目</button>
-        <button id="btnResetZoom" class="toggle-btn">重置縮放</button>
-        <button id="btnLabelMode" class="toggle-btn">名稱：自動</button>
-        <button id="btnFullscreen" class="toggle-btn" aria-pressed="false">⛶ 全螢幕</button>
+        <button id="btnBoxZoom" class="toggle-btn" aria-pressed="false" data-i18n="btnBoxZoom">🔲 框選縮放</button>
+        <button id="btnZoomFit" class="toggle-btn" data-i18n="btnZoomFit">🔍 縮放至可見項目</button>
+        <button id="btnResetZoom" class="toggle-btn" data-i18n="btnResetZoom">重置縮放</button>
+        <button id="btnLabelMode" class="toggle-btn"></button>
+        <button id="btnFullscreen" class="toggle-btn" aria-pressed="false" data-i18n="btnFullscreen">⛶ 全螢幕</button>
       </div>
       <div id="chartOuter">
         <div id="ySliderWrap" class="axis-slider axis-slider-y">
@@ -273,29 +281,29 @@ footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line)
           </div>
         </div>
       </div>
-      <div class="chart-hint">滑鼠滾輪在圖表上可縮放、拖曳可平移，也可直接拖動座標軸旁的拉桿手把調整範圍。想精準聚焦，按「框選縮放」後在圖表上拖曳畫出一個框；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原完整檢視。</div>
+      <div class="chart-hint" data-i18n="chartHint">滑鼠滾輪在圖表上可縮放、拖曳可平移，也可直接拖動座標軸旁的拉桿手把調整範圍。想精準聚焦，按「框選縮放」後在圖表上拖曳畫出一個框；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原完整檢視。</div>
     </section>
 
     <section class="panel" id="comparePanel">
-      <div class="panel-title">比較清單 / COMPARE <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="compareCount"></span></div>
+      <div class="panel-title"><span data-i18n="compareTitle">比較清單 / COMPARE</span> <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="compareCount"></span></div>
       <div id="compareBody">
-        <div class="detail-empty" style="padding:6px 4px;">點選圖表上的戰車，於詳細卡片按「加入比較清單」，即可在此並排比較速度、防護力與火力。</div>
+        <div class="detail-empty" style="padding:6px 4px;" data-i18n="compareEmpty">點選圖表上的戰車，於詳細卡片按「加入比較清單」，即可在此並排比較速度、防護力與火力。</div>
       </div>
     </section>
 
   </div>
 
-  <footer>
+  <footer data-i18n="footerDisclaimer">
     數據為公開資料整理之概略估算值，僅供科普與創作參考。「等效防護力」以「原始裝甲厚度 ÷ cos(傾斜角)」概略估算，用以呈現傾斜裝甲帶來的防護加成，並非真實彈道測試結果，實際防禦力還與裝甲材質、彈種、命中角度等因素有關。輕／中／重型戰車分類主要依循各國戰時官方或後世通用分類，部分車輛（如豹式戰車）官方分類與現代噸位標準有落差，已於詳細卡片中特別註明。主砲口徑不代表穿甲能力，僅供火力量級參考。
   </footer>
 
 </div>
 
 <script>
-window.GROUPS = {"GERMANY":{"label":"德國","color":"#9CA3AF","order":1},"USSR":{"label":"蘇聯","color":"#E0575C","order":2},"USA":{"label":"美國","color":"#7C9070","order":3},"UK":{"label":"英國","color":"#4A9184","order":4},"JAPAN":{"label":"日本","color":"#D4A24E","order":5},"FRANCE":{"label":"法國","color":"#6B8FC4","order":6},"ITALY":{"label":"義大利","color":"#C97B4A","order":7}};
-window.WEIGHT_CLASS = {"LIGHT":{"label":"輕型戰車","color":"#8FE3C0"},"MEDIUM":{"label":"中型戰車","color":"#FFB000"},"HEAVY":{"label":"重型戰車","color":"#FF4466"}};
-window.ERA_CLASS = {"WW1":{"label":"第一次世界大戰","color":"#B983FF"},"WW2":{"label":"第二次世界大戰","color":"#D99A3C"}};
-window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weightClass":"LIGHT","era":"1934–1941","eraClass":"WW2","speedKmh":40,"frontArmorMm":13,"frontArmorAngleDeg":9,"caliberMm":7.92,"weightT":5.4,"lengthM":4.02,"desc":"德國重整軍備後第一款量產戰車，僅配備雙聯裝機槍、未搭載戰車砲，設計目的是訓練戰車兵與驗證閃電戰戰術，西班牙內戰與波蘭戰役中已明顯性能不足。與二、三、四號戰車一樣，公路速度都收斂在約40km/h附近——這並非巧合，詳見三號戰車說明。"},{"id":2,"name":"Panzer II 二號戰車","country":"GERMANY","weightClass":"LIGHT","era":"1935–1943","eraClass":"WW2","speedKmh":40,"frontArmorMm":14.5,"frontArmorAngleDeg":10,"caliberMm":20,"weightT":8.9,"lengthM":4.81,"desc":"配備20mm機關砲的輕型戰車，在三號、四號戰車量產前撐起德軍裝甲部隊的數量，法國戰役後已明顯過時，後期多改造為偵察車或自走砲底盤。與一、三、四號戰車同樣被限速在約40km/h，是德軍同世代戰車共通的設計選擇。"},{"id":3,"name":"Panzer III 三號戰車","country":"GERMANY","weightClass":"MEDIUM","era":"1939–1943","eraClass":"WW2","speedKmh":40,"frontArmorMm":50,"frontArmorAngleDeg":9,"caliberMm":50,"weightT":22,"lengthM":5.52,"desc":"德軍裝甲師最初設想的主力戰車，設計上專門對付敵方戰車，東線初期面對T-34時火力與裝甲皆顯不足，後期逐漸被四號戰車取代主力地位。有趣的是，一到四號戰車的公路速度都收斂在約40km/h附近——這並非巧合：這幾款戰車共用Maybach引擎家族與相近的變速箱設計，加上德軍工程師發現履帶車輛若不限速，變速箱與傳動系統故障率會大幅攀升，寧可犧牲極速也要換取可靠度（三號戰車原始設計規格其實只要求35km/h，實際成品速度略高但仍受限於此），這與蘇聯BT-7「不惜代價換取速度」的設計哲學形成鮮明對比。"},{"id":4,"name":"Panzer IV 四號戰車","country":"GERMANY","weightClass":"MEDIUM","era":"1936–1945","eraClass":"WW2","speedKmh":42,"frontArmorMm":80,"frontArmorAngleDeg":12,"caliberMm":75,"weightT":25,"lengthM":7.02,"desc":"德軍二戰服役最久、產量最大的主力戰車，從支援步兵的短管型一路升級到反戰車長管型，貫穿整場戰爭，是德軍裝甲部隊真正的骨幹。與一、二、三號戰車同樣收斂在約40km/h上下，是德軍同世代戰車共通的限速設計（詳見三號戰車說明）。"},{"id":5,"name":"Panther 豹式戰車","country":"GERMANY","weightClass":"MEDIUM","era":"1943–1945","eraClass":"WW2","speedKmh":46,"frontArmorMm":80,"frontArmorAngleDeg":55,"caliberMm":75,"weightT":44.8,"lengthM":8.86,"desc":"為回應T-34衝擊而生，大角度傾斜裝甲與高初速75mm長砲身是其兩大標誌，德軍官方仍將其列為「中型戰車」，但44.8噸的戰鬥重量其實已超過同期許多國家的重型戰車，是classification與噸位脫節的經典案例。"},{"id":6,"name":"Tiger I 虎式戰車","country":"GERMANY","weightClass":"HEAVY","era":"1942–1945","eraClass":"WW2","speedKmh":38,"frontArmorMm":100,"frontArmorAngleDeg":9,"caliberMm":88,"weightT":54,"lengthM":8.45,"desc":"裝甲幾乎垂直但極厚，配備令盟軍聞風喪膽的88mm高初速砲，單車擊殺紀錄輝煌，但機械複雜、油耗驚人、產量有限，戰略上難以彌補數量劣勢。"},{"id":7,"name":"Tiger II 虎王戰車","country":"GERMANY","weightClass":"HEAVY","era":"1944–1945","eraClass":"WW2","speedKmh":38,"frontArmorMm":150,"frontArmorAngleDeg":50,"caliberMm":88,"weightT":69.8,"lengthM":10.286,"desc":"集厚重裝甲、大傾斜角與長砲身88mm戰車砲於一身，是二戰服役重量最重的量產戰車之一，理論防護力與火力近乎無敵，但機動性差、故障率高，且產量稀少難以扭轉戰局。"},{"id":8,"name":"T-26","country":"USSR","weightClass":"LIGHT","era":"1931–1941","eraClass":"WW2","speedKmh":30,"frontArmorMm":20,"frontArmorAngleDeg":18,"caliberMm":45,"weightT":10.3,"lengthM":4.62,"desc":"蘇聯兩次大戰間產量最大的輕型戰車，西班牙內戰中表現尚可，但1941年德軍入侵時裝甲與火力已全面落後，大量在戰爭初期被殲滅或棄置。"},{"id":9,"name":"BT-7 快速戰車","country":"USSR","weightClass":"LIGHT","era":"1935–1941","eraClass":"WW2","speedKmh":53,"frontArmorMm":22,"frontArmorAngleDeg":18,"caliberMm":45,"weightT":13.8,"lengthM":5.66,"desc":"「BT」意為「快速戰車」，強調高速突穿追求縱深穿插的騎兵化戰術思想，可換裝輪胎在公路上飆出更高速度，其懸吊設計後來直接影響了T-34的誕生。"},{"id":10,"name":"T-34/76","country":"USSR","weightClass":"MEDIUM","era":"1940–1944","eraClass":"WW2","speedKmh":53,"frontArmorMm":45,"frontArmorAngleDeg":60,"caliberMm":76.2,"weightT":26.5,"lengthM":6.68,"desc":"二戰最具影響力的戰車設計之一，45mm裝甲配合60度傾斜角換算等效防護力接近90mm，加上寬履帶、可靠柴油引擎與強大火力，令1941年遭遇的德軍大為震撼，直接催生了豹式戰車的誕生。"},{"id":11,"name":"T-34/85","country":"USSR","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","speedKmh":53,"frontArmorMm":45,"frontArmorAngleDeg":60,"caliberMm":85,"weightT":32,"lengthM":8.15,"desc":"沿用T-34經典傾斜裝甲車體，換裝三人砲塔與85mm砲以對抗豹式、虎式，火力大幅提升，是蘇聯在數量與品質上首次同時逼近德軍的關鍵型號。"},{"id":12,"name":"KV-1","country":"USSR","weightClass":"HEAVY","era":"1939–1942","eraClass":"WW2","speedKmh":34,"frontArmorMm":75,"frontArmorAngleDeg":15,"caliberMm":76.2,"weightT":47,"lengthM":6.75,"desc":"以蘇聯國防人民委員伏羅希洛夫命名，1941年時德軍現役戰車砲幾乎無法擊穿其正面裝甲，聲勢驚人，但機動性差、變速箱可靠度不佳，後期逐漸被IS系列取代。"},{"id":13,"name":"IS-2 史達林式戰車","country":"USSR","weightClass":"HEAVY","era":"1943–1945","eraClass":"WW2","speedKmh":37,"frontArmorMm":120,"frontArmorAngleDeg":30,"caliberMm":122,"weightT":46,"lengthM":9.9,"desc":"搭載122mm巨砲，單發命中即可重創甚至擊毀虎式戰車，柏林巷戰中作為攻堅利器大量使用，122mm砲備彈量少、射速慢是其主要弱點。"},{"id":14,"name":"M3 Stuart 史都華式戰車","country":"USA","weightClass":"LIGHT","era":"1941–1944","eraClass":"WW2","speedKmh":58,"frontArmorMm":44,"frontArmorAngleDeg":10,"caliberMm":37,"weightT":12.7,"lengthM":4.53,"desc":"美軍與英軍北非戰場早期主力輕型戰車之一，速度快、機械可靠性佳，但37mm主砲面對中型戰車已力不從心，英軍暱稱其為「甜心」（Honey）。"},{"id":15,"name":"M5 Stuart 史都華式戰車","country":"USA","weightClass":"LIGHT","era":"1942–1945","eraClass":"WW2","speedKmh":58,"frontArmorMm":44,"frontArmorAngleDeg":25,"caliberMm":37,"weightT":15.2,"lengthM":4.84,"desc":"M3的改良型，換裝雙凱迪拉克引擎與自動變速箱、正面裝甲角度加大，操作更平順，但主砲火力始終偏弱，二戰後期主要擔任偵察任務。"},{"id":16,"name":"M4 Sherman 雪曼式戰車","country":"USA","weightClass":"MEDIUM","era":"1942–1945","eraClass":"WW2","speedKmh":39,"frontArmorMm":51,"frontArmorAngleDeg":56,"caliberMm":75,"weightT":30.3,"lengthM":6.27,"desc":"美國以「數量與後勤」取勝的代表作，機械可靠、便於大量生產與運輸，二戰中總產量近五萬輛，但75mm主砲與裝甲面對虎式、豹式明顯居於劣勢，盟軍常以數量優勢彌補。"},{"id":17,"name":"M4A3E8 Sherman \"Easy Eight\"","country":"USA","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","speedKmh":42,"frontArmorMm":64,"frontArmorAngleDeg":47,"caliberMm":76,"weightT":33.6,"lengthM":7.54,"desc":"換裝新式水平渦捲彈簧懸吊、加厚裝甲與76mm高初速砲的後期改良型，操控更平穩、火力大幅提升，是韓戰中仍持續服役的雪曼終極型號。"},{"id":18,"name":"M26 Pershing 潘興式戰車","country":"USA","weightClass":"HEAVY","era":"1945","eraClass":"WW2","speedKmh":48,"frontArmorMm":102,"frontArmorAngleDeg":46,"caliberMm":90,"weightT":41.9,"lengthM":8.65,"desc":"美軍為對抗虎式、豹式而研發的新一代戰車，二戰末期才少量投入實戰，其90mm砲與傾斜裝甲已接近戰後主力戰車的雛形，服役初期官方分類為「重型戰車」，戰後才重新歸類為中型戰車。"},{"id":19,"name":"Mk VI 輕型戰車","country":"UK","weightClass":"LIGHT","era":"1936–1942","eraClass":"WW2","speedKmh":56,"frontArmorMm":15,"frontArmorAngleDeg":30,"caliberMm":12.7,"weightT":5.2,"lengthM":3.9,"desc":"英軍戰前主力輕型戰車，僅配備機槍、未搭載戰車砲，主要用於偵察任務，法國戰役與北非戰場初期大量使用，但面對敵方戰車幾乎毫無還手之力。"},{"id":20,"name":"Crusader 巡洋戰車","country":"UK","weightClass":"MEDIUM","era":"1941–1943","eraClass":"WW2","speedKmh":43,"frontArmorMm":51,"frontArmorAngleDeg":18,"caliberMm":57,"weightT":20,"lengthM":5.94,"desc":"英軍「巡洋戰車」系列強調速度與機動優於防護，北非沙漠戰場的主力之一，機械可靠度長期是隱憂，經常因故障而非戰損損失戰車。"},{"id":21,"name":"Cromwell 克倫威爾式戰車","country":"UK","weightClass":"MEDIUM","era":"1943–1945","eraClass":"WW2","speedKmh":64,"frontArmorMm":76,"frontArmorAngleDeg":27,"caliberMm":75,"weightT":27.6,"lengthM":6.35,"desc":"英軍二戰速度最快的量產戰車之一，以高速機動配合偵察與快速突穿見長，諾曼第戰役中大量用於裝甲師先鋒，但75mm砲火力仍不及對手虎式、豹式。"},{"id":22,"name":"Churchill 邱吉爾式戰車","country":"UK","weightClass":"HEAVY","era":"1941–1945","eraClass":"WW2","speedKmh":20,"frontArmorMm":152,"frontArmorAngleDeg":15,"caliberMm":75,"weightT":40,"lengthM":7.44,"desc":"英軍「步兵戰車」系列的代表，設計哲學是以厚重裝甲伴隨步兵推進而非追求速度，正面裝甲厚達152mm，義大利與西歐山地、巷戰中的攻堅表現優異。"},{"id":23,"name":"Sherman Firefly 螢火蟲式戰車","country":"UK","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","speedKmh":39,"frontArmorMm":51,"frontArmorAngleDeg":56,"caliberMm":76.2,"weightT":32.7,"lengthM":7.11,"desc":"英軍將美製雪曼戰車車體換裝自家17磅高初速反戰車砲的緊急應急方案，是盟軍地面部隊少數能在正常交戰距離擊穿虎式正面裝甲的戰車，德軍甚至下令優先集火獵殺，車組員暱稱其長砲管為「戴著面具的雪曼」。"},{"id":24,"name":"Type 95 Ha-Go 九五式輕戰車","country":"JAPAN","weightClass":"LIGHT","era":"1935–1945","eraClass":"WW2","speedKmh":45,"frontArmorMm":12,"frontArmorAngleDeg":9,"caliberMm":37,"weightT":7.4,"lengthM":4.38,"desc":"日本陸軍太平洋戰場最常見的輕型戰車，速度快、產量大，但裝甲極薄，面對美軍戰車與反戰車武器幾乎毫無防護力，叢林與島嶼戰中多用於步兵支援。"},{"id":25,"name":"Type 97 Chi-Ha 九七式中戰車","country":"JAPAN","weightClass":"MEDIUM","era":"1937–1945","eraClass":"WW2","speedKmh":38,"frontArmorMm":25,"frontArmorAngleDeg":20,"caliberMm":47,"weightT":15,"lengthM":5.5,"desc":"日本陸軍二戰主力中戰車，後期「新砲塔」型換裝47mm高初速砲改善反戰車能力，但整體裝甲思維停留在1930年代水準，太平洋戰場後期面對美軍雪曼已明顯過時。"},{"id":26,"name":"Type 3 Chi-Nu 三式中戰車","country":"JAPAN","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","speedKmh":38,"frontArmorMm":50,"frontArmorAngleDeg":20,"caliberMm":75,"weightT":18.8,"lengthM":5.73,"desc":"日本陸軍二戰末期研發、換裝75mm野砲改造主砲的最終量產型中戰車，火力終於追上同期盟軍標準，但產量稀少且多數未及投入實戰便迎來戰爭結束。"},{"id":27,"name":"Mark IV 戰車","country":"UK","weightClass":"HEAVY","era":"1917–1918","eraClass":"WW1","speedKmh":6,"frontArmorMm":12,"frontArmorAngleDeg":0,"caliberMm":57,"weightT":28.4,"lengthM":8.05,"desc":"史上第一款大規模投入實戰、對戰局產生實質影響的戰車，經典菱形車體是為了跨越壕溝與鐵絲網而設計。「男性型」搭載兩門57mm（6磅）艦砲、「女性型」則僅配機槍，1917年康布雷戰役中近400輛集中使用首次展現戰車的戰術價值，但時速僅約6km/h，比人步行快不了多少。"},{"id":28,"name":"Renault FT","country":"FRANCE","weightClass":"LIGHT","era":"1917–1918","eraClass":"WW1","speedKmh":7.7,"frontArmorMm":16,"frontArmorAngleDeg":5,"caliberMm":37,"weightT":6.5,"lengthM":4.1,"desc":"史上第一款採用「可360度旋轉砲塔＋車體其餘部分分離」現代化配置的戰車，奠定了往後一百年幾乎所有戰車的基本設計範式。體型小、產量超過3000輛，一戰後仍被多國沿用數十年，堪稱戰車史上最具影響力的單一設計。"},{"id":29,"name":"A7V","country":"GERMANY","weightClass":"HEAVY","era":"1918","eraClass":"WW1","speedKmh":15,"frontArmorMm":30,"frontArmorAngleDeg":0,"caliberMm":57,"weightT":33,"lengthM":7.34,"desc":"德意志帝國一戰唯一量產的戰車型號，僅生產約20輛，箱型車體、裝甲比同期英法戰車更厚，車組員多達18人。1918年首次戰車對戰車交戰的維萊布勒托訥戰役中即為其參戰車型，但產量稀少對戰局影響有限。"},{"id":30,"name":"Whippet 惠比特式中戰車","country":"UK","weightClass":"MEDIUM","era":"1917–1918","eraClass":"WW1","speedKmh":13.4,"frontArmorMm":14,"frontArmorAngleDeg":0,"caliberMm":7.7,"weightT":14,"lengthM":6.09,"desc":"英軍為彌補菱形重戰車速度過慢而研發的「中戰車」，速度是Mark IV的兩倍以上，設計目的是在步兵戰車突破戰線後負責快速穿插與擴大戰果，可視為現代巡洋戰車與騎兵戰車概念的先驅，僅配備機槍、未搭載戰車砲。"},{"id":31,"name":"Matilda II 瑪蒂爾達II式戰車","country":"UK","weightClass":"HEAVY","era":"1939–1945","eraClass":"WW2","speedKmh":24,"frontArmorMm":78,"frontArmorAngleDeg":0,"caliberMm":40,"weightT":26.5,"lengthM":5.61,"desc":"暱稱「沙漠女王」，1940–41年北非戰場前期德軍現役反戰車砲幾乎打不穿其正面裝甲，德軍被迫將88mm高射砲拉去平射反戰車，意外開啟了88砲反戰車的傳奇生涯（後來也成為虎式戰車主砲血統源頭）。屬英軍「步兵戰車」系列，設計哲學是以厚重裝甲伴隨步兵推進，速度極慢、40mm主砲後期火力明顯不足。"},{"id":32,"name":"Maus 鼠式戰車","country":"GERMANY","weightClass":"HEAVY","era":"1944–1945（原型車，未量產）","eraClass":"WW2","speedKmh":13,"frontArmorMm":200,"frontArmorAngleDeg":52,"caliberMm":128,"weightT":188,"lengthM":10.2,"desc":"史上最重的戰車，重達188噸，配備128mm主砲，理論上幾乎無法被當時任何武器擊穿。然而僅完成2輛原型車，從未實戰部署，過度笨重導致大多數橋樑無法通行、機動性近乎癱瘓，是「規格表上無敵、戰場上無用」的極端範例，放進圖表僅供對照參考。"},{"id":33,"name":"L3/35 快速戰車","country":"ITALY","weightClass":"LIGHT","era":"1935–1943","eraClass":"WW2","speedKmh":42,"frontArmorMm":13.5,"frontArmorAngleDeg":0,"caliberMm":8,"weightT":3.2,"lengthM":3.17,"desc":"義大利陸軍產量最大的裝甲車輛，本質上是雙聯裝機槍的小型履帶車，未搭載任何戰車砲，裝甲薄到步槍彈藥就有威脅，北非與東線戰場中面對盟軍與蘇軍戰車幾乎毫無自保能力，是「數量多但戰力低」的典型代表。"},{"id":34,"name":"M13/40 中戰車","country":"ITALY","weightClass":"MEDIUM","era":"1940–1943","eraClass":"WW2","speedKmh":32,"frontArmorMm":30,"frontArmorAngleDeg":0,"caliberMm":47,"weightT":14,"lengthM":4.92,"desc":"義大利陸軍二戰主力中戰車，鉚接裝甲工藝落後（中彈時鉚釘容易崩落成二次破片傷及車內乘員），汽油引擎馬力也明顯不足，北非戰場中面對英軍瑪蒂爾達、十字軍等戰車經常居於下風，可靠度不佳更雪上加霜。"},{"id":35,"name":"P40 重戰車","country":"ITALY","weightClass":"MEDIUM","era":"1943（義大利投降後多由德軍接收使用）","eraClass":"WW2","speedKmh":40,"frontArmorMm":50,"frontArmorAngleDeg":0,"caliberMm":75,"weightT":26,"lengthM":5.53,"desc":"義大利二戰末期研發、火力裝甲終於追上同期水準的最終型號，但量產進度緩慢，1943年義大利投降時僅完成少量車體，多數成品後來由德軍接收使用，未能以義大利軍隊身分真正大規模參戰。"}];
+window.GROUPS = {"GERMANY":{"label":"德國","color":"#9CA3AF","order":1,"label_en":"Germany"},"USSR":{"label":"蘇聯","color":"#E0575C","order":2,"label_en":"Soviet Union"},"USA":{"label":"美國","color":"#7C9070","order":3,"label_en":"United States"},"UK":{"label":"英國","color":"#4A9184","order":4,"label_en":"United Kingdom"},"JAPAN":{"label":"日本","color":"#D4A24E","order":5,"label_en":"Japan"},"FRANCE":{"label":"法國","color":"#6B8FC4","order":6,"label_en":"France"},"ITALY":{"label":"義大利","color":"#C97B4A","order":7,"label_en":"Italy"}};
+window.WEIGHT_CLASS = {"LIGHT":{"label":"輕型戰車","color":"#8FE3C0","label_en":"Light Tank"},"MEDIUM":{"label":"中型戰車","color":"#FFB000","label_en":"Medium Tank"},"HEAVY":{"label":"重型戰車","color":"#FF4466","label_en":"Heavy Tank"}};
+window.ERA_CLASS = {"WW1":{"label":"第一次世界大戰","color":"#B983FF","label_en":"World War I"},"WW2":{"label":"第二次世界大戰","color":"#D99A3C","label_en":"World War II"}};
+window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weightClass":"LIGHT","era":"1934–1941","eraClass":"WW2","name_en":"Panzer I","era_en":"1934-1941","desc_en":"Germany's first mass-produced tank after rearmament, armed only with twin machine guns and no main gun -- intended to train crews and prove blitzkrieg tactics. Already outclassed by the Spanish Civil War and the Poland campaign. Like the Panzer II, III and IV, its road speed converges around 40 km/h -- not a coincidence; see the Panzer III entry for why.","speedKmh":40,"frontArmorMm":13,"frontArmorAngleDeg":9,"caliberMm":7.92,"weightT":5.4,"lengthM":4.02,"desc":"德國重整軍備後第一款量產戰車，僅配備雙聯裝機槍、未搭載戰車砲，設計目的是訓練戰車兵與驗證閃電戰戰術，西班牙內戰與波蘭戰役中已明顯性能不足。與二、三、四號戰車一樣，公路速度都收斂在約40km/h附近——這並非巧合，詳見三號戰車說明。"},{"id":2,"name":"Panzer II 二號戰車","country":"GERMANY","weightClass":"LIGHT","era":"1935–1943","eraClass":"WW2","name_en":"Panzer II","era_en":"1935-1943","desc_en":"A light tank armed with a 20mm autocannon that carried the bulk of German armored strength before the Panzer III and IV reached mass production. Already obsolete after the Battle of France, and later mostly converted into reconnaissance vehicles or self-propelled gun chassis. Governed to about 40 km/h like the I, III and IV -- a shared design choice across the same tank generation.","speedKmh":40,"frontArmorMm":14.5,"frontArmorAngleDeg":10,"caliberMm":20,"weightT":8.9,"lengthM":4.81,"desc":"配備20mm機關砲的輕型戰車，在三號、四號戰車量產前撐起德軍裝甲部隊的數量，法國戰役後已明顯過時，後期多改造為偵察車或自走砲底盤。與一、三、四號戰車同樣被限速在約40km/h，是德軍同世代戰車共通的設計選擇。"},{"id":3,"name":"Panzer III 三號戰車","country":"GERMANY","weightClass":"MEDIUM","era":"1939–1943","eraClass":"WW2","name_en":"Panzer III","era_en":"1939-1943","desc_en":"Originally envisioned as the Panzer divisions' primary tank-killer, but its firepower and armor already fell short against the T-34 early on the Eastern Front, and it was gradually superseded by the Panzer IV. Interestingly, the Panzer I through IV all converge around 40 km/h road speed -- not a coincidence: they share the Maybach engine family and similar transmissions, and German engineers found that unrestricted tracked vehicles suffered sharply higher transmission failure rates, so they traded top speed for reliability (the Panzer III's original spec actually called for just 35 km/h). This stands in sharp contrast to the Soviet BT-7's 'speed at any cost' design philosophy.","speedKmh":40,"frontArmorMm":50,"frontArmorAngleDeg":9,"caliberMm":50,"weightT":22,"lengthM":5.52,"desc":"德軍裝甲師最初設想的主力戰車，設計上專門對付敵方戰車，東線初期面對T-34時火力與裝甲皆顯不足，後期逐漸被四號戰車取代主力地位。有趣的是，一到四號戰車的公路速度都收斂在約40km/h附近——這並非巧合：這幾款戰車共用Maybach引擎家族與相近的變速箱設計，加上德軍工程師發現履帶車輛若不限速，變速箱與傳動系統故障率會大幅攀升，寧可犧牲極速也要換取可靠度（三號戰車原始設計規格其實只要求35km/h，實際成品速度略高但仍受限於此），這與蘇聯BT-7「不惜代價換取速度」的設計哲學形成鮮明對比。"},{"id":4,"name":"Panzer IV 四號戰車","country":"GERMANY","weightClass":"MEDIUM","era":"1936–1945","eraClass":"WW2","name_en":"Panzer IV","era_en":"1936-1945","desc_en":"Germany's longest-serving, most-produced tank of the war, upgraded from a short-barreled infantry-support gun to a long-barreled tank-killer across its production life -- the true backbone of the German armored force. Converges around 40 km/h like the I, II and III, a speed-governing choice shared across that tank generation (see the Panzer III entry for why).","speedKmh":42,"frontArmorMm":80,"frontArmorAngleDeg":12,"caliberMm":75,"weightT":25,"lengthM":7.02,"desc":"德軍二戰服役最久、產量最大的主力戰車，從支援步兵的短管型一路升級到反戰車長管型，貫穿整場戰爭，是德軍裝甲部隊真正的骨幹。與一、二、三號戰車同樣收斂在約40km/h上下，是德軍同世代戰車共通的限速設計（詳見三號戰車說明）。"},{"id":5,"name":"Panther 豹式戰車","country":"GERMANY","weightClass":"MEDIUM","era":"1943–1945","eraClass":"WW2","name_en":"Panther","era_en":"1943-1945","desc_en":"Born from the shock of encountering the T-34, its two defining features are steeply sloped armor and a long, high-velocity 75mm gun. Germany officially classified it as a 'medium tank,' but at 44.8 tonnes its combat weight actually exceeds many contemporary heavy tanks -- a classic case where classification and weight class part ways.","speedKmh":46,"frontArmorMm":80,"frontArmorAngleDeg":55,"caliberMm":75,"weightT":44.8,"lengthM":8.86,"desc":"為回應T-34衝擊而生，大角度傾斜裝甲與高初速75mm長砲身是其兩大標誌，德軍官方仍將其列為「中型戰車」，但44.8噸的戰鬥重量其實已超過同期許多國家的重型戰車，是classification與噸位脫節的經典案例。"},{"id":6,"name":"Tiger I 虎式戰車","country":"GERMANY","weightClass":"HEAVY","era":"1942–1945","eraClass":"WW2","name_en":"Tiger I","era_en":"1942-1945","desc_en":"Nearly vertical but extremely thick armor, paired with the high-velocity 88mm gun that Allied crews came to dread. Its individual kill record was formidable, but the mechanically complex, fuel-hungry design was built in limited numbers -- strategically unable to offset the Allies' numerical advantage.","speedKmh":38,"frontArmorMm":100,"frontArmorAngleDeg":9,"caliberMm":88,"weightT":54,"lengthM":8.45,"desc":"裝甲幾乎垂直但極厚，配備令盟軍聞風喪膽的88mm高初速砲，單車擊殺紀錄輝煌，但機械複雜、油耗驚人、產量有限，戰略上難以彌補數量劣勢。"},{"id":7,"name":"Tiger II 虎王戰車","country":"GERMANY","weightClass":"HEAVY","era":"1944–1945","eraClass":"WW2","name_en":"Tiger II (King Tiger)","era_en":"1944-1945","desc_en":"Combined heavy armor, a steep glacis angle and a long-barreled 88mm gun in one package, making it one of the heaviest production tanks of the war. Its theoretical protection and firepower were nearly unbeatable, but poor mobility, high breakdown rates and scarce numbers meant it could never turn the tide of the war.","speedKmh":38,"frontArmorMm":150,"frontArmorAngleDeg":50,"caliberMm":88,"weightT":69.8,"lengthM":10.286,"desc":"集厚重裝甲、大傾斜角與長砲身88mm戰車砲於一身，是二戰服役重量最重的量產戰車之一，理論防護力與火力近乎無敵，但機動性差、故障率高，且產量稀少難以扭轉戰局。"},{"id":8,"name":"T-26","country":"USSR","weightClass":"LIGHT","era":"1931–1941","eraClass":"WW2","name_en":"T-26","era_en":"1931-1941","desc_en":"The most-produced Soviet light tank of the interwar years, performing adequately in the Spanish Civil War, but its armor and firepower were already thoroughly outclassed by the 1941 German invasion, with huge numbers destroyed or abandoned in the war's opening months.","speedKmh":30,"frontArmorMm":20,"frontArmorAngleDeg":18,"caliberMm":45,"weightT":10.3,"lengthM":4.62,"desc":"蘇聯兩次大戰間產量最大的輕型戰車，西班牙內戰中表現尚可，但1941年德軍入侵時裝甲與火力已全面落後，大量在戰爭初期被殲滅或棄置。"},{"id":9,"name":"BT-7 快速戰車","country":"USSR","weightClass":"LIGHT","era":"1935–1941","eraClass":"WW2","name_en":"BT-7","era_en":"1935-1941","desc_en":"'BT' stood for 'fast tank,' embodying a cavalry-inspired doctrine of high-speed breakthroughs and deep penetration; it could even swap tracks for wheels to hit even higher road speeds. Its suspension design directly influenced the T-34 that followed it.","speedKmh":53,"frontArmorMm":22,"frontArmorAngleDeg":18,"caliberMm":45,"weightT":13.8,"lengthM":5.66,"desc":"「BT」意為「快速戰車」，強調高速突穿追求縱深穿插的騎兵化戰術思想，可換裝輪胎在公路上飆出更高速度，其懸吊設計後來直接影響了T-34的誕生。"},{"id":10,"name":"T-34/76","country":"USSR","weightClass":"MEDIUM","era":"1940–1944","eraClass":"WW2","name_en":"T-34/76","era_en":"1940-1944","desc_en":"One of the most influential tank designs of WWII: 45mm of armor sloped at 60 degrees gives an estimated effective thickness near 90mm, combined with wide tracks, a reliable diesel engine and strong firepower. It stunned the German forces that encountered it in 1941 and directly spurred the creation of the Panther.","speedKmh":53,"frontArmorMm":45,"frontArmorAngleDeg":60,"caliberMm":76.2,"weightT":26.5,"lengthM":6.68,"desc":"二戰最具影響力的戰車設計之一，45mm裝甲配合60度傾斜角換算等效防護力接近90mm，加上寬履帶、可靠柴油引擎與強大火力，令1941年遭遇的德軍大為震撼，直接催生了豹式戰車的誕生。"},{"id":11,"name":"T-34/85","country":"USSR","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","name_en":"T-34/85","era_en":"1944-1945","desc_en":"Kept the T-34's classic sloped hull but added a three-man turret and an 85mm gun to counter the Panther and Tiger, sharply boosting firepower -- the key model where Soviet tanks first closed the gap with Germany in both quantity and quality at once.","speedKmh":53,"frontArmorMm":45,"frontArmorAngleDeg":60,"caliberMm":85,"weightT":32,"lengthM":8.15,"desc":"沿用T-34經典傾斜裝甲車體，換裝三人砲塔與85mm砲以對抗豹式、虎式，火力大幅提升，是蘇聯在數量與品質上首次同時逼近德軍的關鍵型號。"},{"id":12,"name":"KV-1","country":"USSR","weightClass":"HEAVY","era":"1939–1942","eraClass":"WW2","name_en":"KV-1","era_en":"1939-1942","desc_en":"Named after Soviet defense commissar Kliment Voroshilov. In 1941, front-line German tank guns could barely penetrate its frontal armor at all, making a fearsome impression -- but poor mobility and an unreliable transmission saw it gradually replaced by the IS series.","speedKmh":34,"frontArmorMm":75,"frontArmorAngleDeg":15,"caliberMm":76.2,"weightT":47,"lengthM":6.75,"desc":"以蘇聯國防人民委員伏羅希洛夫命名，1941年時德軍現役戰車砲幾乎無法擊穿其正面裝甲，聲勢驚人，但機動性差、變速箱可靠度不佳，後期逐漸被IS系列取代。"},{"id":13,"name":"IS-2 史達林式戰車","country":"USSR","weightClass":"HEAVY","era":"1943–1945","eraClass":"WW2","name_en":"IS-2","era_en":"1943-1945","desc_en":"Armed with a massive 122mm gun capable of crippling or destroying a Tiger with a single hit, used heavily as a breakthrough weapon in the Berlin street fighting. Its main weaknesses were a small ammunition load and slow rate of fire for such a huge gun.","speedKmh":37,"frontArmorMm":120,"frontArmorAngleDeg":30,"caliberMm":122,"weightT":46,"lengthM":9.9,"desc":"搭載122mm巨砲，單發命中即可重創甚至擊毀虎式戰車，柏林巷戰中作為攻堅利器大量使用，122mm砲備彈量少、射速慢是其主要弱點。"},{"id":14,"name":"M3 Stuart 史都華式戰車","country":"USA","weightClass":"LIGHT","era":"1941–1944","eraClass":"WW2","name_en":"M3 Stuart","era_en":"1941-1944","desc_en":"One of the main early-war light tanks for US and British forces in North Africa -- fast and mechanically reliable, but its 37mm gun was already struggling against medium tanks. British crews affectionately nicknamed it the \"Honey.\"","speedKmh":58,"frontArmorMm":44,"frontArmorAngleDeg":10,"caliberMm":37,"weightT":12.7,"lengthM":4.53,"desc":"美軍與英軍北非戰場早期主力輕型戰車之一，速度快、機械可靠性佳，但37mm主砲面對中型戰車已力不從心，英軍暱稱其為「甜心」（Honey）。"},{"id":15,"name":"M5 Stuart 史都華式戰車","country":"USA","weightClass":"LIGHT","era":"1942–1945","eraClass":"WW2","name_en":"M5 Stuart","era_en":"1942-1945","desc_en":"An improved M3 with twin Cadillac engines, an automatic transmission and a steeper glacis angle for smoother handling, though its main gun remained persistently weak -- by late WWII it mainly served in the reconnaissance role.","speedKmh":58,"frontArmorMm":44,"frontArmorAngleDeg":25,"caliberMm":37,"weightT":15.2,"lengthM":4.84,"desc":"M3的改良型，換裝雙凱迪拉克引擎與自動變速箱、正面裝甲角度加大，操作更平順，但主砲火力始終偏弱，二戰後期主要擔任偵察任務。"},{"id":16,"name":"M4 Sherman 雪曼式戰車","country":"USA","weightClass":"MEDIUM","era":"1942–1945","eraClass":"WW2","name_en":"M4 Sherman","era_en":"1942-1945","desc_en":"America's answer built on 'quantity and logistics' -- mechanically reliable and easy to mass-produce and ship, with nearly 50,000 built during the war. Its 75mm gun and armor were clearly outmatched by the Tiger and Panther, a gap Allied forces routinely made up for with sheer numbers.","speedKmh":39,"frontArmorMm":51,"frontArmorAngleDeg":56,"caliberMm":75,"weightT":30.3,"lengthM":6.27,"desc":"美國以「數量與後勤」取勝的代表作，機械可靠、便於大量生產與運輸，二戰中總產量近五萬輛，但75mm主砲與裝甲面對虎式、豹式明顯居於劣勢，盟軍常以數量優勢彌補。"},{"id":17,"name":"M4A3E8 Sherman \"Easy Eight\"","country":"USA","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","name_en":"M4A3E8 Sherman \"Easy Eight\"","era_en":"1944-1945","desc_en":"A late-war upgrade with a new horizontal volute spring suspension, thicker armor and a high-velocity 76mm gun -- smoother handling and much improved firepower, making it the ultimate Sherman variant that remained in service through the Korean War.","speedKmh":42,"frontArmorMm":64,"frontArmorAngleDeg":47,"caliberMm":76,"weightT":33.6,"lengthM":7.54,"desc":"換裝新式水平渦捲彈簧懸吊、加厚裝甲與76mm高初速砲的後期改良型，操控更平穩、火力大幅提升，是韓戰中仍持續服役的雪曼終極型號。"},{"id":18,"name":"M26 Pershing 潘興式戰車","country":"USA","weightClass":"HEAVY","era":"1945","eraClass":"WW2","name_en":"M26 Pershing","era_en":"1945","desc_en":"America's next-generation tank built to counter the Tiger and Panther, entering combat only in small numbers at the very end of the war. Its 90mm gun and sloped armor already prefigure post-war main battle tanks; it was officially classified a 'heavy tank' on entering service, and only reclassified as medium after the war.","speedKmh":48,"frontArmorMm":102,"frontArmorAngleDeg":46,"caliberMm":90,"weightT":41.9,"lengthM":8.65,"desc":"美軍為對抗虎式、豹式而研發的新一代戰車，二戰末期才少量投入實戰，其90mm砲與傾斜裝甲已接近戰後主力戰車的雛形，服役初期官方分類為「重型戰車」，戰後才重新歸類為中型戰車。"},{"id":19,"name":"Mk VI 輕型戰車","country":"UK","weightClass":"LIGHT","era":"1936–1942","eraClass":"WW2","name_en":"Mk VI Light Tank","era_en":"1936-1942","desc_en":"Britain's main prewar light tank, armed only with machine guns and no main gun, used mainly for reconnaissance. It saw heavy use in the Battle of France and early North Africa but had almost no ability to fight back against enemy tanks.","speedKmh":56,"frontArmorMm":15,"frontArmorAngleDeg":30,"caliberMm":12.7,"weightT":5.2,"lengthM":3.9,"desc":"英軍戰前主力輕型戰車，僅配備機槍、未搭載戰車砲，主要用於偵察任務，法國戰役與北非戰場初期大量使用，但面對敵方戰車幾乎毫無還手之力。"},{"id":20,"name":"Crusader 巡洋戰車","country":"UK","weightClass":"MEDIUM","era":"1941–1943","eraClass":"WW2","name_en":"Crusader","era_en":"1941-1943","desc_en":"British 'cruiser tank' doctrine prized speed and mobility over protection; the Crusader was a mainstay of the North African desert campaign, though chronic mechanical unreliability meant it was often lost to breakdowns rather than enemy fire.","speedKmh":43,"frontArmorMm":51,"frontArmorAngleDeg":18,"caliberMm":57,"weightT":20,"lengthM":5.94,"desc":"英軍「巡洋戰車」系列強調速度與機動優於防護，北非沙漠戰場的主力之一，機械可靠度長期是隱憂，經常因故障而非戰損損失戰車。"},{"id":21,"name":"Cromwell 克倫威爾式戰車","country":"UK","weightClass":"MEDIUM","era":"1943–1945","eraClass":"WW2","name_en":"Cromwell","era_en":"1943-1945","desc_en":"One of the fastest production tanks Britain fielded in WWII, prized for high-speed reconnaissance and rapid breakthroughs; used extensively to spearhead armored divisions in Normandy, though its 75mm gun still couldn't match the Tiger or Panther.","speedKmh":64,"frontArmorMm":76,"frontArmorAngleDeg":27,"caliberMm":75,"weightT":27.6,"lengthM":6.35,"desc":"英軍二戰速度最快的量產戰車之一，以高速機動配合偵察與快速突穿見長，諾曼第戰役中大量用於裝甲師先鋒，但75mm砲火力仍不及對手虎式、豹式。"},{"id":22,"name":"Churchill 邱吉爾式戰車","country":"UK","weightClass":"HEAVY","era":"1941–1945","eraClass":"WW2","name_en":"Churchill","era_en":"1941-1945","desc_en":"The flagship of Britain's 'infantry tank' line, designed to advance alongside infantry behind heavy armor rather than chase speed -- its front armor reached a full 152mm, and it excelled at breaking through fortified positions in the mountains and city streets of Italy and Western Europe.","speedKmh":20,"frontArmorMm":152,"frontArmorAngleDeg":15,"caliberMm":75,"weightT":40,"lengthM":7.44,"desc":"英軍「步兵戰車」系列的代表，設計哲學是以厚重裝甲伴隨步兵推進而非追求速度，正面裝甲厚達152mm，義大利與西歐山地、巷戰中的攻堅表現優異。"},{"id":23,"name":"Sherman Firefly 螢火蟲式戰車","country":"UK","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","name_en":"Sherman Firefly","era_en":"1944-1945","desc_en":"A British emergency fix that fitted an American Sherman hull with Britain's own high-velocity 17-pounder anti-tank gun -- one of the few Allied ground vehicles able to penetrate a Tiger's frontal armor at normal engagement ranges. German crews were reportedly ordered to prioritize destroying them on sight; its own crews nicknamed the long barrel the \"Sherman in disguise.\"","speedKmh":39,"frontArmorMm":51,"frontArmorAngleDeg":56,"caliberMm":76.2,"weightT":32.7,"lengthM":7.11,"desc":"英軍將美製雪曼戰車車體換裝自家17磅高初速反戰車砲的緊急應急方案，是盟軍地面部隊少數能在正常交戰距離擊穿虎式正面裝甲的戰車，德軍甚至下令優先集火獵殺，車組員暱稱其長砲管為「戴著面具的雪曼」。"},{"id":24,"name":"Type 95 Ha-Go 九五式輕戰車","country":"JAPAN","weightClass":"LIGHT","era":"1935–1945","eraClass":"WW2","name_en":"Type 95 Ha-Go","era_en":"1935-1945","desc_en":"The most common light tank of the Japanese Army in the Pacific theater -- fast and produced in large numbers, but its armor was paper-thin, offering almost no protection against American tanks and anti-tank weapons; mostly used for infantry support in jungle and island fighting.","speedKmh":45,"frontArmorMm":12,"frontArmorAngleDeg":9,"caliberMm":37,"weightT":7.4,"lengthM":4.38,"desc":"日本陸軍太平洋戰場最常見的輕型戰車，速度快、產量大，但裝甲極薄，面對美軍戰車與反戰車武器幾乎毫無防護力，叢林與島嶼戰中多用於步兵支援。"},{"id":25,"name":"Type 97 Chi-Ha 九七式中戰車","country":"JAPAN","weightClass":"MEDIUM","era":"1937–1945","eraClass":"WW2","name_en":"Type 97 Chi-Ha","era_en":"1937-1945","desc_en":"The Japanese Army's mainstay medium tank of WWII; the later 'new turret' variant fitted a high-velocity 47mm gun to improve anti-tank capability, but its overall armor concept remained stuck in 1930s thinking, and it was clearly outclassed facing American Shermans late in the Pacific War.","speedKmh":38,"frontArmorMm":25,"frontArmorAngleDeg":20,"caliberMm":47,"weightT":15,"lengthM":5.5,"desc":"日本陸軍二戰主力中戰車，後期「新砲塔」型換裝47mm高初速砲改善反戰車能力，但整體裝甲思維停留在1930年代水準，太平洋戰場後期面對美軍雪曼已明顯過時。"},{"id":26,"name":"Type 3 Chi-Nu 三式中戰車","country":"JAPAN","weightClass":"MEDIUM","era":"1944–1945","eraClass":"WW2","name_en":"Type 3 Chi-Nu","era_en":"1944-1945","desc_en":"The Japanese Army's final production medium tank of the war, fitted with a 75mm field-gun-derived main armament that finally brought its firepower up to contemporary Allied standards -- but it was built in tiny numbers, and most never saw combat before the war ended.","speedKmh":38,"frontArmorMm":50,"frontArmorAngleDeg":20,"caliberMm":75,"weightT":18.8,"lengthM":5.73,"desc":"日本陸軍二戰末期研發、換裝75mm野砲改造主砲的最終量產型中戰車，火力終於追上同期盟軍標準，但產量稀少且多數未及投入實戰便迎來戰爭結束。"},{"id":27,"name":"Mark IV 戰車","country":"UK","weightClass":"HEAVY","era":"1917–1918","eraClass":"WW1","name_en":"Mark IV","era_en":"1917-1918","desc_en":"The first tank ever deployed at scale to have a real effect on a battle. Its rhomboid hull was shaped to cross trenches and barbed wire; the \"Male\" variant carried two 57mm (6-pounder) naval guns, the \"Female\" carried machine guns only. Nearly 400 were massed at Cambrai in 1917, the first demonstration of the tank's tactical value -- though its top speed was only about 6 km/h, barely faster than walking.","speedKmh":6,"frontArmorMm":12,"frontArmorAngleDeg":0,"caliberMm":57,"weightT":28.4,"lengthM":8.05,"desc":"史上第一款大規模投入實戰、對戰局產生實質影響的戰車，經典菱形車體是為了跨越壕溝與鐵絲網而設計。「男性型」搭載兩門57mm（6磅）艦砲、「女性型」則僅配機槍，1917年康布雷戰役中近400輛集中使用首次展現戰車的戰術價值，但時速僅約6km/h，比人步行快不了多少。"},{"id":28,"name":"Renault FT","country":"FRANCE","weightClass":"LIGHT","era":"1917–1918","eraClass":"WW1","name_en":"Renault FT","era_en":"1917-1918","desc_en":"The first tank ever built with the now-familiar layout of a 360-degree rotating turret separated from the rest of the hull -- a template that would define nearly every tank design for the century that followed. Small and produced in numbers exceeding 3,000, it remained in service with multiple countries for decades after WWI, arguably the single most influential tank design in history.","speedKmh":7.7,"frontArmorMm":16,"frontArmorAngleDeg":5,"caliberMm":37,"weightT":6.5,"lengthM":4.1,"desc":"史上第一款採用「可360度旋轉砲塔＋車體其餘部分分離」現代化配置的戰車，奠定了往後一百年幾乎所有戰車的基本設計範式。體型小、產量超過3000輛，一戰後仍被多國沿用數十年，堪稱戰車史上最具影響力的單一設計。"},{"id":29,"name":"A7V","country":"GERMANY","weightClass":"HEAVY","era":"1918","eraClass":"WW1","name_en":"A7V","era_en":"1918","desc_en":"Imperial Germany's only production tank design of WWI, with only about 20 built. Its boxy hull carried thicker armor than contemporary British and French tanks and required a crew of up to 18. It fought in the first tank-versus-tank engagement in history at Villers-Bretonneux in 1918, though its tiny production run limited its impact on the war.","speedKmh":15,"frontArmorMm":30,"frontArmorAngleDeg":0,"caliberMm":57,"weightT":33,"lengthM":7.34,"desc":"德意志帝國一戰唯一量產的戰車型號，僅生產約20輛，箱型車體、裝甲比同期英法戰車更厚，車組員多達18人。1918年首次戰車對戰車交戰的維萊布勒托訥戰役中即為其參戰車型，但產量稀少對戰局影響有限。"},{"id":30,"name":"Whippet 惠比特式中戰車","country":"UK","weightClass":"MEDIUM","era":"1917–1918","eraClass":"WW1","name_en":"Whippet (Medium Mark A)","era_en":"1917-1918","desc_en":"A British 'medium tank' built to make up for the rhomboid heavy tanks' painful slowness, with more than twice the Mark IV's speed. Designed to exploit breakthroughs made by infantry tanks with fast, deep thrusts -- a forerunner of the modern cruiser- and cavalry-tank concept, armed with machine guns only and no main gun.","speedKmh":13.4,"frontArmorMm":14,"frontArmorAngleDeg":0,"caliberMm":7.7,"weightT":14,"lengthM":6.09,"desc":"英軍為彌補菱形重戰車速度過慢而研發的「中戰車」，速度是Mark IV的兩倍以上，設計目的是在步兵戰車突破戰線後負責快速穿插與擴大戰果，可視為現代巡洋戰車與騎兵戰車概念的先驅，僅配備機槍、未搭載戰車砲。"},{"id":31,"name":"Matilda II 瑪蒂爾達II式戰車","country":"UK","weightClass":"HEAVY","era":"1939–1945","eraClass":"WW2","name_en":"Matilda II","era_en":"1939-1945","desc_en":"Nicknamed the \"Queen of the Desert.\" In 1940-41, front-line German anti-tank guns in North Africa could barely scratch its frontal armor, forcing the Germans to press 88mm anti-aircraft guns into a direct-fire anti-tank role -- inadvertently launching the 88's legendary anti-tank career (and later informing the gun lineage behind the Tiger's main armament). Part of Britain's \"infantry tank\" family, built around heavy armor advancing alongside infantry rather than speed; painfully slow, and its 40mm gun grew clearly inadequate later in the war.","speedKmh":24,"frontArmorMm":78,"frontArmorAngleDeg":0,"caliberMm":40,"weightT":26.5,"lengthM":5.61,"desc":"暱稱「沙漠女王」，1940–41年北非戰場前期德軍現役反戰車砲幾乎打不穿其正面裝甲，德軍被迫將88mm高射砲拉去平射反戰車，意外開啟了88砲反戰車的傳奇生涯（後來也成為虎式戰車主砲血統源頭）。屬英軍「步兵戰車」系列，設計哲學是以厚重裝甲伴隨步兵推進，速度極慢、40mm主砲後期火力明顯不足。"},{"id":32,"name":"Maus 鼠式戰車","country":"GERMANY","weightClass":"HEAVY","era":"1944–1945（原型車，未量產）","eraClass":"WW2","name_en":"Maus","era_en":"1944-1945 (prototype, never mass-produced)","desc_en":"The heaviest tank ever built, at 188 tonnes, armed with a 128mm gun that could theoretically shrug off almost any contemporary weapon. Only 2 prototypes were ever completed and it never saw combat deployment -- its sheer bulk meant most bridges couldn't bear its weight and its mobility was practically crippled. An extreme case of 'unbeatable on paper, useless on the battlefield,' included here purely for reference.","speedKmh":13,"frontArmorMm":200,"frontArmorAngleDeg":52,"caliberMm":128,"weightT":188,"lengthM":10.2,"desc":"史上最重的戰車，重達188噸，配備128mm主砲，理論上幾乎無法被當時任何武器擊穿。然而僅完成2輛原型車，從未實戰部署，過度笨重導致大多數橋樑無法通行、機動性近乎癱瘓，是「規格表上無敵、戰場上無用」的極端範例，放進圖表僅供對照參考。"},{"id":33,"name":"L3/35 快速戰車","country":"ITALY","weightClass":"LIGHT","era":"1935–1943","eraClass":"WW2","name_en":"L3/35","era_en":"1935-1943","desc_en":"Italy's most-produced armored vehicle -- essentially a small tracked carrier for twin machine guns, with no main gun at all. Its armor was thin enough to be threatened by rifle ammunition, leaving it almost defenseless against Allied and Soviet tanks in North Africa and on the Eastern Front -- a textbook case of 'plentiful in numbers, weak in combat power.'","speedKmh":42,"frontArmorMm":13.5,"frontArmorAngleDeg":0,"caliberMm":8,"weightT":3.2,"lengthM":3.17,"desc":"義大利陸軍產量最大的裝甲車輛，本質上是雙聯裝機槍的小型履帶車，未搭載任何戰車砲，裝甲薄到步槍彈藥就有威脅，北非與東線戰場中面對盟軍與蘇軍戰車幾乎毫無自保能力，是「數量多但戰力低」的典型代表。"},{"id":34,"name":"M13/40 中戰車","country":"ITALY","weightClass":"MEDIUM","era":"1940–1943","eraClass":"WW2","name_en":"M13/40","era_en":"1940-1943","desc_en":"Italy's mainstay WWII medium tank. Its riveted armor construction was already outdated (rivets could shear off on impact and become secondary shrapnel inside the crew compartment), and its gasoline engine was clearly underpowered. It regularly came off worse against British Matildas and Crusaders in North Africa, compounded by poor overall reliability.","speedKmh":32,"frontArmorMm":30,"frontArmorAngleDeg":0,"caliberMm":47,"weightT":14,"lengthM":4.92,"desc":"義大利陸軍二戰主力中戰車，鉚接裝甲工藝落後（中彈時鉚釘容易崩落成二次破片傷及車內乘員），汽油引擎馬力也明顯不足，北非戰場中面對英軍瑪蒂爾達、十字軍等戰車經常居於下風，可靠度不佳更雪上加霜。"},{"id":35,"name":"P40 重戰車","country":"ITALY","weightClass":"MEDIUM","era":"1943（義大利投降後多由德軍接收使用）","eraClass":"WW2","name_en":"P40","era_en":"1943 (mostly taken over and used by German forces after the Italian surrender)","desc_en":"Italy's final wartime model, whose firepower and armor finally caught up to contemporary standards -- but production moved too slowly, and only a handful of hulls were completed by the 1943 Italian surrender. Most finished vehicles were subsequently taken over and used by German forces rather than seeing large-scale action under Italian colors.","speedKmh":40,"frontArmorMm":50,"frontArmorAngleDeg":0,"caliberMm":75,"weightT":26,"lengthM":5.53,"desc":"義大利二戰末期研發、火力裝甲終於追上同期水準的最終型號，但量產進度緩慢，1943年義大利投降時僅完成少量車體，多數成品後來由德軍接收使用，未能以義大利軍隊身分真正大規模參戰。"}];
 </script>
 <script>
 (function(){
@@ -397,13 +405,84 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
     activeEras: new Set(Object.keys(ERA_CLASS)),
     search: '',
     selectedId: null,
+    detailClosed: false, // once the ✕ is clicked, stays closed through filter/panel changes until a new tank is picked
     boxZoomMode: false,
     labelMode: 'auto', // 'auto' | 'show' | 'hide'
     fullscreen: false,
     compareIds: new Set(),
     showArmorRefs: true,
-    showSpeedRefs: true
+    showSpeedRefs: true,
+    lang: 'zh' // 'zh' | 'en'
   };
+
+  // ---------------- i18n ----------------
+  var UI_STRINGS = {
+    zh: {
+      title: '二戰戰車<span class="accent">速度</span>／<span class="accent">防護力</span>／<span class="accent">火力</span>比較圖',
+      subtitle1: '從5噸的輕型偵察戰車，到近70噸的重型巨獸——用速度、等效防護力與主砲口徑三個維度，直覺理解「輕型戰車」與「重型戰車」的真正差異。',
+      subtitle2: '本站設計目的是給初學者建立直覺印象，方便入門比較，並非嚴謹的軍事研究工具。圖上比的是紙面規格，不是戰場表現。等效防護力也僅為原始厚度依傾斜角度換算的概略估算，未計入裝甲材質、彈種與實際命中角度等變數。',
+      statCountLabel: '收錄戰車', unitItems: '輛', statSpeedLabel: '速度跨度', statArmorLabel: '防護力跨度', statCountriesLabel: '參戰國', unitCountries: '國',
+      filterTitle: '篩選 / FILTER', searchPlaceholder: '搜尋戰車名稱…', selectAll: '全選', selectNone: '清空',
+      classTitle: '噸位分級 / CLASS', eraTitle: '年代 / ERA', refTitle: '參考線 / REFERENCE',
+      refArmorLabel: '裝甲防護力參考', refSpeedLabel: '速度參考',
+      chartLegendTitle: '圖表判讀：',
+      chartLegend1: '橫軸＝公路最大速度', chartLegend2: '縱軸＝車體正面等效防護力（原始厚度換算傾斜角後的估算值）',
+      chartLegend3: '點的大小＝主砲口徑，口徑越大點越大', chartLegend4: '青色虛線為裝甲防護力參考門檻（約可抵禦哪種火砲）',
+      chartLegend5: '琥珀色虛線為速度參考（人類步行／跑步、電動滑板車），皆為粗略估算，僅供建立直覺',
+      chartLegend6: '等效防護力估算方式與傾斜角度可在點選後的詳細卡片查看。',
+      chartTitle: '速度 × 防護力 散點圖',
+      btnBoxZoom: '🔲 框選縮放', btnZoomFit: '🔍 縮放至可見項目', btnResetZoom: '重置縮放', btnFullscreen: '⛶ 全螢幕', btnExitFullscreen: '⛶ 退出全螢幕',
+      labelModePrefix: '名稱：', labelAuto: '自動', labelShow: '顯示', labelHide: '隱藏',
+      chartHint: '滑鼠滾輪在圖表上可縮放、拖曳可平移，也可直接拖動座標軸旁的拉桿手把調整範圍。想精準聚焦，按「框選縮放」後在圖表上拖曳畫出一個框；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原完整檢視。',
+      compareTitle: '比較清單 / COMPARE',
+      compareEmpty: '點選圖表上的戰車，於詳細卡片按「加入比較清單」，即可在此並排比較速度、防護力與火力。',
+      footerDisclaimer: '數據為公開資料整理之概略估算值，僅供科普與創作參考。「等效防護力」以「原始裝甲厚度 ÷ cos(傾斜角)」概略估算，用以呈現傾斜裝甲帶來的防護加成，並非真實彈道測試結果，實際防禦力還與裝甲材質、彈種、命中角度等因素有關。輕／中／重型戰車分類主要依循各國戰時官方或後世通用分類，部分車輛（如豹式戰車）官方分類與現代噸位標準有落差，已於詳細卡片中特別註明。主砲口徑不代表穿甲能力，僅供火力量級參考。',
+      langButton: 'EN',
+      detailSpeed: '公路最高速度', detailArmor: '等效防護力(估算)', detailCaliber: '主砲口徑', detailWeight: '戰鬥重量', detailLength: '車體全長（含砲身）',
+      addToCompare: '＋ 加入比較清單', removeFromCompare: '✕ 移出比較清單',
+      cmpSpeed: '速度', cmpArmor: '等效防護力', cmpCaliber: '主砲口徑', cmpWeight: '戰鬥重量', clearCompare: '清空比較',
+      tooltipSpeed: '速度', tooltipArmor: '等效防護力', tooltipCaliber: '主砲口徑',
+      xAxisLabel: '公路最高速度 (km/h) →', yAxisLabel: '↑ 車體正面等效防護力 (mm)',
+      unitCount: function(n){ return '(顯示 ' + n.shown + ' / ' + n.total + ' 輛)'; }
+    },
+    en: {
+      title: 'WWII Tank <span class="accent">Speed</span> / <span class="accent">Protection</span> / <span class="accent">Firepower</span> Comparison',
+      subtitle1: 'From 5-tonne light scout tanks to nearly 70-tonne heavy monsters -- speed, estimated effective armor, and main gun caliber, in one chart, to build an intuitive feel for what really separates a "light tank" from a "heavy tank."',
+      subtitle2: 'This site is built to give beginners an intuitive first impression for casual comparison -- it is not a rigorous military research tool. The chart compares paper specifications, not battlefield performance. Effective armor is only a rough estimate derived from raw thickness and slope angle, and does not account for armor quality, ammunition type, or actual impact angle.',
+      statCountLabel: 'Tanks Covered', unitItems: '', statSpeedLabel: 'Speed Span', statArmorLabel: 'Armor Span', statCountriesLabel: 'Nations', unitCountries: '',
+      filterTitle: 'FILTER', searchPlaceholder: 'Search tank name…', selectAll: 'All', selectNone: 'None',
+      classTitle: 'WEIGHT CLASS', eraTitle: 'ERA', refTitle: 'REFERENCE LINES',
+      refArmorLabel: 'Armor thresholds', refSpeedLabel: 'Speed references',
+      chartLegendTitle: 'Reading the chart:',
+      chartLegend1: 'X axis = top road speed', chartLegend2: 'Y axis = estimated effective frontal armor (raw thickness adjusted for slope angle)',
+      chartLegend3: 'Bubble size = main gun caliber -- bigger gun, bigger bubble', chartLegend4: 'Cyan dashed lines = armor-protection thresholds (roughly what gun they can stop)',
+      chartLegend5: 'Amber dashed lines = speed references (human walking/running, e-scooter) -- all rough estimates for intuition only',
+      chartLegend6: 'The effective-armor formula and slope angle are shown on each tank\'s detail card.',
+      chartTitle: 'Speed × Armor Scatter Plot',
+      btnBoxZoom: '🔲 Box Zoom', btnZoomFit: '🔍 Zoom to Visible', btnResetZoom: 'Reset View', btnFullscreen: '⛶ Fullscreen', btnExitFullscreen: '⛶ Exit Fullscreen',
+      labelModePrefix: 'Names: ', labelAuto: 'Auto', labelShow: 'Show', labelHide: 'Hide',
+      chartHint: 'Scroll on the chart to zoom, drag to pan, or drag the handles on the sliders beside each axis. Click "Box Zoom" then drag a box on the chart to focus precisely; "Zoom to Visible" fits the current sidebar filter results; "Reset View" restores the full view.',
+      compareTitle: 'COMPARE',
+      compareEmpty: 'Click a tank on the chart and use "Add to compare" on its detail card to line it up here against speed, armor and firepower.',
+      footerDisclaimer: 'Figures are rough estimates compiled from public sources, intended for education and creative reference only. "Effective armor" is approximated as raw armor thickness divided by cos(slope angle), meant to illustrate the protection bonus from sloped armor -- it is not a real ballistic test result, and actual protection also depends on armor quality, ammunition type, and impact angle. Light/medium/heavy classifications generally follow wartime official or commonly used designations; some vehicles (e.g. the Panther) have an official class that diverges from modern weight-based standards, noted specifically on their detail cards. Main gun caliber does not represent penetration capability and is shown only as a rough indicator of firepower class.',
+      langButton: '中',
+      detailSpeed: 'Top road speed', detailArmor: 'Effective armor (est.)', detailCaliber: 'Main gun caliber', detailWeight: 'Combat weight', detailLength: 'Overall length (incl. gun)',
+      addToCompare: '＋ Add to compare', removeFromCompare: '✕ Remove from compare',
+      cmpSpeed: 'Speed', cmpArmor: 'Effective armor', cmpCaliber: 'Main gun', cmpWeight: 'Weight', clearCompare: 'Clear all',
+      tooltipSpeed: 'Speed', tooltipArmor: 'Effective armor', tooltipCaliber: 'Main gun',
+      xAxisLabel: 'Top road speed (km/h) →', yAxisLabel: '↑ Effective frontal armor (mm)',
+      unitCount: function(n){ return '(showing ' + n.shown + ' / ' + n.total + ')'; }
+    }
+  };
+  function t(key){ return (UI_STRINGS[state.lang] && UI_STRINGS[state.lang][key]) || UI_STRINGS.zh[key] || ''; }
+  function L(obj, field){
+    if(!obj) return '';
+    if(state.lang === 'en'){
+      var v = obj[field + '_en'];
+      if(v !== undefined) return v;
+    }
+    return obj[field];
+  }
 
   function isVisible(d){
     if(!state.activeGroups.has(d.country)) return false;
@@ -411,7 +490,7 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
     if(!state.activeEras.has(d.eraClass)) return false;
     if(state.search){
       var q = state.search.toLowerCase();
-      var hay = d.name.toLowerCase();
+      var hay = (d.name + ' ' + (d.name_en||'')).toLowerCase();
       if(hay.indexOf(q) === -1) return false;
     }
     return true;
@@ -432,18 +511,23 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
 
   // ---------------- filter panel: country toggles ----------------
   var groupListEl = document.getElementById('groupList');
-  Object.keys(GROUPS).sort(function(a,b){ return GROUPS[a].order - GROUPS[b].order; }).forEach(function(key){
-    var g = GROUPS[key];
-    var count = DATA.filter(function(d){ return d.country === key; }).length;
-    var row = document.createElement('label');
-    row.className = 'group-row';
-    row.innerHTML =
-      '<input type="checkbox" checked data-group="' + key + '">' +
-      '<span class="swatch" style="background:' + g.color + '"></span>' +
-      '<span class="lbl">' + g.label + '</span>' +
-      '<span class="cnt">' + count + '</span>';
-    groupListEl.appendChild(row);
-  });
+  function renderGroupList(){
+    groupListEl.innerHTML = '';
+    Object.keys(GROUPS).sort(function(a,b){ return GROUPS[a].order - GROUPS[b].order; }).forEach(function(key){
+      var g = GROUPS[key];
+      var count = DATA.filter(function(d){ return d.country === key; }).length;
+      var row = document.createElement('label');
+      row.className = 'group-row';
+      var checked = state.activeGroups.has(key) ? 'checked' : '';
+      row.innerHTML =
+        '<input type="checkbox" ' + checked + ' data-group="' + key + '">' +
+        '<span class="swatch" style="background:' + g.color + '"></span>' +
+        '<span class="lbl">' + L(g,'label') + '</span>' +
+        '<span class="cnt">' + count + '</span>';
+      groupListEl.appendChild(row);
+    });
+  }
+  renderGroupList();
   groupListEl.addEventListener('change', function(e){
     var cb = e.target;
     if(cb && cb.dataset && cb.dataset.group){
@@ -469,18 +553,23 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
 
   // ---------------- filter panel: weight class toggles ----------------
   var classListEl = document.getElementById('classList');
-  Object.keys(WEIGHT_CLASS).forEach(function(key){
-    var c = WEIGHT_CLASS[key];
-    var count = DATA.filter(function(d){ return d.weightClass === key; }).length;
-    var row = document.createElement('label');
-    row.className = 'group-row';
-    row.innerHTML =
-      '<input type="checkbox" checked data-class="' + key + '">' +
-      '<span class="swatch" style="background:' + c.color + '"></span>' +
-      '<span class="lbl">' + c.label + '</span>' +
-      '<span class="cnt">' + count + '</span>';
-    classListEl.appendChild(row);
-  });
+  function renderClassList(){
+    classListEl.innerHTML = '';
+    Object.keys(WEIGHT_CLASS).forEach(function(key){
+      var c = WEIGHT_CLASS[key];
+      var count = DATA.filter(function(d){ return d.weightClass === key; }).length;
+      var row = document.createElement('label');
+      row.className = 'group-row';
+      var checked = state.activeClasses.has(key) ? 'checked' : '';
+      row.innerHTML =
+        '<input type="checkbox" ' + checked + ' data-class="' + key + '">' +
+        '<span class="swatch" style="background:' + c.color + '"></span>' +
+        '<span class="lbl">' + L(c,'label') + '</span>' +
+        '<span class="cnt">' + count + '</span>';
+      classListEl.appendChild(row);
+    });
+  }
+  renderClassList();
   classListEl.addEventListener('change', function(e){
     var cb = e.target;
     if(cb && cb.dataset && cb.dataset.class){
@@ -492,18 +581,23 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
 
   // ---------------- filter panel: era (WW1 / WW2) toggles ----------------
   var eraListEl = document.getElementById('eraList');
-  Object.keys(ERA_CLASS).forEach(function(key){
-    var c = ERA_CLASS[key];
-    var count = DATA.filter(function(d){ return d.eraClass === key; }).length;
-    var row = document.createElement('label');
-    row.className = 'group-row';
-    row.innerHTML =
-      '<input type="checkbox" checked data-era="' + key + '">' +
-      '<span class="swatch" style="background:' + c.color + '"></span>' +
-      '<span class="lbl">' + c.label + '</span>' +
-      '<span class="cnt">' + count + '</span>';
-    eraListEl.appendChild(row);
-  });
+  function renderEraList(){
+    eraListEl.innerHTML = '';
+    Object.keys(ERA_CLASS).forEach(function(key){
+      var c = ERA_CLASS[key];
+      var count = DATA.filter(function(d){ return d.eraClass === key; }).length;
+      var row = document.createElement('label');
+      row.className = 'group-row';
+      var checked = state.activeEras.has(key) ? 'checked' : '';
+      row.innerHTML =
+        '<input type="checkbox" ' + checked + ' data-era="' + key + '">' +
+        '<span class="swatch" style="background:' + c.color + '"></span>' +
+        '<span class="lbl">' + L(c,'label') + '</span>' +
+        '<span class="cnt">' + count + '</span>';
+      eraListEl.appendChild(row);
+    });
+  }
+  renderEraList();
   eraListEl.addEventListener('change', function(e){
     var cb = e.target;
     if(cb && cb.dataset && cb.dataset.era){
@@ -515,19 +609,24 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
 
   // ---------------- filter panel: reference-line layer toggles ----------------
   var REF_LAYER_META = [
-    { key: 'armor', label: '裝甲防護力參考', color: '#7FB8AE', stateKey: 'showArmorRefs' },
-    { key: 'speed', label: '速度參考', color: '#D99A3C', stateKey: 'showSpeedRefs' }
+    { key: 'armor', labelKey: 'refArmorLabel', color: '#7FB8AE', stateKey: 'showArmorRefs' },
+    { key: 'speed', labelKey: 'refSpeedLabel', color: '#D99A3C', stateKey: 'showSpeedRefs' }
   ];
   var refLayerListEl = document.getElementById('refLayerList');
-  REF_LAYER_META.forEach(function(m){
-    var row = document.createElement('label');
-    row.className = 'group-row';
-    row.innerHTML =
-      '<input type="checkbox" checked data-reflayer="' + m.key + '">' +
-      '<span class="swatch" style="background:' + m.color + '"></span>' +
-      '<span class="lbl">' + m.label + '</span>';
-    refLayerListEl.appendChild(row);
-  });
+  function renderRefLayerList(){
+    refLayerListEl.innerHTML = '';
+    REF_LAYER_META.forEach(function(m){
+      var row = document.createElement('label');
+      row.className = 'group-row';
+      var checked = state[m.stateKey] ? 'checked' : '';
+      row.innerHTML =
+        '<input type="checkbox" ' + checked + ' data-reflayer="' + m.key + '">' +
+        '<span class="swatch" style="background:' + m.color + '"></span>' +
+        '<span class="lbl">' + t(m.labelKey) + '</span>';
+      refLayerListEl.appendChild(row);
+    });
+  }
+  renderRefLayerList();
   refLayerListEl.addEventListener('change', function(e){
     var cb = e.target;
     if(cb && cb.dataset && cb.dataset.reflayer){
@@ -550,11 +649,11 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
   btnBoxZoom.addEventListener('click', function(){ setBoxZoomMode(!state.boxZoomMode); });
   btnResetZoom.addEventListener('click', function(){ if(resetChartViewRef) resetChartViewRef(); });
 
-  var LABEL_MODE_TEXT = { auto: '名稱：自動', show: '名稱：顯示', hide: '名稱：隱藏' };
   var LABEL_MODE_NEXT = { auto: 'show', show: 'hide', hide: 'auto' };
+  var LABEL_MODE_KEY = { auto: 'labelAuto', show: 'labelShow', hide: 'labelHide' };
   btnLabelMode.addEventListener('click', function(){
     state.labelMode = LABEL_MODE_NEXT[state.labelMode];
-    btnLabelMode.textContent = LABEL_MODE_TEXT[state.labelMode];
+    btnLabelMode.textContent = t('labelModePrefix') + t(LABEL_MODE_KEY[state.labelMode]);
     btnLabelMode.classList.toggle('active', state.labelMode !== 'auto');
     if(refreshLabelsOnChart) refreshLabelsOnChart();
   });
@@ -564,7 +663,7 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
     document.body.classList.toggle('chart-fullscreen', on);
     btnFullscreen.classList.toggle('active', on);
     btnFullscreen.setAttribute('aria-pressed', on);
-    btnFullscreen.textContent = on ? '⛶ 退出全螢幕' : '⛶ 全螢幕';
+    btnFullscreen.textContent = on ? t('btnExitFullscreen') : t('btnFullscreen');
     requestAnimationFrame(function(){ buildChart(); });
   }
   btnFullscreen.addEventListener('click', function(){ setFullscreen(!state.fullscreen); });
@@ -578,6 +677,12 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
     btnBoxZoom.setAttribute('aria-pressed', on);
     if(brushLayerSel) brushLayerSel.classed('active', on);
   }
+
+  function refreshToolbarText(){
+    btnLabelMode.textContent = t('labelModePrefix') + t(LABEL_MODE_KEY[state.labelMode]);
+    btnFullscreen.textContent = state.fullscreen ? t('btnExitFullscreen') : t('btnFullscreen');
+  }
+  refreshToolbarText();
 
   // ---------------- chart ----------------
   var chartContainer = document.getElementById('chartContainer');
@@ -617,17 +722,17 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
   // ammo type, armor quality and impact angle far beyond what a single
   // number can capture; treat these as rough orientation, not ballistic fact.
   var ARMOR_REF_LINES = [
-    { mm: 15,  label: '~15mm・可抵禦步槍／機槍彈藥' },
-    { mm: 45,  label: '~45mm・約可抵禦37mm戰防砲（如PaK 36）' },
-    { mm: 60,  label: '~60mm・約可抵禦45–50mm戰車砲' },
-    { mm: 90,  label: '~90mm・約可抵禦75mm戰車砲（如KwK40）' },
-    { mm: 130, label: '~130mm・約可抵禦88mm戰車砲（虎式 KwK36）' },
-    { mm: 180, label: '~180mm・約可抵禦88mm長砲身戰車砲（虎王 KwK43）' }
+    { mm: 15,  label: '~15mm・可抵禦步槍／機槍彈藥', label_en: '~15mm - stops rifle/machine-gun rounds' },
+    { mm: 45,  label: '~45mm・約可抵禦37mm戰防砲（如PaK 36）', label_en: '~45mm - vs. ~37mm AT guns (e.g. PaK 36)' },
+    { mm: 60,  label: '~60mm・約可抵禦45–50mm戰車砲', label_en: '~60mm - vs. ~45-50mm tank guns' },
+    { mm: 90,  label: '~90mm・約可抵禦75mm戰車砲（如KwK40）', label_en: '~90mm - vs. 75mm tank guns (e.g. KwK40)' },
+    { mm: 130, label: '~130mm・約可抵禦88mm戰車砲（虎式 KwK36）', label_en: '~130mm - vs. 88mm gun (Tiger I KwK36)' },
+    { mm: 180, label: '~180mm・約可抵禦88mm長砲身戰車砲（虎王 KwK43）', label_en: '~180mm - vs. long 88mm gun (Tiger II KwK43)' }
   ];
   var SPEED_REF_LINES = [
-    { kmh: 4,  label: '人類步行 ~4 km/h' },
-    { kmh: 10, label: '人類跑步 ~10 km/h' },
-    { kmh: 25, label: '城市電動滑板車速限 ~25 km/h' }
+    { kmh: 4,  label: '人類步行 ~4 km/h', label_en: 'Human walking ~4 km/h' },
+    { kmh: 10, label: '人類跑步 ~10 km/h', label_en: 'Human running ~10 km/h' },
+    { kmh: 25, label: '城市電動滑板車速限 ~25 km/h', label_en: 'Urban e-scooter speed cap ~25 km/h' }
   ];
 
   function buildChart(){
@@ -683,7 +788,7 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
       .join('text')
       .attr('class', 'armor-ref-lbl band-label')
       .attr('x', innerW - 6).attr('text-anchor', 'end')
-      .text(function(d){ return d.label; });
+      .text(function(d){ return L(d,'label'); });
 
     var speedLineSel = gRefV.selectAll('line.speed-ref')
       .data(state.showSpeedRefs ? SPEED_REF_LINES : [])
@@ -695,13 +800,13 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
       .join('text')
       .attr('class', 'speed-ref-lbl mach-label')
       .attr('y', 10)
-      .text(function(d){ return d.label; });
+      .text(function(d){ return L(d,'label'); });
 
     function refreshRefLines(){
       armorLineSel = gRefH.selectAll('line.armor-ref').data(state.showArmorRefs ? ARMOR_REF_LINES : []).join('line').attr('class', 'armor-ref band-line').attr('x1', 0).attr('x2', innerW);
-      armorLabelSel = isSmall ? null : gRefH.selectAll('text.armor-ref-lbl').data(state.showArmorRefs ? ARMOR_REF_LINES : []).join('text').attr('class', 'armor-ref-lbl band-label').attr('x', innerW - 6).attr('text-anchor', 'end').text(function(d){ return d.label; });
+      armorLabelSel = isSmall ? null : gRefH.selectAll('text.armor-ref-lbl').data(state.showArmorRefs ? ARMOR_REF_LINES : []).join('text').attr('class', 'armor-ref-lbl band-label').attr('x', innerW - 6).attr('text-anchor', 'end').text(function(d){ return L(d,'label'); });
       speedLineSel = gRefV.selectAll('line.speed-ref').data(state.showSpeedRefs ? SPEED_REF_LINES : []).join('line').attr('class', 'speed-ref mach-line').attr('y1', 0).attr('y2', innerH);
-      speedLabelSel = gRefV.selectAll('text.speed-ref-lbl').data(state.showSpeedRefs ? SPEED_REF_LINES : []).join('text').attr('class', 'speed-ref-lbl mach-label').attr('y', 10).text(function(d){ return d.label; });
+      speedLabelSel = gRefV.selectAll('text.speed-ref-lbl').data(state.showSpeedRefs ? SPEED_REF_LINES : []).join('text').attr('class', 'speed-ref-lbl mach-label').attr('y', 10).text(function(d){ return L(d,'label'); });
       redraw();
     }
     refreshRefLinesOnChart = refreshRefLines;
@@ -713,10 +818,10 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
     var gAxisY = gRoot.append('g').attr('class', 'axis axis-y');
     var xAxisLabel = gRoot.append('text').attr('class', 'axis-label')
       .attr('x', innerW).attr('y', innerH + 38).attr('text-anchor', 'end')
-      .text('公路最高速度 (km/h) →');
+      .text(t('xAxisLabel'));
     var yAxisLabel = gRoot.append('text').attr('class', 'axis-label')
       .attr('transform', 'rotate(-90)').attr('x', 0).attr('y', -44).attr('text-anchor', 'end')
-      .text('↑ 車體正面等效防護力 (mm)');
+      .text(t('yAxisLabel'));
 
     var chX = gCrosshair.append('line').attr('class', 'crosshair chx');
     var chY = gCrosshair.append('line').attr('class', 'crosshair chy');
@@ -742,6 +847,7 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
       })
       .on('click', function(event, d){
         state.selectedId = d.id;
+        state.detailClosed = false;
         refreshAll();
       });
 
@@ -750,7 +856,7 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
       .data(DATA, function(d){ return d.id; })
       .join('text')
       .attr('class', 'pt-label')
-      .text(function(d){ return d.name; })
+      .text(function(d){ return L(d,'name'); })
       .attr('opacity', 0);
 
     var curXScale = xScale, curYScale = yScale;
@@ -869,7 +975,7 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
           if(!isChartVisible(d)) return;
           candidates.push({
             d: d, x: curX(d), y: curY(d) - rScale(d.caliberMm) - 6,
-            w: estimateLabelWidth(d.name, LFS), h: LFS + 3
+            w: estimateLabelWidth(L(d,'name'), LFS), h: LFS + 3
           });
         });
         candidates.sort(function(a, b){
@@ -1044,10 +1150,10 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
 
   function showTooltip(event, d){
     tooltip.innerHTML =
-      '<div class="tt-name">' + d.name + '</div>' +
-      '<div class="tt-row">速度 <span>' + fmtSpeed(d.speedKmh) + '</span></div>' +
-      '<div class="tt-row">等效防護力 <span>~' + Math.round(effArmor(d)) + ' mm</span></div>' +
-      '<div class="tt-row">主砲口徑 <span>' + fmtMm(d.caliberMm) + '</span></div>';
+      '<div class="tt-name">' + L(d,'name') + '</div>' +
+      '<div class="tt-row">' + t('tooltipSpeed') + ' <span>' + fmtSpeed(d.speedKmh) + '</span></div>' +
+      '<div class="tt-row">' + t('tooltipArmor') + ' <span>~' + Math.round(effArmor(d)) + ' mm</span></div>' +
+      '<div class="tt-row">' + t('tooltipCaliber') + ' <span>' + fmtMm(d.caliberMm) + '</span></div>';
     tooltip.style.opacity = 1;
     positionTooltip(event);
   }
@@ -1068,7 +1174,7 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
       .attr('fill-opacity', function(d){ return isChartVisible(d) ? 0.85 : 0.05; })
       .attr('pointer-events', function(d){ return isChartVisible(d) ? 'auto' : 'none'; });
     document.getElementById('chartCount').textContent =
-      '(顯示 ' + DATA.filter(isChartVisible).length + ' / ' + DATA.length + ' 輛)';
+      t('unitCount')({ shown: DATA.filter(isChartVisible).length, total: DATA.length });
   }
 
   // ---------------- detail overlay ----------------
@@ -1077,27 +1183,29 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
     var wc = WEIGHT_CLASS[d.weightClass];
     var inCompare = state.compareIds.has(d.id);
     var eff = effArmor(d);
-    return '<span class="detail-tag" style="background:' + g.color + '22;color:' + g.color + ';border:1px solid ' + g.color + '55;">' + g.label + '</span>' +
-      '<span class="detail-tag" style="background:' + wc.color + '22;color:' + wc.color + ';border:1px solid ' + wc.color + '55;">' + wc.label + '</span>' +
-      '<h3 class="detail-name">' + d.name + '</h3>' +
-      '<div class="detail-type">' + d.era + '</div>' +
+    var slopeWord = state.lang === 'en' ? '° slope' : '°傾斜';
+    var rawWord = state.lang === 'en' ? 'raw ' : '原始 ';
+    return '<span class="detail-tag" style="background:' + g.color + '22;color:' + g.color + ';border:1px solid ' + g.color + '55;">' + L(g,'label') + '</span>' +
+      '<span class="detail-tag" style="background:' + wc.color + '22;color:' + wc.color + ';border:1px solid ' + wc.color + '55;">' + L(wc,'label') + '</span>' +
+      '<h3 class="detail-name">' + L(d,'name') + '</h3>' +
+      '<div class="detail-type">' + L(d,'era') + '</div>' +
       '<div class="detail-stats">' +
-        '<div class="dstat"><div class="k">公路最高速度</div><div class="v">' + fmtSpeed(d.speedKmh) + '</div></div>' +
-        '<div class="dstat"><div class="k">等效防護力(估算)</div><div class="v">~' + Math.round(eff) + ' mm<br><small>原始 ' + fmtMm(d.frontArmorMm) + ' @ ' + d.frontArmorAngleDeg + '°傾斜</small></div></div>' +
-        '<div class="dstat"><div class="k">主砲口徑</div><div class="v">' + fmtMm(d.caliberMm) + '</div></div>' +
-        '<div class="dstat"><div class="k">戰鬥重量</div><div class="v">' + fmtT(d.weightT) + '</div></div>' +
+        '<div class="dstat"><div class="k">' + t('detailSpeed') + '</div><div class="v">' + fmtSpeed(d.speedKmh) + '</div></div>' +
+        '<div class="dstat"><div class="k">' + t('detailArmor') + '</div><div class="v">~' + Math.round(eff) + ' mm<br><small>' + rawWord + fmtMm(d.frontArmorMm) + ' @ ' + d.frontArmorAngleDeg + slopeWord + '</small></div></div>' +
+        '<div class="dstat"><div class="k">' + t('detailCaliber') + '</div><div class="v">' + fmtMm(d.caliberMm) + '</div></div>' +
+        '<div class="dstat"><div class="k">' + t('detailWeight') + '</div><div class="v">' + fmtT(d.weightT) + '</div></div>' +
       '</div>' +
-      '<div class="dstat" style="margin-bottom:14px;"><div class="k">車體全長（含砲身）</div><div class="v">' + fmtM(d.lengthM) + '</div></div>' +
-      '<div class="detail-desc">' + d.desc + '</div>' +
+      '<div class="dstat" style="margin-bottom:14px;"><div class="k">' + t('detailLength') + '</div><div class="v">' + fmtM(d.lengthM) + '</div></div>' +
+      '<div class="detail-desc">' + L(d,'desc') + '</div>' +
       '<div class="filter-actions" style="margin-top:14px;">' +
-        '<button class="btn-mini detail-cmp-toggle">' + (inCompare ? '✕ 移出比較清單' : '＋ 加入比較清單') + '</button>' +
+        '<button class="btn-mini detail-cmp-toggle">' + (inCompare ? t('removeFromCompare') : t('addToCompare')) + '</button>' +
       '</div>';
   }
 
   function renderDetail(){
     var overlay = document.getElementById('detailOverlay');
     var overlayBody = document.getElementById('detailOverlayBody');
-    if(state.selectedId === null){
+    if(state.selectedId === null || state.detailClosed){
       overlay.classList.remove('open');
       return;
     }
@@ -1114,6 +1222,7 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
     });
   }
   document.getElementById('detailOverlayClose').addEventListener('click', function(){
+    state.detailClosed = true;
     document.getElementById('detailOverlay').classList.remove('open');
   });
 
@@ -1121,9 +1230,9 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
   function renderCompare(){
     var body = document.getElementById('compareBody');
     var ids = Array.from(state.compareIds);
-    document.getElementById('compareCount').textContent = ids.length ? '(' + ids.length + ' 輛)' : '';
+    document.getElementById('compareCount').textContent = ids.length ? '(' + ids.length + (state.lang==='en'?'':' 輛') + ')' : '';
     if(ids.length === 0){
-      body.innerHTML = '<div class="detail-empty" style="padding:6px 4px;">點選圖表上的戰車，於詳細卡片按「加入比較清單」，即可在此並排比較速度、防護力與火力。</div>';
+      body.innerHTML = '<div class="detail-empty" style="padding:6px 4px;">' + t('compareEmpty') + '</div>';
       return;
     }
     var items = ids.map(function(id){ return DATA.find(function(d){ return d.id === id; }); }).filter(Boolean);
@@ -1132,16 +1241,16 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
       var wc = WEIGHT_CLASS[d.weightClass];
       return '<div class="cmp-card">' +
         '<button class="cmp-close" data-id="' + d.id + '">✕</button>' +
-        '<div><span class="cmp-tag" style="background:' + g.color + '"></span><span style="font-size:10px;color:var(--text-3);">' + g.label + ' · ' + wc.label + '</span></div>' +
-        '<div class="cmp-name">' + d.name + '</div>' +
-        '<div class="cmp-type">' + d.era + '</div>' +
-        '<div class="cmp-row"><span class="k">速度</span><span class="v">' + fmtSpeed(d.speedKmh) + '</span></div>' +
-        '<div class="cmp-row"><span class="k">等效防護力</span><span class="v">~' + Math.round(effArmor(d)) + ' mm</span></div>' +
-        '<div class="cmp-row"><span class="k">主砲口徑</span><span class="v">' + fmtMm(d.caliberMm) + '</span></div>' +
-        '<div class="cmp-row"><span class="k">戰鬥重量</span><span class="v">' + fmtT(d.weightT) + '</span></div>' +
+        '<div><span class="cmp-tag" style="background:' + g.color + '"></span><span style="font-size:10px;color:var(--text-3);">' + L(g,'label') + ' · ' + L(wc,'label') + '</span></div>' +
+        '<div class="cmp-name">' + L(d,'name') + '</div>' +
+        '<div class="cmp-type">' + L(d,'era') + '</div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpSpeed') + '</span><span class="v">' + fmtSpeed(d.speedKmh) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpArmor') + '</span><span class="v">~' + Math.round(effArmor(d)) + ' mm</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpCaliber') + '</span><span class="v">' + fmtMm(d.caliberMm) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpWeight') + '</span><span class="v">' + fmtT(d.weightT) + '</span></div>' +
       '</div>';
     }).join('');
-    body.innerHTML = cards + '<div class="cmp-clear-wrap"><button class="btn-mini" id="btnCompareClear" style="height:100%;">清空比較</button></div>';
+    body.innerHTML = cards + '<div class="cmp-clear-wrap"><button class="btn-mini" id="btnCompareClear" style="height:100%;">' + t('clearCompare') + '</button></div>';
     body.querySelectorAll('.cmp-close').forEach(function(btn){
       btn.addEventListener('click', function(){
         state.compareIds.delete(Number(btn.dataset.id));
@@ -1156,6 +1265,41 @@ window.DATA = [{"id":1,"name":"Panzer I 一號戰車","country":"GERMANY","weigh
       });
     }
   }
+
+  // ---------------- language toggle ----------------
+  function applyStaticI18n(){
+    document.documentElement.lang = state.lang === 'en' ? 'en' : 'zh-Hant';
+    document.title = state.lang === 'en' ? 'WWII Tank Speed/Armor/Firepower Comparison' : '二戰戰車比較圖：速度／防護力／火力';
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var key = el.getAttribute('data-i18n');
+      var val = t(key);
+      if(val) el.innerHTML = val;
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){
+      var key = el.getAttribute('data-i18n-placeholder');
+      var val = t(key);
+      if(val) el.setAttribute('placeholder', val);
+    });
+  }
+  var btnLang = document.getElementById('btnLang');
+  function applyLanguage(){
+    applyStaticI18n();
+    btnLang.textContent = t('langButton');
+    renderGroupList();
+    renderClassList();
+    renderEraList();
+    renderRefLayerList();
+    refreshToolbarText();
+    buildChart();
+    renderDetail();
+    renderCompare();
+  }
+  btnLang.addEventListener('click', function(){
+    state.lang = state.lang === 'zh' ? 'en' : 'zh';
+    applyLanguage();
+  });
+  applyStaticI18n();
+  btnLang.textContent = t('langButton');
 
   // ---------------- master refresh ----------------
   function refreshAll(){
