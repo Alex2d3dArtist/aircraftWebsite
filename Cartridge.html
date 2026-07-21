@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>彈道實驗室 — 子彈參數對比</title>
+<title id="pageTitle">彈道實驗室 — 子彈參數對比</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -42,13 +42,20 @@
     content:"";position:absolute;top:0;left:0;right:0;height:3px;
     background:linear-gradient(90deg,var(--west),var(--brass) 45%,var(--brass) 55%,var(--soviet));
   }
+  .lang-toggle{
+    all:unset;cursor:pointer;position:absolute;top:16px;right:20px;
+    padding:6px 14px;border-radius:5px;font-size:12.5px;font-weight:700;
+    font-family:'JetBrains Mono',monospace;letter-spacing:.03em;
+    border:1px solid var(--brass);color:var(--brass-bright);background:rgba(224,189,127,.08);
+  }
+  .lang-toggle:hover{background:rgba(224,189,127,.2);}
   header .eyebrow{
     font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--brass);
     letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;opacity:.85;
   }
   header h1{
     margin:0;font-size:26px;font-weight:700;color:var(--brass-bright);
-    text-transform:uppercase;
+    text-transform:uppercase;padding-right:70px;
   }
   header p{margin:6px 0 0;color:var(--text-dim);font-size:13px;}
   header .disclaimer{font-size:11.5px;color:var(--brass);opacity:.8;margin-top:4px;}
@@ -179,37 +186,43 @@
   .diff-row{grid-column:1/-1;text-align:center;padding-top:6px;font-size:13px;color:var(--brass-bright);font-family:'JetBrains Mono',monospace;}
 
   footer{padding:20px 24px 40px;font-size:11.5px;color:var(--text-dim);line-height:1.7;border-top:1px solid var(--line);margin-top:10px;}
+
+  @media(max-width:520px){
+    .lang-toggle{top:14px;right:14px;padding:5px 11px;font-size:11.5px;}
+    header h1{padding-right:56px;}
+  }
 </style>
 </head>
 <body>
 
 <header>
+  <button id="langToggle" class="lang-toggle">EN</button>
   <div class="eyebrow">Small Arms Ballistics · Reference Sheet</div>
-  <h1>彈道實驗室 · Cartridge Comparison Lab</h1>
-  <p>以子彈本身為主角 — 對比常見輕兵器彈藥的長度、動能、直徑、重量、初速與截面密度</p>
-  <p class="disclaimer">數據僅供相對比較參考，非精確彈道規格，實際數值因廠牌、批次與槍管長度而異</p>
+  <h1 id="hTitle">彈道實驗室 · Cartridge Comparison Lab</h1>
+  <p id="hSubtitle">以子彈本身為主角 — 對比常見輕兵器彈藥的長度、動能、直徑、重量、初速與截面密度</p>
+  <p class="disclaimer" id="hDisclaimer">數據僅供相對比較參考，非精確彈道規格，實際數值因廠牌、批次與槍管長度而異</p>
 </header>
 
 <div class="layout">
   <aside>
     <div class="filter-group">
-      <h3>比較模式</h3>
+      <h3 id="hModeHeading">比較模式</h3>
       <div class="mode-select" id="modeSelect"></div>
     </div>
 
     <div class="filter-group">
-      <h3>武器類別</h3>
+      <h3 id="hCatHeading">武器類別</h3>
       <div id="catFilters"></div>
     </div>
 
     <div class="filter-group">
-      <h3>陣營系統</h3>
+      <h3 id="hOriginHeading">陣營系統</h3>
       <div id="originFilters"></div>
     </div>
 
     <div class="filter-group">
       <div class="extreme-toggle">
-        <span>加入 20mm 機炮<br>作為極端對照組（高）</span>
+        <span id="hExtremeToggle">加入 20mm 機炮<br>作為極端對照組（高）</span>
         <label class="switch">
           <input type="checkbox" id="extremeToggle">
           <span class="slider-tog"></span>
@@ -219,7 +232,7 @@
 
     <div class="filter-group">
       <div class="extreme-toggle" style="border-color:var(--bb);background:rgba(154,178,196,.08);">
-        <span>加入 BB彈（香港合法上限2J）<br>作為極端對照組（低）</span>
+        <span id="hBBToggle">加入 BB彈（香港合法上限2J）<br>作為極端對照組（低）</span>
         <label class="switch">
           <input type="checkbox" id="bbToggle">
           <span class="slider-tog" style="background:#3a3f47;"></span>
@@ -227,7 +240,7 @@
       </div>
     </div>
 
-    <div class="hint">
+    <div class="hint" id="hHint">
       點擊長條可<b>釘選比較</b>（最多兩個）。<br>
       長條顏色 = 武器類別；X軸下方色條 = 陣營系統。
     </div>
@@ -246,7 +259,7 @@
     </div>
 
     <div id="tray">
-      <h3>釘選比較</h3>
+      <h3 id="hTrayHeading">釘選比較</h3>
       <div class="tray-grid" id="trayGrid"></div>
     </div>
   </main>
@@ -254,63 +267,225 @@
 
 <div id="chipPopover"></div>
 
-<footer>
+<footer id="hFooter">
   數據為常見/典型裝藥的近似值，實際彈藥因製造商、槍管長度、批次不同會有差異，僅供相對比較參考。截面密度 = 彈頭重量(lb) ÷ 直徑(in)²，數值越高代表彈頭越傾向細長重、越容易維持動能與穿透；數值越低代表越傾向短胖、越容易在阻力下減速並在前段釋放能量。
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
+/* ============================================================
+   UI STRING TABLE — everything shown outside the data cards
+   ============================================================ */
+const UI = {
+  pageTitle: {zh:'彈道實驗室 — 子彈參數對比', en:'Ballistics Lab — Cartridge Comparison'},
+  title: {zh:'彈道實驗室 · Cartridge Comparison Lab', en:'Ballistics Lab · Cartridge Comparison Lab'},
+  subtitle: {zh:'以子彈本身為主角 — 對比常見輕兵器彈藥的長度、動能、直徑、重量、初速與截面密度', en:'Cartridges take center stage — comparing common small-arms ammunition by length, energy, diameter, weight, velocity, and sectional density'},
+  disclaimer: {zh:'數據僅供相對比較參考，非精確彈道規格，實際數值因廠牌、批次與槍管長度而異', en:'Figures are for relative comparison only, not precise ballistic specs — actual values vary by manufacturer, batch, and barrel length'},
+  modeHeading: {zh:'比較模式', en:'Compare by'},
+  catHeading: {zh:'武器類別', en:'Weapon category'},
+  originHeading: {zh:'陣營系統', en:'Bloc / origin'},
+  extremeToggle: {zh:'加入 20mm 機炮<br>作為極端對照組（高）', en:'Add 20mm autocannon<br>as high-end extreme reference'},
+  bbToggle: {zh:'加入 BB彈（香港合法上限2J）<br>作為極端對照組（低）', en:'Add BB pellet (HK legal cap 2J)<br>as low-end extreme reference'},
+  hint: {zh:'點擊長條可<b>釘選比較</b>（最多兩個）。<br>長條顏色 = 武器類別；X軸下方色條 = 陣營系統。', en:'Click a bar to <b>pin it for comparison</b> (up to two).<br>Bar color = weapon category; strip below the X-axis = bloc/origin.'},
+  trayHeading: {zh:'釘選比較', en:'Pinned comparison'},
+  representativeGun: {zh:'代表槍械：', en:'Representative firearm: '},
+  statLength: {zh:'整體長度', en:'Overall length'},
+  statEnergy: {zh:'焦耳（槍口動能）', en:'Energy (muzzle)'},
+  statDiam: {zh:'彈頭直徑', en:'Bullet diameter'},
+  statWeight: {zh:'彈頭重量', en:'Bullet weight'},
+  statVel: {zh:'初速', en:'Muzzle velocity'},
+  statSD: {zh:'截面密度', en:'Sectional density'},
+  statMomentum: {zh:'動量（後座力參考）', en:'Momentum (recoil ref.)'},
+  chipLabel: {zh:'常見彈頭類型：', en:'Common bullet types: '},
+  focusOn: {zh:'🔍 並排比較這兩個', en:'🔍 Compare side by side'},
+  focusOff: {zh:'← 返回完整圖表', en:'← Back to full chart'},
+  unitPrefix: {zh:'單位：', en:'Unit: '},
+  footer: {
+    zh:'數據為常見/典型裝藥的近似值，實際彈藥因製造商、槍管長度、批次不同會有差異，僅供相對比較參考。截面密度 = 彈頭重量(lb) ÷ 直徑(in)²，數值越高代表彈頭越傾向細長重、越容易維持動能與穿透；數值越低代表越傾向短胖、越容易在阻力下減速並在前段釋放能量。',
+    en:'Figures are approximate values for common/typical loadings — actual ammunition varies by manufacturer, barrel length, and batch, so use this for relative comparison only. Sectional density = bullet weight (lb) ÷ diameter (in)². A higher value means a longer, heavier-for-caliber bullet that holds velocity and penetrates more easily; a lower value means a shorter, stubbier bullet that sheds velocity faster and dumps energy earlier.'
+  },
+};
+
+function sortTitle(modeLabel){
+  return lang==='zh' ? `依 ${modeLabel} 由小到大排列` : `Sorted by ${modeLabel}, ascending`;
+}
+function diffRowText(bigName, ratio){
+  return lang==='zh'
+    ? `焦耳差距：${bigName} 約為另一者的 ${ratio} 倍`
+    : `Energy gap: ${bigName} is about ${ratio}× the other`;
+}
+function compareCalloutText(bigName, smallName, ratio){
+  return lang==='zh'
+    ? `${bigName} 約為 ${smallName} 的 ${ratio} 倍`
+    : `${bigName} is about ${ratio}× ${smallName}`;
+}
+function entriesLabel(n){
+  return lang==='zh' ? `${n} 筆` : `${n} entries`;
+}
+
+/* ============================================================
+   CARTRIDGE DATA — name / gun / note / desc are bilingual objects
+   ============================================================ */
 const D = [
-  {id:'22lr_pistol', name:'.22 LR（手槍版）', cat:'pistol', origin:'west', gun:'Ruger Mk IV（點22手槍）', oal:25.4, diam:5.69, weight:2.6, vel:335, tags:['LRN','HP'], note:'與步槍版同彈，差異純粹來自槍管長度', desc:'全球用量最大的彈藥之一，幾乎每個廠牌都有生產。因後座力小、價格低廉，是最常見的休閒打靶、初學者訓練與松鼠兔子等小型獵物用彈。'},
-  {id:'22lr_micro', name:'.22 LR（微型手槍版）', cat:'pistol', origin:'west', gun:'North American Arms Mini Revolver（1⅝吋槍管）', oal:25.4, diam:5.69, weight:2.6, vel:210, tags:['LRN'], note:'與同一種40gr彈完全相同，槍管短到火藥來不及完全燃燒就已出膛，初速大幅下滑', desc:'裝在可放入口袋的迷你左輪上，主要用途是隱蔽收藏與極端情況下的最後手段，業界普遍不建議作為主要防身武器。'},
-  {id:'22lr_rifle', name:'.22 LR（步槍版）', cat:'rifle', origin:'west', gun:'Ruger 10/22（點22步槍）', oal:25.4, diam:5.69, weight:2.6, vel:390, tags:['LRN','HP'], note:'與手槍版同彈同裝藥，較長槍管使初速明顯提升', desc:'北美最普及的步槍彈藥之一，主要用於打靶教學、新手訓練與害獸防治，幾乎每個獵人或射擊愛好者家中都會有一把點22步槍。'},
-  {id:'22wmr_pistol', name:'.22 WMR（手槍版）', cat:'pistol', origin:'west', gun:'KelTec PMR-30', oal:34.3, diam:5.7, weight:2.6, vel:412, tags:['JHP','FMJ'], desc:'威力比.22 LR明顯提升但仍屬輕量級，常用於野外防身與驅趕危害動物，是想要比.22LR多一點威力又不想犧牲輕巧的折衷選擇。'},
-  {id:'22wmr_rifle', name:'.22 WMR（步槍版）', cat:'rifle', origin:'west', gun:'CZ 512 / Marlin 25 系列（點22馬格農步槍）', oal:34.3, diam:5.7, weight:2.6, vel:595, tags:['JHP','POLY'], note:'與手槍版同彈同裝藥，長槍管使初速大幅提升', desc:'彈道比.22LR更平直、有效射程更遠，主要用於土撥鼠、浣熊等中小型害獸防治，深受農場主與野外工作者喜愛。'},
-  {id:'9x19', name:'9×19mm Parabellum', cat:'pistol', origin:'west', gun:'Glock 17', oal:29.69, diam:9.01, weight:8.0, vel:360, tags:['FMJ','HP'], desc:'全世界軍警使用最廣泛的手槍彈，美軍與多數歐洲國家軍警的制式彈藥，同時也是民間自衛與運動射擊最主流的選擇，供應鏈最成熟、價格也最實惠。'},
-  {id:'45acp', name:'.45 ACP', cat:'pistol', origin:'west', gun:'M1911', oal:32.3, diam:11.5, weight:14.9, vel:253, tags:['FMJ','JHP'], desc:'美軍從1911年到1980年代長期採用的制式手槍彈，訴求低速重彈頭「一發制敵」的哲學，至今仍是美國民間自衛與1911型手槍愛好者的經典選擇。'},
-  {id:'357mag', name:'.357 Magnum', cat:'pistol', origin:'west', gun:'Colt Python', oal:33.0, diam:9.07, weight:10.2, vel:425, tags:['SP','JHP'], desc:'曾長期是美國警察機關的標準左輪彈藥，威力足以擊倒鹿等中型獵物，目前主要用於狩獵、野外防身（防熊）與左輪射擊運動。'},
-  {id:'44mag', name:'.44 Magnum', cat:'pistol', origin:'west', gun:'S&W Model 29', oal:33.02, diam:10.9, weight:15.6, vel:436, tags:['SJSP','JHP'], desc:'因電影《緊急追捕令》「骯髒哈利」而聞名的大威力左輪彈，主要用於大型獵物狩獵與野外防熊，是左輪手槍中最具代表性的重裝彈藥之一。'},
-  {id:'380acp', name:'.380 ACP', cat:'pistol', origin:'west', gun:'Walther PPK（007電影經典配槍）', oal:25.0, diam:9.0, weight:6.0, vel:300, tags:['JHP','FMJ'], desc:'全球最常見的口袋型自衛手槍口徑之一，體積輕巧、後座力小，威力介於.22與9mm之間，因007電影中Walther PPK的形象而廣為人知。'},
-  {id:'38spl', name:'.38 Special', cat:'pistol', origin:'west', gun:'Smith & Wesson Model 10（經典警用左輪）', oal:39.4, diam:9.1, weight:10.2, vel:230, tags:['LRN','JHP'], desc:'美國警用左輪手槍史上使用量最大的彈藥，20世紀大半時間是美國警察標準配備，如今仍是左輪愛好者與居家防身的經典選擇，也是.357 Magnum可以直接兼容發射的「弱化版」。'},
-  {id:'762x25p', name:'7.62×25mm Tokarev（手槍版）', cat:'pistol', origin:'soviet', gun:'TT-33', oal:35.2, diam:7.85, weight:5.5, vel:420, tags:['FMJ'], desc:'前蘇聯與華約國家的制式手槍彈，穿透力在同級手槍彈中數一數二，如今主要見於東歐、中國舊式庫存槍械及收藏/射擊愛好者手中。'},
-  {id:'762x25s', name:'7.62×25mm Tokarev（衝鋒槍版）', cat:'smg', origin:'soviet', gun:'PPSh-41', oal:35.2, diam:7.85, weight:5.5, vel:488, tags:['FMJ'], note:'與手槍版同彈，衝鋒槍較長槍管使初速明顯提升', desc:'二戰蘇聯波波沙衝鋒槍的制式彈藥，戰時產量極大，戰後大量流入世界各地衝突地區，至今仍能在部分地區的舊式衝鋒槍與收藏市場見到。'},
-  {id:'9x18mak', name:'9×18mm Makarov', cat:'pistol', origin:'soviet', gun:'Makarov PM', oal:25.0, diam:9.27, weight:6.1, vel:315, tags:['FMJ'], note:'蘇聯刻意加大彈徑使其與北約9mm不相容', desc:'蘇聯與華約國家長期的制式手槍彈，設計上刻意跟北約9mm不相容，如今主要用於俄羅斯及前蘇聯國家的警用/民用市場與馬卡洛夫手槍愛好者。'},
-  {id:'556nato', name:'5.56×45mm NATO', cat:'rifle', origin:'west', gun:'M16 / AR-15', oal:57.4, diam:5.70, weight:4.0, vel:920, tags:['FMJ'], desc:'北約成員國步槍的制式彈藥，美軍與多數西方國家軍警現役主力步槍彈，同時也是全世界AR-15民用市場最大宗的彈藥。'},
-  {id:'762nato', name:'7.62×51mm NATO', cat:'rifle', origin:'west', gun:'FN FAL / M14', oal:71.1, diam:7.82, weight:9.5, vel:838, tags:['FMJ','SP'], desc:'北約的另一款制式步槍彈，用於精確射手步槍與通用機槍，也是民間.308 Winchester獵槍彈藥的軍規版本，狩獵與長距離射擊圈都很常見。'},
-  {id:'65creed', name:'6.5 Creedmoor', cat:'sniper', origin:'west', gun:'現代精準射擊步槍（如Ruger Precision Rifle）', oal:71.8, diam:6.72, weight:9.1, vel:820, tags:['HPBT','POLY'], desc:'近十年最受歡迎的長距離精準射擊彈藥，後座力比同級軍規彈小很多，彈道效率極高，已取代部分軍用狙擊彈種，也是中型獵物狩獵的熱門新選擇。'},
-  {id:'308win', name:'.308 Winchester', cat:'sniper', origin:'west', gun:'Remington 700（栓動狙擊步槍代表作）', oal:71.1, diam:7.82, weight:10.9, vel:808, tags:['HPBT','SP'], note:'跟軍規的7.62×51mm NATO幾乎是同一顆子彈', desc:'電影、遊戲裡最常見的「狙擊步槍口徑」，跟軍規的7.62×51mm NATO幾乎是同一顆子彈，只是民用/競賽市場慣用.308這個名字，雷明頓700是它最具代表性的載體。'},
-  {id:'300wm', name:'.300 Winchester Magnum', cat:'sniper', origin:'west', gun:'M2010 增強型狙擊步槍系統', oal:84.84, diam:7.82, weight:11.7, vel:902, tags:['HPBT','SP'], desc:'美軍曾將狙擊步槍從.308升級到這款彈藥，有效距離多出五成，同時也是北美大型獵物（麋鹿、大角羊）獵人心中的長距離首選彈藥之一。'},
-  {id:'762x39', name:'7.62×39mm', cat:'rifle', origin:'soviet', gun:'AK-47', oal:56.0, diam:7.92, weight:8.0, vel:715, tags:['FMJ'], desc:'AK系列步槍的制式彈藥，全世界產量與存量最大的步槍彈之一，廣泛見於前蘇聯陣營、中東、非洲軍隊與武裝團體，民用市場也因AK平價步槍盛行而熱門。'},
-  {id:'545x39', name:'5.45×39mm', cat:'rifle', origin:'soviet', gun:'AK-74', oal:57.0, diam:5.62, weight:3.4, vel:880, tags:['HP'], note:'彈頭內有空腔設計使其易偏轉，俗稱「毒牙」', desc:'蘇聯/俄羅斯後期AK-74系列步槍的制式彈藥，設計理念類似西方的5.56小口徑高速彈，目前仍是俄羅斯及部分前蘇聯國家軍隊的現役步槍彈。'},
-  {id:'3006', name:'.30-06 Springfield', cat:'rifle', origin:'west', gun:'M1 Garand', oal:84.8, diam:7.82, weight:9.7, vel:853, tags:['FMJ','SP'], desc:'美軍在兩次大戰與韓戰期間的制式步槍彈，除役後因彈道優異，至今仍是北美最受歡迎的大型獵物（鹿、麋鹿）狩獵彈藥之一。'},
-  {id:'762x54r', name:'7.62×54mmR', cat:'rifle', origin:'soviet', gun:'Mosin-Nagant / PKM', oal:77.16, diam:7.92, weight:9.6, vel:855, tags:['FMJ','TRACER','API'], desc:'俄羅斯/蘇聯史上服役最久的步槍彈，從沙俄時代沿用至今，仍是俄羅斯及多國PKM通用機槍與德拉貢諾夫狙擊步槍的制式彈藥。'},
-  {id:'303brit', name:'.303 British', cat:'rifle', origin:'west', gun:'Lee-Enfield', oal:76.2, diam:7.92, weight:11.3, vel:744, tags:['FMJ'], desc:'大英帝國與國協軍隊在兩次大戰的制式步槍彈，如今在前大英國協國家仍有大量老槍與庫存彈藥流通，狩獵與收藏市場都看得到。'},
-  {id:'50bmg', name:'.50 BMG', cat:'am', origin:'west', gun:'Barrett M82 / M2 重機槍', oal:138, diam:12.98, weight:42.0, vel:930, tags:['FMJ','API','TRACER'], desc:'美軍白朗寧M2重機槍與大型狙擊/反器材步槍的制式彈藥，是目前主流服役中威力最大的輕兵器彈藥之一，用於長距離狙擊、反裝備射擊與防空。'},
-  {id:'127x108', name:'12.7×108mm', cat:'am', origin:'soviet', gun:'DShK / NSV 重機槍', oal:147, diam:12.99, weight:48.0, vel:820, tags:['API'], desc:'蘇聯/俄羅斯系統與前華約國家重機槍的制式彈藥，功能定位跟西方的.50 BMG相同，至今仍是俄羅斯及多國軍隊現役的反器材彈藥。'},
-  {id:'12ga00', name:'12 Gauge 00 Buckshot（9顆鉛彈總合）', cat:'shotgun', origin:'west', gun:'Remington 870', oal:70, diam:8.4, weight:31.5, vel:390, tags:['BUCKSHOT'], note:'本表為9顆彈丸總合動能，並非單一彈頭', desc:'全世界最普及的霰彈規格，廣泛用於警用/軍用破門與近距離制敵、居家防身，以及獵鳥獵獸，00號鹿彈是專門用於獵鹿與防身的重裝彈種。'},
-  {id:'45colt', name:'.45 Colt（.45 Long Colt）', cat:'pistol', origin:'west', gun:'Colt Single Action Army「和平締造者」', oal:40.6, diam:11.5, weight:16.2, vel:262, tags:['LRN'], desc:'美國西部拓荒時代最具代表性的手槍彈，柯爾特「和平締造者」左輪的制式彈藥，如今主要活躍於牛仔動作射擊運動與復古左輪愛好者手中。'},
-  {id:'4440win', name:'.44-40 Winchester', cat:'rifle', origin:'west', gun:'Winchester Model 1873「贏得西部的步槍」', oal:40.4, diam:10.9, weight:13.0, vel:379, tags:['RNFP'], desc:'有「贏得西部的步槍」之稱的溫徹斯特1873型制式彈藥，當年因能與柯爾特左輪共用同一種子彈而風靡整個拓荒時代，如今主要見於牛仔動作射擊運動與古董槍收藏。'},
-  {id:'3840win', name:'.38-40 Winchester', cat:'pistol', origin:'west', gun:'Colt SAA / Winchester 1873（.38-40版）', oal:40.0, diam:10.17, weight:11.7, vel:345, tags:['RNFP'], desc:'同樣誕生於溫徹斯特1873型步槍的西部彈藥，威力介於.44-40與一般.38口徑之間，如今幾乎只在牛仔動作射擊運動的圈子裡還能見到現役使用。'},
-  {id:'20x102', name:'20×102mm（M61 Vulcan）', cat:'extreme', origin:'west', gun:'M61 Vulcan（F-16 / A-10 機砲）', oal:146, diam:20.3, weight:100, vel:1030, tags:['HEI','API'], desc:'美軍F-16、A-10攻擊機與方陣快砲等近迫防禦系統的制式機砲彈，主要用於空對空、空對地掃射與近距離防空攔截。'},
-  {id:'20x99', name:'20×99mmR（ShVAK）', cat:'extreme', origin:'soviet', gun:'ShVAK 機砲（Yak-1 / La-5 戰機）', oal:147, diam:20.0, weight:91, vel:800, tags:['HEI'], desc:'二戰蘇聯主力戰鬥機的制式機砲彈，是東線空戰中蘇聯最主要的機載武器彈藥之一，現今僅存於歷史文獻與收藏展示。'},
-  {id:'bb6mm', name:'6mm BB彈（香港合法上限）', cat:'bb', origin:'west', gun:'瓦斯/電動生存遊戲槍（Airsoft）', oal:6.0, diam:6.0, weight:0.20, vel:141.4, tags:['BB'], note:'依香港法例，威力上限約為2焦耳；其他地區上限不同（如日本約1J、部分歐洲場地容許到3.5J），此處僅以香港標準為例', desc:'生存遊戲(Airsoft)用彈丸，靠壓縮氣體或彈簧推動，不是火藥發射，物理原理跟表格中其他子彈完全不同。放在這裡純粹作為大眾常見、身體有記憶的「威力下限參照物」。'},
+  {id:'22lr_pistol', cat:'pistol', origin:'west', oal:25.4, diam:5.69, weight:2.6, vel:335, tags:['LRN','HP'],
+    name:{zh:'.22 LR（手槍版）', en:'.22 LR (Pistol)'},
+    gun:{zh:'Ruger Mk IV（點22手槍）', en:'Ruger Mk IV (.22 pistol)'},
+    note:{zh:'與步槍版同彈，差異純粹來自槍管長度', en:'Same round as the rifle version — the difference comes purely from barrel length'},
+    desc:{zh:'全球用量最大的彈藥之一，幾乎每個廠牌都有生產。因後座力小、價格低廉，是最常見的休閒打靶、初學者訓練與松鼠兔子等小型獵物用彈。', en:'One of the most-produced cartridges in the world, made by nearly every manufacturer. Low recoil and low cost make it the default for casual plinking, beginner training, and small game like squirrels and rabbits.'}},
+  {id:'22lr_micro', cat:'pistol', origin:'west', oal:25.4, diam:5.69, weight:2.6, vel:210, tags:['LRN'],
+    name:{zh:'.22 LR（微型手槍版）', en:'.22 LR (Micro Pistol)'},
+    gun:{zh:'North American Arms Mini Revolver（1⅝吋槍管）', en:'North American Arms Mini Revolver (1⅝" barrel)'},
+    note:{zh:'與同一種40gr彈完全相同，槍管短到火藥來不及完全燃燒就已出膛，初速大幅下滑', en:'The exact same 40gr round — the barrel is so short the powder barely finishes burning before the bullet exits, cutting velocity sharply'},
+    desc:{zh:'裝在可放入口袋的迷你左輪上，主要用途是隱蔽收藏與極端情況下的最後手段，業界普遍不建議作為主要防身武器。', en:'Chambered in a revolver small enough to pocket. Mainly used for concealment, collecting, or as an absolute last resort — generally not recommended as a primary self-defense weapon.'}},
+  {id:'22lr_rifle', cat:'rifle', origin:'west', oal:25.4, diam:5.69, weight:2.6, vel:390, tags:['LRN','HP'],
+    name:{zh:'.22 LR（步槍版）', en:'.22 LR (Rifle)'},
+    gun:{zh:'Ruger 10/22（點22步槍）', en:'Ruger 10/22 (.22 rifle)'},
+    note:{zh:'與手槍版同彈同裝藥，較長槍管使初速明顯提升', en:'Same cartridge and load as the pistol version — the longer barrel meaningfully raises velocity'},
+    desc:{zh:'北美最普及的步槍彈藥之一，主要用於打靶教學、新手訓練與害獸防治，幾乎每個獵人或射擊愛好者家中都會有一把點22步槍。', en:'One of the most common rifle cartridges in North America, used for target practice, teaching new shooters, and pest control — nearly every hunter or shooter owns a .22 rifle.'}},
+  {id:'22wmr_pistol', cat:'pistol', origin:'west', oal:34.3, diam:5.7, weight:2.6, vel:412, tags:['JHP','FMJ'],
+    name:{zh:'.22 WMR（手槍版）', en:'.22 WMR (Pistol)'},
+    gun:{zh:'KelTec PMR-30', en:'KelTec PMR-30'},
+    desc:{zh:'威力比.22 LR明顯提升但仍屬輕量級，常用於野外防身與驅趕危害動物，是想要比.22LR多一點威力又不想犧牲輕巧的折衷選擇。', en:'Noticeably more powerful than .22 LR while staying lightweight. Commonly used for backcountry defense and pest deterrence — a middle ground for more power without giving up compactness.'}},
+  {id:'22wmr_rifle', cat:'rifle', origin:'west', oal:34.3, diam:5.7, weight:2.6, vel:595, tags:['JHP','POLY'],
+    name:{zh:'.22 WMR（步槍版）', en:'.22 WMR (Rifle)'},
+    gun:{zh:'CZ 512 / Marlin 25 系列（點22馬格農步槍）', en:'CZ 512 / Marlin 25 series (.22 Magnum rifle)'},
+    note:{zh:'與手槍版同彈同裝藥，長槍管使初速大幅提升', en:'Same cartridge and load as the pistol version — the longer barrel substantially raises velocity'},
+    desc:{zh:'彈道比.22LR更平直、有效射程更遠，主要用於土撥鼠、浣熊等中小型害獸防治，深受農場主與野外工作者喜愛。', en:'Flatter trajectory and longer effective range than .22 LR. A favorite among farmers and outdoorsmen for groundhogs, raccoons, and similar mid-size pests.'}},
+  {id:'9x19', cat:'pistol', origin:'west', oal:29.69, diam:9.01, weight:8.0, vel:360, tags:['FMJ','HP'],
+    name:{zh:'9×19mm Parabellum', en:'9×19mm Parabellum'},
+    gun:{zh:'Glock 17', en:'Glock 17'},
+    desc:{zh:'全世界軍警使用最廣泛的手槍彈，美軍與多數歐洲國家軍警的制式彈藥，同時也是民間自衛與運動射擊最主流的選擇，供應鏈最成熟、價格也最實惠。', en:'The most widely used handgun cartridge in military and police service worldwide — standard issue for the US and most European forces, and the top choice for civilian self-defense and sport shooting thanks to its mature, affordable supply chain.'}},
+  {id:'45acp', cat:'pistol', origin:'west', oal:32.3, diam:11.5, weight:14.9, vel:253, tags:['FMJ','JHP'],
+    name:{zh:'.45 ACP', en:'.45 ACP'},
+    gun:{zh:'M1911', en:'M1911'},
+    desc:{zh:'美軍從1911年到1980年代長期採用的制式手槍彈，訴求低速重彈頭「一發制敵」的哲學，至今仍是美國民間自衛與1911型手槍愛好者的經典選擇。', en:"The US military's standard-issue pistol cartridge from 1911 into the 1980s, built around a slow, heavy-bullet philosophy for stopping power in one shot. Still a classic choice for American civilian defense and 1911 enthusiasts today."}},
+  {id:'357mag', cat:'pistol', origin:'west', oal:33.0, diam:9.07, weight:10.2, vel:425, tags:['SP','JHP'],
+    name:{zh:'.357 Magnum', en:'.357 Magnum'},
+    gun:{zh:'Colt Python', en:'Colt Python'},
+    desc:{zh:'曾長期是美國警察機關的標準左輪彈藥，威力足以擊倒鹿等中型獵物，目前主要用於狩獵、野外防身（防熊）與左輪射擊運動。', en:'Long the standard-issue revolver round for American police departments, powerful enough to take down deer-sized game. Today mainly used for hunting, backcountry (bear) defense, and revolver sport shooting.'}},
+  {id:'44mag', cat:'pistol', origin:'west', oal:33.02, diam:10.9, weight:15.6, vel:436, tags:['SJSP','JHP'],
+    name:{zh:'.44 Magnum', en:'.44 Magnum'},
+    gun:{zh:'S&W Model 29', en:'S&W Model 29'},
+    desc:{zh:'因電影《緊急追捕令》「骯髒哈利」而聞名的大威力左輪彈，主要用於大型獵物狩獵與野外防熊，是左輪手槍中最具代表性的重裝彈藥之一。', en:'Made famous by "Dirty Harry" in the Magnum Force films. Used mainly for large-game hunting and backcountry bear defense — one of the most iconic heavy-hitting revolver rounds.'}},
+  {id:'380acp', cat:'pistol', origin:'west', oal:25.0, diam:9.0, weight:6.0, vel:300, tags:['JHP','FMJ'],
+    name:{zh:'.380 ACP', en:'.380 ACP'},
+    gun:{zh:'Walther PPK（007電影經典配槍）', en:"Walther PPK (James Bond's signature sidearm)"},
+    desc:{zh:'全球最常見的口袋型自衛手槍口徑之一，體積輕巧、後座力小，威力介於.22與9mm之間，因007電影中Walther PPK的形象而廣為人知。', en:'One of the most common pocket-pistol calibers worldwide — compact and low-recoil, sitting in power between .22 and 9mm. Widely recognized thanks to the Walther PPK\'s appearances in the James Bond films.'}},
+  {id:'38spl', cat:'pistol', origin:'west', oal:39.4, diam:9.1, weight:10.2, vel:230, tags:['LRN','JHP'],
+    name:{zh:'.38 Special', en:'.38 Special'},
+    gun:{zh:'Smith & Wesson Model 10（經典警用左輪）', en:'Smith & Wesson Model 10 (classic police revolver)'},
+    desc:{zh:'美國警用左輪手槍史上使用量最大的彈藥，20世紀大半時間是美國警察標準配備，如今仍是左輪愛好者與居家防身的經典選擇，也是.357 Magnum可以直接兼容發射的「弱化版」。', en:"The most-fired revolver cartridge in American police history, standard issue for most of the 20th century. Still a classic choice for revolver enthusiasts and home defense — also the milder round that .357 Magnum revolvers can fire interchangeably."}},
+  {id:'762x25p', cat:'pistol', origin:'soviet', oal:35.2, diam:7.85, weight:5.5, vel:420, tags:['FMJ'],
+    name:{zh:'7.62×25mm Tokarev（手槍版）', en:'7.62×25mm Tokarev (Pistol)'},
+    gun:{zh:'TT-33', en:'TT-33'},
+    desc:{zh:'前蘇聯與華約國家的制式手槍彈，穿透力在同級手槍彈中數一數二，如今主要見於東歐、中國舊式庫存槍械及收藏/射擊愛好者手中。', en:'Standard-issue handgun round for the Soviet Union and Warsaw Pact, with penetration near the top of its class among pistol cartridges. Today found mainly in old Eastern Bloc/Chinese surplus firearms and among collectors and shooters.'}},
+  {id:'762x25s', cat:'smg', origin:'soviet', oal:35.2, diam:7.85, weight:5.5, vel:488, tags:['FMJ'],
+    name:{zh:'7.62×25mm Tokarev（衝鋒槍版）', en:'7.62×25mm Tokarev (SMG)'},
+    gun:{zh:'PPSh-41', en:'PPSh-41'},
+    note:{zh:'與手槍版同彈，衝鋒槍較長槍管使初速明顯提升', en:'Same round as the pistol version — the SMG\'s longer barrel meaningfully raises velocity'},
+    desc:{zh:'二戰蘇聯波波沙衝鋒槍的制式彈藥，戰時產量極大，戰後大量流入世界各地衝突地區，至今仍能在部分地區的舊式衝鋒槍與收藏市場見到。', en:"The standard round for the Soviet PPSh-41 submachine gun in WWII, produced in enormous quantities. Large surplus stockpiles spread worldwide after the war and still turn up in old SMGs and collectors' markets in some regions."}},
+  {id:'9x18mak', cat:'pistol', origin:'soviet', oal:25.0, diam:9.27, weight:6.1, vel:315, tags:['FMJ'],
+    name:{zh:'9×18mm Makarov', en:'9×18mm Makarov'},
+    gun:{zh:'Makarov PM', en:'Makarov PM'},
+    note:{zh:'蘇聯刻意加大彈徑使其與北約9mm不相容', en:'The Soviets deliberately widened the bullet diameter so it\'s incompatible with NATO 9mm'},
+    desc:{zh:'蘇聯與華約國家長期的制式手槍彈，設計上刻意跟北約9mm不相容，如今主要用於俄羅斯及前蘇聯國家的警用/民用市場與馬卡洛夫手槍愛好者。', en:'The long-serving standard sidearm round for the Soviet Union and Warsaw Pact, deliberately made incompatible with NATO 9mm. Today mainly used in Russia and former Soviet states\' police/civilian markets and by Makarov enthusiasts.'}},
+  {id:'556nato', cat:'rifle', origin:'west', oal:57.4, diam:5.70, weight:4.0, vel:920, tags:['FMJ'],
+    name:{zh:'5.56×45mm NATO', en:'5.56×45mm NATO'},
+    gun:{zh:'M16 / AR-15', en:'M16 / AR-15'},
+    desc:{zh:'北約成員國步槍的制式彈藥，美軍與多數西方國家軍警現役主力步槍彈，同時也是全世界AR-15民用市場最大宗的彈藥。', en:'Standard-issue rifle round for NATO member states, used by the US and most Western militaries/police as their primary service rifle cartridge — also the single most common round in the worldwide civilian AR-15 market.'}},
+  {id:'762nato', cat:'rifle', origin:'west', oal:71.1, diam:7.82, weight:9.5, vel:838, tags:['FMJ','SP'],
+    name:{zh:'7.62×51mm NATO', en:'7.62×51mm NATO'},
+    gun:{zh:'FN FAL / M14', en:'FN FAL / M14'},
+    desc:{zh:'北約的另一款制式步槍彈，用於精確射手步槍與通用機槍，也是民間.308 Winchester獵槍彈藥的軍規版本，狩獵與長距離射擊圈都很常見。', en:"NATO's other standard-issue rifle round, used in designated marksman rifles and general-purpose machine guns. Also the military-spec sibling of the civilian .308 Winchester hunting round — common in both hunting and long-range shooting circles."}},
+  {id:'65creed', cat:'sniper', origin:'west', oal:71.8, diam:6.72, weight:9.1, vel:820, tags:['HPBT','POLY'],
+    name:{zh:'6.5 Creedmoor', en:'6.5 Creedmoor'},
+    gun:{zh:'現代精準射擊步槍（如Ruger Precision Rifle）', en:'Modern precision rifles (e.g. Ruger Precision Rifle)'},
+    desc:{zh:'近十年最受歡迎的長距離精準射擊彈藥，後座力比同級軍規彈小很多，彈道效率極高，已取代部分軍用狙擊彈種，也是中型獵物狩獵的熱門新選擇。', en:'The most popular long-range precision cartridge of the past decade — noticeably less recoil than comparable military rounds with extremely efficient ballistics. It has replaced some military sniper rounds and become a rising favorite for mid-size game hunting.'}},
+  {id:'308win', cat:'sniper', origin:'west', oal:71.1, diam:7.82, weight:10.9, vel:808, tags:['HPBT','SP'],
+    name:{zh:'.308 Winchester', en:'.308 Winchester'},
+    gun:{zh:'Remington 700（栓動狙擊步槍代表作）', en:'Remington 700 (the archetypal bolt-action sniper rifle)'},
+    note:{zh:'跟軍規的7.62×51mm NATO幾乎是同一顆子彈', en:'Essentially the same round as the military 7.62×51mm NATO'},
+    desc:{zh:'電影、遊戲裡最常見的「狙擊步槍口徑」，跟軍規的7.62×51mm NATO幾乎是同一顆子彈，只是民用/競賽市場慣用.308這個名字，雷明頓700是它最具代表性的載體。', en:'The "sniper rifle caliber" most people recognize from movies and games — essentially the same cartridge as the military 7.62×51mm NATO, just sold under the civilian/competition name .308. The Remington 700 is its most iconic host rifle.'}},
+  {id:'300wm', cat:'sniper', origin:'west', oal:84.84, diam:7.82, weight:11.7, vel:902, tags:['HPBT','SP'],
+    name:{zh:'.300 Winchester Magnum', en:'.300 Winchester Magnum'},
+    gun:{zh:'M2010 增強型狙擊步槍系統', en:'M2010 Enhanced Sniper Rifle system'},
+    desc:{zh:'美軍曾將狙擊步槍從.308升級到這款彈藥，有效距離多出五成，同時也是北美大型獵物（麋鹿、大角羊）獵人心中的長距離首選彈藥之一。', en:'The round the US military upgraded to from .308 for its sniper rifles, extending effective range by roughly 50%. Also a top long-range choice for North American big-game hunters (elk, bighorn sheep).'}},
+  {id:'762x39', cat:'rifle', origin:'soviet', oal:56.0, diam:7.92, weight:8.0, vel:715, tags:['FMJ'],
+    name:{zh:'7.62×39mm', en:'7.62×39mm'},
+    gun:{zh:'AK-47', en:'AK-47'},
+    desc:{zh:'AK系列步槍的制式彈藥，全世界產量與存量最大的步槍彈之一，廣泛見於前蘇聯陣營、中東、非洲軍隊與武裝團體，民用市場也因AK平價步槍盛行而熱門。', en:'The standard round for the AK family of rifles — one of the most-produced and most-stockpiled rifle cartridges in the world, widely used by former Soviet-bloc, Middle Eastern, and African forces and armed groups, and popular in the civilian market thanks to affordable AK-pattern rifles.'}},
+  {id:'545x39', cat:'rifle', origin:'soviet', oal:57.0, diam:5.62, weight:3.4, vel:880, tags:['HP'],
+    name:{zh:'5.45×39mm', en:'5.45×39mm'},
+    gun:{zh:'AK-74', en:'AK-74'},
+    note:{zh:'彈頭內有空腔設計使其易偏轉，俗稱「毒牙」', en:'An internal cavity in the bullet tip makes it prone to tumbling on impact, earning it the nickname "poison fang"'},
+    desc:{zh:'蘇聯/俄羅斯後期AK-74系列步槍的制式彈藥，設計理念類似西方的5.56小口徑高速彈，目前仍是俄羅斯及部分前蘇聯國家軍隊的現役步槍彈。', en:'The standard round for the later-generation Soviet/Russian AK-74 rifle family, designed on a similar small-caliber, high-velocity philosophy to the West\'s 5.56mm. Still in active service with Russia and some former Soviet states.'}},
+  {id:'3006', cat:'rifle', origin:'west', oal:84.8, diam:7.82, weight:9.7, vel:853, tags:['FMJ','SP'],
+    name:{zh:'.30-06 Springfield', en:'.30-06 Springfield'},
+    gun:{zh:'M1 Garand', en:'M1 Garand'},
+    desc:{zh:'美軍在兩次大戰與韓戰期間的制式步槍彈，除役後因彈道優異，至今仍是北美最受歡迎的大型獵物（鹿、麋鹿）狩獵彈藥之一。', en:"The US military's standard rifle round through both World Wars and Korea. After retirement from service, its excellent ballistics kept it as one of North America's most popular big-game (deer, elk) hunting cartridges."}},
+  {id:'762x54r', cat:'rifle', origin:'soviet', oal:77.16, diam:7.92, weight:9.6, vel:855, tags:['FMJ','TRACER','API'],
+    name:{zh:'7.62×54mmR', en:'7.62×54mmR'},
+    gun:{zh:'Mosin-Nagant / PKM', en:'Mosin-Nagant / PKM'},
+    desc:{zh:'俄羅斯/蘇聯史上服役最久的步槍彈，從沙俄時代沿用至今，仍是俄羅斯及多國PKM通用機槍與德拉貢諾夫狙擊步槍的制式彈藥。', en:'The longest-serving rifle cartridge in Russian/Soviet history, in continuous use since the Tsarist era. Still the standard round for the PKM general-purpose machine gun and Dragunov sniper rifle in Russia and many other countries.'}},
+  {id:'303brit', cat:'rifle', origin:'west', oal:76.2, diam:7.92, weight:11.3, vel:744, tags:['FMJ'],
+    name:{zh:'.303 British', en:'.303 British'},
+    gun:{zh:'Lee-Enfield', en:'Lee-Enfield'},
+    desc:{zh:'大英帝國與國協軍隊在兩次大戰的制式步槍彈，如今在前大英國協國家仍有大量老槍與庫存彈藥流通，狩獵與收藏市場都看得到。', en:'The standard-issue rifle round for the British Empire and Commonwealth forces through both World Wars. Large numbers of old rifles and surplus ammunition still circulate in former Commonwealth countries, seen in both hunting and collector circles.'}},
+  {id:'50bmg', cat:'am', origin:'west', oal:138, diam:12.98, weight:42.0, vel:930, tags:['FMJ','API','TRACER'],
+    name:{zh:'.50 BMG', en:'.50 BMG'},
+    gun:{zh:'Barrett M82 / M2 重機槍', en:'Barrett M82 / M2 heavy machine gun'},
+    desc:{zh:'美軍白朗寧M2重機槍與大型狙擊/反器材步槍的制式彈藥，是目前主流服役中威力最大的輕兵器彈藥之一，用於長距離狙擊、反裝備射擊與防空。', en:'The standard round for the Browning M2 heavy machine gun and large anti-materiel/sniper rifles — currently one of the most powerful small-arms cartridges in mainstream service, used for long-range sniping, anti-equipment fire, and air defense.'}},
+  {id:'127x108', cat:'am', origin:'soviet', oal:147, diam:12.99, weight:48.0, vel:820, tags:['API'],
+    name:{zh:'12.7×108mm', en:'12.7×108mm'},
+    gun:{zh:'DShK / NSV 重機槍', en:'DShK / NSV heavy machine gun'},
+    desc:{zh:'蘇聯/俄羅斯系統與前華約國家重機槍的制式彈藥，功能定位跟西方的.50 BMG相同，至今仍是俄羅斯及多國軍隊現役的反器材彈藥。', en:'The Soviet/Russian and former Warsaw Pact equivalent of the .50 BMG, serving the same anti-materiel role. Still an active-duty round in Russia and many other militaries today.'}},
+  {id:'12ga00', cat:'shotgun', origin:'west', oal:70, diam:8.4, weight:31.5, vel:390, tags:['BUCKSHOT'],
+    name:{zh:'12 Gauge 00 Buckshot（9顆鉛彈總合）', en:'12 Gauge 00 Buckshot (9-pellet total)'},
+    gun:{zh:'Remington 870', en:'Remington 870'},
+    note:{zh:'本表為9顆彈丸總合動能，並非單一彈頭', en:'This entry sums the energy of all 9 pellets — not a single projectile'},
+    desc:{zh:'全世界最普及的霰彈規格，廣泛用於警用/軍用破門與近距離制敵、居家防身，以及獵鳥獵獸，00號鹿彈是專門用於獵鹿與防身的重裝彈種。', en:'The most common shotgun gauge worldwide, widely used for police/military breaching and close-range engagement, home defense, and bird/game hunting. 00 buckshot specifically is a heavy load meant for deer hunting and defense.'}},
+  {id:'45colt', cat:'pistol', origin:'west', oal:40.6, diam:11.5, weight:16.2, vel:262, tags:['LRN'],
+    name:{zh:'.45 Colt（.45 Long Colt）', en:'.45 Colt (.45 Long Colt)'},
+    gun:{zh:'Colt Single Action Army「和平締造者」', en:'Colt Single Action Army "Peacemaker"'},
+    desc:{zh:'美國西部拓荒時代最具代表性的手槍彈，柯爾特「和平締造者」左輪的制式彈藥，如今主要活躍於牛仔動作射擊運動與復古左輪愛好者手中。', en:'The most iconic handgun round of the American Old West — standard ammunition for the Colt "Peacemaker" revolver. Today it lives on mainly in Cowboy Action Shooting and among vintage-revolver enthusiasts.'}},
+  {id:'4440win', cat:'rifle', origin:'west', oal:40.4, diam:10.9, weight:13.0, vel:379, tags:['RNFP'],
+    name:{zh:'.44-40 Winchester', en:'.44-40 Winchester'},
+    gun:{zh:'Winchester Model 1873「贏得西部的步槍」', en:'Winchester Model 1873, "The Gun That Won the West"'},
+    desc:{zh:'有「贏得西部的步槍」之稱的溫徹斯特1873型制式彈藥，當年因能與柯爾特左輪共用同一種子彈而風靡整個拓荒時代，如今主要見於牛仔動作射擊運動與古董槍收藏。', en:'Standard round for the Winchester Model 1873, nicknamed "The Gun That Won the West." Hugely popular in its day because it could be shared with Colt revolvers chambered for the same round. Today mostly seen in Cowboy Action Shooting and antique-firearm collecting.'}},
+  {id:'3840win', cat:'pistol', origin:'west', oal:40.0, diam:10.17, weight:11.7, vel:345, tags:['RNFP'],
+    name:{zh:'.38-40 Winchester', en:'.38-40 Winchester'},
+    gun:{zh:'Colt SAA / Winchester 1873（.38-40版）', en:'Colt SAA / Winchester 1873 (.38-40 chambering)'},
+    desc:{zh:'同樣誕生於溫徹斯特1873型步槍的西部彈藥，威力介於.44-40與一般.38口徑之間，如今幾乎只在牛仔動作射擊運動的圈子裡還能見到現役使用。', en:'Another Old West round born alongside the Winchester 1873, with power between the .44-40 and a typical .38 caliber. Today almost exclusively seen in active use within Cowboy Action Shooting circles.'}},
+  {id:'20x102', cat:'extreme', origin:'west', oal:146, diam:20.3, weight:100, vel:1030, tags:['HEI','API'],
+    name:{zh:'20×102mm（M61 Vulcan）', en:'20×102mm (M61 Vulcan)'},
+    gun:{zh:'M61 Vulcan（F-16 / A-10 機砲）', en:'M61 Vulcan (F-16 / A-10 cannon)'},
+    desc:{zh:'美軍F-16、A-10攻擊機與方陣快砲等近迫防禦系統的制式機砲彈，主要用於空對空、空對地掃射與近距離防空攔截。', en:'Standard autocannon round for the US F-16, A-10, and close-in weapon systems like the Phalanx — used for air-to-air, air-to-ground strafing, and short-range air defense.'}},
+  {id:'20x99', cat:'extreme', origin:'soviet', oal:147, diam:20.0, weight:91, vel:800, tags:['HEI'],
+    name:{zh:'20×99mmR（ShVAK）', en:'20×99mmR (ShVAK)'},
+    gun:{zh:'ShVAK 機砲（Yak-1 / La-5 戰機）', en:'ShVAK autocannon (Yak-1 / La-5 fighters)'},
+    desc:{zh:'二戰蘇聯主力戰鬥機的制式機砲彈，是東線空戰中蘇聯最主要的機載武器彈藥之一，現今僅存於歷史文獻與收藏展示。', en:"Standard autocannon round for the Soviet Union's main WWII-era fighters — one of the primary Soviet aircraft weapons on the Eastern Front. Today it survives only in historical records and museum collections."}},
+  {id:'bb6mm', cat:'bb', origin:'west', oal:6.0, diam:6.0, weight:0.20, vel:141.4, tags:['BB'],
+    name:{zh:'6mm BB彈（香港合法上限）', en:'6mm BB (Hong Kong legal cap)'},
+    gun:{zh:'瓦斯/電動生存遊戲槍（Airsoft）', en:'Gas/electric airsoft replica'},
+    note:{zh:'依香港法例，威力上限約為2焦耳；其他地區上限不同（如日本約1J、部分歐洲場地容許到3.5J），此處僅以香港標準為例', en:'Capped at roughly 2 joules under Hong Kong law; limits differ elsewhere (e.g. ~1J in Japan, up to 3.5J at some European fields) — shown here using the Hong Kong standard as one example'},
+    desc:{zh:'生存遊戲(Airsoft)用彈丸，靠壓縮氣體或彈簧推動，不是火藥發射，物理原理跟表格中其他子彈完全不同。放在這裡純粹作為大眾常見、身體有記憶的「威力下限參照物」。', en:"Airsoft ammunition, propelled by compressed gas or a spring rather than gunpowder — physically a completely different mechanism from every other round in this chart. Included purely as a widely-felt \"lower bound\" reference point most people have actually experienced."}},
 ];
 
 const BULLET_GLOSSARY = {
-  FMJ:  {name:'全金屬被甲彈 FMJ', short:'全被甲', desc:'彈頭外層包覆銅或鋼被甲、彈心為鉛，不易變形，穿透力佳但擴張效果差。是最常見的訓練與軍規彈頭，因日內瓦公約限制，軍用彈藥多半要求使用全被甲彈。'},
-  LRN:  {name:'鉛質圓頭彈 LRN', short:'鉛圓頭', desc:'不含被甲的純鉛彈頭，圓頭造型，是早期彈藥最常見的設計。成本低廉，但精度與穿透力都比現代被甲彈頭弱一些。'},
-  RNFP: {name:'圓頭平頭鉛彈 RNFP', short:'鉛平頭', desc:'鉛彈頭前端削平，是19世紀末槓桿式步槍管狀彈匣的經典設計——平頭可避免彈頭在彈匣裡意外撞擊前一發子彈的底火引發連鎖擊發。'},
-  HP:   {name:'空尖彈 HP', short:'空尖彈', desc:'彈頭前端挖空，命中目標後會像花瓣一樣向外翻開擴張，增加傷害範圍並降低過度穿透的風險，是現代防身彈藥的主流設計。'},
-  JHP:  {name:'被甲空尖彈 JHP', short:'被甲空尖', desc:'在空尖彈的基礎上加上金屬被甲包覆，兼顧擴張效果與結構強度，避免彈頭在高速下解體，是目前執法與民用防身彈藥最常見的形式。'},
-  SP:   {name:'軟頭彈 SP', short:'軟頭彈', desc:'彈頭尖端露出鉛芯、不完全被甲包覆，命中後會有限度地變形擴張，介於全被甲彈與空尖彈之間，狩獵用途十分常見。'},
-  SJSP: {name:'半被甲軟頭彈 SJSP', short:'半被甲軟頭', desc:'被甲只包覆彈頭下半部，尖端外露的鉛芯提供適度擴張效果，同時保留較高的結構強度，常用於大型獵物的重彈頭裝彈。'},
-  HPBT: {name:'尖頭空尾彈 HPBT', short:'尖頭空尾', desc:'彈頭尾端收窄成船型（boat tail），搭配尖銳的彈頭形狀，能大幅降低空氣阻力、提升遠距離飛行的穩定性與精度，是競賽與狙擊彈藥的主流設計。'},
-  POLY: {name:'聚合物彈道尖 Poly-Tip', short:'聚合彈道尖', desc:'彈頭尖端嵌入一小塊塑膠尖頭（如Hornady V-MAX/ELD-X），兼顧空尖彈的擴張效果與尖頭彈的低風阻飛行效率，是現代狩獵與競賽彈藥常見的設計。'},
-  API:  {name:'穿甲燃燒彈 API', short:'穿甲燃燒', desc:'彈頭內含硬化穿甲蕊心並混合燃燒劑，擊中裝甲後除了物理穿透還會引燃目標，主要用於對付輕裝甲車輛與設備。'},
-  HEI:  {name:'高爆燃燒彈 HEI', short:'高爆燃燒', desc:'彈頭內裝少量炸藥與燃燒劑，擊中目標時會爆炸並引燃，是機砲、防空武器最常見的裝彈類型之一。'},
-  TRACER: {name:'曳光彈', short:'曳光彈', desc:'彈頭底部裝有燃燒劑，發射後會拖出一道可見光跡，方便射手觀察並修正彈著點，通常會依固定比例間隔裝填在彈鏈或彈匣中。'},
-  BUCKSHOT: {name:'鹿彈 Buckshot', short:'鹿彈', desc:'霰彈殼內裝填多顆較大的鉛彈丸（而非細碎彈粒），扣一次扳機同時打出去，近距離覆蓋範圍大，常用於居家防身、破門與獵鹿。'},
-  BB: {name:'BB彈', short:'BB彈', desc:'生存遊戲(Airsoft)用的塑膠或金屬彈丸，靠壓縮氣體或彈簧推動出膛，不含火藥發射藥，威力通常受各地法規限制在極低的焦耳數以內。'},
+  FMJ:  {name:{zh:'全金屬被甲彈 FMJ', en:'Full Metal Jacket (FMJ)'}, short:{zh:'全被甲', en:'FMJ'}, desc:{zh:'彈頭外層包覆銅或鋼被甲、彈心為鉛，不易變形，穿透力佳但擴張效果差。是最常見的訓練與軍規彈頭，因日內瓦公約限制，軍用彈藥多半要求使用全被甲彈。', en:'A copper- or steel-jacketed bullet with a lead core that resists deformation — good penetration, poor expansion. The most common training and military-spec bullet, since the Geneva Conventions generally require full-jacketed bullets for military use.'}},
+  LRN:  {name:{zh:'鉛質圓頭彈 LRN', en:'Lead Round Nose (LRN)'}, short:{zh:'鉛圓頭', en:'LRN'}, desc:{zh:'不含被甲的純鉛彈頭，圓頭造型，是早期彈藥最常見的設計。成本低廉，但精度與穿透力都比現代被甲彈頭弱一些。', en:'An unjacketed, pure-lead bullet with a rounded nose — the most common design in early ammunition. Cheap to produce, but less accurate and less penetrating than modern jacketed bullets.'}},
+  RNFP: {name:{zh:'圓頭平頭鉛彈 RNFP', en:'Round Nose Flat Point (RNFP)'}, short:{zh:'鉛平頭', en:'RNFP'}, desc:{zh:'鉛彈頭前端削平，是19世紀末槓桿式步槍管狀彈匣的經典設計——平頭可避免彈頭在彈匣裡意外撞擊前一發子彈的底火引發連鎖擊發。', en:"A lead bullet with the tip flattened off — a classic late-19th-century design for tubular-magazine lever-action rifles: the flat tip stops a bullet from striking the primer of the round ahead of it and setting off a chain-fire."}},
+  HP:   {name:{zh:'空尖彈 HP', en:'Hollow Point (HP)'}, short:{zh:'空尖彈', en:'HP'}, desc:{zh:'彈頭前端挖空，命中目標後會像花瓣一樣向外翻開擴張，增加傷害範圍並降低過度穿透的風險，是現代防身彈藥的主流設計。', en:'The bullet tip is hollowed out; on impact it opens up like flower petals, increasing wound area and reducing over-penetration risk. The dominant design in modern self-defense ammunition.'}},
+  JHP:  {name:{zh:'被甲空尖彈 JHP', en:'Jacketed Hollow Point (JHP)'}, short:{zh:'被甲空尖', en:'JHP'}, desc:{zh:'在空尖彈的基礎上加上金屬被甲包覆，兼顧擴張效果與結構強度，避免彈頭在高速下解體，是目前執法與民用防身彈藥最常見的形式。', en:"A hollow point with a metal jacket added, balancing expansion with structural strength so the bullet doesn't disintegrate at high velocity — the most common form in law enforcement and civilian defense ammunition today."}},
+  SP:   {name:{zh:'軟頭彈 SP', en:'Soft Point (SP)'}, short:{zh:'軟頭彈', en:'SP'}, desc:{zh:'彈頭尖端露出鉛芯、不完全被甲包覆，命中後會有限度地變形擴張，介於全被甲彈與空尖彈之間，狩獵用途十分常見。', en:'The bullet tip is exposed lead with only partial jacketing, allowing limited expansion on impact — a middle ground between full jacket and hollow point, very common in hunting ammunition.'}},
+  SJSP: {name:{zh:'半被甲軟頭彈 SJSP', en:'Semi-Jacketed Soft Point (SJSP)'}, short:{zh:'半被甲軟頭', en:'SJSP'}, desc:{zh:'被甲只包覆彈頭下半部，尖端外露的鉛芯提供適度擴張效果，同時保留較高的結構強度，常用於大型獵物的重彈頭裝彈。', en:'The jacket only covers the lower half of the bullet, leaving an exposed lead tip for moderate expansion while retaining more structural strength — often used in heavy hunting loads for large game.'}},
+  HPBT: {name:{zh:'尖頭空尾彈 HPBT', en:'Hollow Point Boat Tail (HPBT)'}, short:{zh:'尖頭空尾', en:'HPBT'}, desc:{zh:'彈頭尾端收窄成船型（boat tail），搭配尖銳的彈頭形狀，能大幅降低空氣阻力、提升遠距離飛行的穩定性與精度，是競賽與狙擊彈藥的主流設計。', en:"The bullet's base is tapered into a boat-tail shape and paired with a sharp point, greatly reducing air drag and improving long-range flight stability and accuracy — the dominant design in competition and sniper ammunition."}},
+  POLY: {name:{zh:'聚合物彈道尖 Poly-Tip', en:'Polymer Tip (Poly-Tip)'}, short:{zh:'聚合彈道尖', en:'Poly-Tip'}, desc:{zh:'彈頭尖端嵌入一小塊塑膠尖頭（如Hornady V-MAX/ELD-X），兼顧空尖彈的擴張效果與尖頭彈的低風阻飛行效率，是現代狩獵與競賽彈藥常見的設計。', en:"A small plastic tip is set into the bullet's nose (e.g. Hornady's V-MAX/ELD-X), combining a hollow point's expansion with a spitzer bullet's low-drag flight efficiency — common in modern hunting and competition ammunition."}},
+  API:  {name:{zh:'穿甲燃燒彈 API', en:'Armor-Piercing Incendiary (API)'}, short:{zh:'穿甲燃燒', en:'API'}, desc:{zh:'彈頭內含硬化穿甲蕊心並混合燃燒劑，擊中裝甲後除了物理穿透還會引燃目標，主要用於對付輕裝甲車輛與設備。', en:'The bullet contains a hardened penetrator core mixed with incendiary compound; on hitting armor it both penetrates and ignites the target — used mainly against lightly armored vehicles and equipment.'}},
+  HEI:  {name:{zh:'高爆燃燒彈 HEI', en:'High-Explosive Incendiary (HEI)'}, short:{zh:'高爆燃燒', en:'HEI'}, desc:{zh:'彈頭內裝少量炸藥與燃燒劑，擊中目標時會爆炸並引燃，是機砲、防空武器最常見的裝彈類型之一。', en:'The projectile carries a small explosive charge plus incendiary compound that detonates and ignites on impact — one of the most common loadings for autocannons and air-defense weapons.'}},
+  TRACER: {name:{zh:'曳光彈', en:'Tracer'}, short:{zh:'曳光彈', en:'Tracer'}, desc:{zh:'彈頭底部裝有燃燒劑，發射後會拖出一道可見光跡，方便射手觀察並修正彈著點，通常會依固定比例間隔裝填在彈鏈或彈匣中。', en:"A pyrotechnic compound in the bullet's base burns visibly in flight, letting the shooter see and correct point of impact — typically loaded at a fixed ratio within a belt or magazine."}},
+  BUCKSHOT: {name:{zh:'鹿彈 Buckshot', en:'Buckshot'}, short:{zh:'鹿彈', en:'Buckshot'}, desc:{zh:'霰彈殼內裝填多顆較大的鉛彈丸（而非細碎彈粒），扣一次扳機同時打出去，近距離覆蓋範圍大，常用於居家防身、破門與獵鹿。', en:'A shotgun shell loaded with several larger lead pellets (rather than fine shot), all fired with a single trigger pull for wide close-range coverage — common for home defense, breaching, and deer hunting.'}},
+  BB: {name:{zh:'BB彈', en:'BB'}, short:{zh:'BB彈', en:'BB'}, desc:{zh:'生存遊戲(Airsoft)用的塑膠或金屬彈丸，靠壓縮氣體或彈簧推動出膛，不含火藥發射藥，威力通常受各地法規限制在極低的焦耳數以內。', en:'A plastic or metal pellet used in airsoft, propelled by compressed gas or a spring rather than gunpowder — power is typically capped at a very low joule rating by local regulations.'}},
 };
 
 D.forEach(d=>{
@@ -322,13 +497,18 @@ D.forEach(d=>{
 });
 
 const CAT_COLOR = {pistol:'var(--pistol)', smg:'var(--smg)', rifle:'var(--rifle)', sniper:'var(--sniper)', am:'var(--am)', shotgun:'var(--shotgun)', extreme:'var(--extreme)', bb:'var(--bb)'};
-const CAT_LABEL = {pistol:'手槍彈', smg:'衝鋒槍彈', rifle:'步槍彈', sniper:'狙擊/獵槍彈', am:'大口徑/反器材彈', shotgun:'霰彈', extreme:'機炮彈（極端對照-高）', bb:'BB彈（極端對照-低）'};
+const CAT_LABEL = {
+  pistol:{zh:'手槍彈', en:'Pistol'}, smg:{zh:'衝鋒槍彈', en:'SMG'}, rifle:{zh:'步槍彈', en:'Rifle'},
+  sniper:{zh:'狙擊/獵槍彈', en:'Sniper / Hunting'}, am:{zh:'大口徑/反器材彈', en:'Anti-materiel'},
+  shotgun:{zh:'霰彈', en:'Shotgun'}, extreme:{zh:'機炮彈（極端對照-高）', en:'Autocannon (extreme-high)'},
+  bb:{zh:'BB彈（極端對照-低）', en:'BB pellet (extreme-low)'},
+};
 const ORIGIN_COLOR = {west:'var(--west)', soviet:'var(--soviet)'};
-const ORIGIN_LABEL = {west:'西方陣營（美國/北約）', soviet:'蘇聯/華約陣營'};
+const ORIGIN_LABEL = {
+  west:{zh:'西方陣營（美國/北約）', en:'Western bloc (US / NATO)'},
+  soviet:{zh:'蘇聯/華約陣營', en:'Soviet / Warsaw Pact'},
+};
 
-function cssVar(v){
-  return getComputedStyle(document.documentElement).getPropertyValue(v.replace('var(','').replace(')','')).trim() || v;
-}
 function resolveColor(v){
   const m = v.match(/var\((--[\w-]+)\)/);
   if(!m) return v;
@@ -336,23 +516,24 @@ function resolveColor(v){
 }
 
 const MODES = [
-  {key:'energy', label:'焦耳（槍口動能）', unit:'J', fmt:v=>Math.round(v).toLocaleString()},
-  {key:'oal', label:'整體長度', unit:'mm', fmt:v=>v.toFixed(1)},
-  {key:'diam', label:'彈頭直徑', unit:'mm', fmt:v=>v.toFixed(2)},
-  {key:'weight', label:'彈頭重量', unit:'g', fmt:v=>v.toFixed(1)},
-  {key:'vel', label:'初速', unit:'m/s', fmt:v=>Math.round(v).toLocaleString()},
-  {key:'sd', label:'截面密度', unit:'（無因次）', fmt:v=>v.toFixed(3)},
-  {key:'momentum', label:'動量（後座力簡化參考）', unit:'g·m/s', fmt:v=>Math.round(v).toLocaleString()},
+  {key:'energy', label:{zh:'焦耳（槍口動能）', en:'Energy (muzzle)'}, unit:{zh:'J', en:'J'}, fmt:v=>Math.round(v).toLocaleString()},
+  {key:'oal', label:{zh:'整體長度', en:'Overall length'}, unit:{zh:'mm', en:'mm'}, fmt:v=>v.toFixed(1)},
+  {key:'diam', label:{zh:'彈頭直徑', en:'Bullet diameter'}, unit:{zh:'mm', en:'mm'}, fmt:v=>v.toFixed(2)},
+  {key:'weight', label:{zh:'彈頭重量', en:'Bullet weight'}, unit:{zh:'g', en:'g'}, fmt:v=>v.toFixed(1)},
+  {key:'vel', label:{zh:'初速', en:'Muzzle velocity'}, unit:{zh:'m/s', en:'m/s'}, fmt:v=>Math.round(v).toLocaleString()},
+  {key:'sd', label:{zh:'截面密度', en:'Sectional density'}, unit:{zh:'（無因次）', en:'(dimensionless)'}, fmt:v=>v.toFixed(3)},
+  {key:'momentum', label:{zh:'動量（後座力簡化參考）', en:'Momentum (recoil ref.)'}, unit:{zh:'g·m/s', en:'g·m/s'}, fmt:v=>Math.round(v).toLocaleString()},
 ];
 
 const WEIGHT_REFS = [
-  {label:'一枚硬幣', val:7},
-  {label:'3號AAA鹼性電池', val:12},
-  {label:'一張A4影印紙', val:4.5},
-  {label:'一顆標準高爾夫球', val:45},
-  {label:'一副撲克牌', val:95},
+  {label:{zh:'一枚硬幣', en:'a coin'}, val:7},
+  {label:{zh:'3號AAA鹼性電池', en:'an AAA battery'}, val:12},
+  {label:{zh:'一張A4影印紙', en:'a sheet of A4 paper'}, val:4.5},
+  {label:{zh:'一顆標準高爾夫球', en:'a standard golf ball'}, val:45},
+  {label:{zh:'一副撲克牌', en:'a deck of cards'}, val:95},
 ];
 
+let lang = 'zh';
 let currentMode = 'energy';
 let activeCats = new Set(['pistol','smg','rifle','sniper','am','shotgun']);
 let activeOrigins = new Set(['west','soviet']);
@@ -361,47 +542,57 @@ let showBB = false;
 let pinned = [];
 let focusMode = false;
 
-// --- Build sidebar controls ---
-const modeSelectEl = document.getElementById('modeSelect');
-MODES.forEach(m=>{
-  const btn = document.createElement('button');
-  btn.textContent = m.label;
-  btn.dataset.key = m.key;
-  if(m.key===currentMode) btn.classList.add('active');
-  btn.onclick = ()=>{
-    currentMode = m.key;
-    [...modeSelectEl.children].forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('chartTitle').textContent = `依 ${m.label} 由小到大排列`;
-    document.getElementById('chartUnit').textContent = `單位：${m.unit}`;
-    render();
-  };
-  modeSelectEl.appendChild(btn);
-});
+/* ============================================================
+   Build sidebar controls (rebuilt on language toggle too)
+   ============================================================ */
+function buildModeButtons(){
+  const el = document.getElementById('modeSelect');
+  el.innerHTML = '';
+  MODES.forEach(m=>{
+    const btn = document.createElement('button');
+    btn.textContent = m.label[lang];
+    btn.dataset.key = m.key;
+    if(m.key===currentMode) btn.classList.add('active');
+    btn.onclick = ()=>{
+      currentMode = m.key;
+      [...el.children].forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      updateChartTitle();
+      render();
+    };
+    el.appendChild(btn);
+  });
+}
 
-const catFiltersEl = document.getElementById('catFilters');
-Object.keys(CAT_LABEL).filter(c=>c!=='extreme' && c!=='bb').forEach(c=>{
-  const lab = document.createElement('label');
-  lab.className='chk';
-  lab.innerHTML = `<input type="checkbox" checked data-cat="${c}"><span class="swatch" style="background:${CAT_COLOR[c]}"></span>${CAT_LABEL[c]}`;
-  lab.querySelector('input').onchange = (e)=>{
-    if(e.target.checked) activeCats.add(c); else activeCats.delete(c);
-    render();
-  };
-  catFiltersEl.appendChild(lab);
-});
+function buildCatFilters(){
+  const el = document.getElementById('catFilters');
+  el.innerHTML = '';
+  Object.keys(CAT_LABEL).filter(c=>c!=='extreme' && c!=='bb').forEach(c=>{
+    const lab = document.createElement('label');
+    lab.className='chk';
+    lab.innerHTML = `<input type="checkbox" ${activeCats.has(c)?'checked':''} data-cat="${c}"><span class="swatch" style="background:${CAT_COLOR[c]}"></span>${CAT_LABEL[c][lang]}`;
+    lab.querySelector('input').onchange = (e)=>{
+      if(e.target.checked) activeCats.add(c); else activeCats.delete(c);
+      render();
+    };
+    el.appendChild(lab);
+  });
+}
 
-const originFiltersEl = document.getElementById('originFilters');
-Object.keys(ORIGIN_LABEL).forEach(o=>{
-  const lab = document.createElement('label');
-  lab.className='chk';
-  lab.innerHTML = `<input type="checkbox" checked data-origin="${o}"><span class="swatch" style="background:${ORIGIN_COLOR[o]}"></span>${ORIGIN_LABEL[o]}`;
-  lab.querySelector('input').onchange = (e)=>{
-    if(e.target.checked) activeOrigins.add(o); else activeOrigins.delete(o);
-    render();
-  };
-  originFiltersEl.appendChild(lab);
-});
+function buildOriginFilters(){
+  const el = document.getElementById('originFilters');
+  el.innerHTML = '';
+  Object.keys(ORIGIN_LABEL).forEach(o=>{
+    const lab = document.createElement('label');
+    lab.className='chk';
+    lab.innerHTML = `<input type="checkbox" ${activeOrigins.has(o)?'checked':''} data-origin="${o}"><span class="swatch" style="background:${ORIGIN_COLOR[o]}"></span>${ORIGIN_LABEL[o][lang]}`;
+    lab.querySelector('input').onchange = (e)=>{
+      if(e.target.checked) activeOrigins.add(o); else activeOrigins.delete(o);
+      render();
+    };
+    el.appendChild(lab);
+  });
+}
 
 document.getElementById('extremeToggle').onchange = (e)=>{
   showExtreme = e.target.checked;
@@ -410,6 +601,40 @@ document.getElementById('extremeToggle').onchange = (e)=>{
 document.getElementById('bbToggle').onchange = (e)=>{
   showBB = e.target.checked;
   render();
+};
+
+function updateChartTitle(){
+  const modeDef = MODES.find(m=>m.key===currentMode);
+  document.getElementById('chartTitle').textContent = sortTitle(modeDef.label[lang]);
+  document.getElementById('chartUnit').textContent = `${UI.unitPrefix[lang]}${modeDef.unit[lang]}`;
+}
+
+function applyStaticText(){
+  document.documentElement.lang = lang==='zh' ? 'zh-Hant' : 'en';
+  document.getElementById('pageTitle').textContent = UI.pageTitle[lang];
+  document.getElementById('hTitle').textContent = UI.title[lang];
+  document.getElementById('hSubtitle').textContent = UI.subtitle[lang];
+  document.getElementById('hDisclaimer').textContent = UI.disclaimer[lang];
+  document.getElementById('hModeHeading').textContent = UI.modeHeading[lang];
+  document.getElementById('hCatHeading').textContent = UI.catHeading[lang];
+  document.getElementById('hOriginHeading').textContent = UI.originHeading[lang];
+  document.getElementById('hExtremeToggle').innerHTML = UI.extremeToggle[lang];
+  document.getElementById('hBBToggle').innerHTML = UI.bbToggle[lang];
+  document.getElementById('hHint').innerHTML = UI.hint[lang];
+  document.getElementById('hTrayHeading').textContent = UI.trayHeading[lang];
+  document.getElementById('hFooter').textContent = UI.footer[lang];
+  document.getElementById('langToggle').textContent = lang==='zh' ? 'EN' : '中文';
+  updateChartTitle();
+}
+
+document.getElementById('langToggle').onclick = ()=>{
+  lang = lang==='zh' ? 'en' : 'zh';
+  applyStaticText();
+  buildModeButtons();
+  buildCatFilters();
+  buildOriginFilters();
+  render();
+  renderTray();
 };
 
 // --- Chart ---
@@ -474,7 +699,7 @@ function render(){
           .attr('y1', gy).attr('y2', gy);
         g.append('text').attr('class','grid-label')
           .attr('x', margin.left+2).attr('y', gy-3)
-          .text(`${r.label}（${r.val}g）`);
+          .text(`${r.label[lang]} (${r.val}g)`);
       });
     } else {
       [0.25, 0.5, 0.75].forEach(f=>{
@@ -514,7 +739,7 @@ function render(){
           .attr('x', x.bandwidth()/2)
           .attr('y', (d,i)=> (inFocus || i%2===0) ? height-margin.bottom+30 : height-margin.bottom+52)
           .attr('text-anchor','middle')
-          .text(d=>d.name.length>16? d.name.slice(0,15)+'…': d.name)
+          .text(d=>{ const n = d.name[lang]; return n.length>16? n.slice(0,15)+'…': n; })
           .call(wrapLabel, x.bandwidth());
         grp.append('text')
           .attr('class','bar-value')
@@ -557,7 +782,7 @@ function render(){
       .attr('x', (xa+xb)/2).attr('y', topY-8)
       .attr('text-anchor','middle')
       .attr('font-size', 14)
-      .text(`${bigger.name} 約為 ${smaller.name} 的 ${rv} 倍`);
+      .text(compareCalloutText(bigger.name[lang], smaller.name[lang], rv));
   }
 }
 
@@ -565,7 +790,7 @@ function renderFocusBanner(){
   const btn = document.getElementById('focusBtn');
   if(pinned.length===2){
     btn.style.visibility = 'visible';
-    btn.textContent = focusMode ? '← 返回完整圖表' : '🔍 並排比較這兩個';
+    btn.textContent = focusMode ? UI.focusOff[lang] : UI.focusOn[lang];
     btn.onclick = toggleFocus;
   } else {
     btn.style.visibility = 'hidden';
@@ -599,21 +824,21 @@ function renderTray(){
     card.className='tray-card';
     card.innerHTML = `
       <button class="close" data-id="${d.id}">✕</button>
-      <h4>${d.name}</h4>
-      <div class="gun">代表槍械：${d.gun}</div>
-      <div class="stat-row"><span>整體長度</span><span>${d.oal.toFixed(1)} mm</span></div>
-      <div class="stat-row"><span>焦耳（槍口動能）</span><span>${Math.round(d.energy).toLocaleString()} J</span></div>
-      <div class="stat-row"><span>彈頭直徑</span><span>${d.diam.toFixed(2)} mm</span></div>
-      <div class="stat-row"><span>彈頭重量</span><span>${d.weight.toFixed(1)} g</span></div>
-      <div class="stat-row"><span>初速</span><span>${Math.round(d.vel)} m/s</span></div>
-      <div class="stat-row"><span>截面密度</span><span>${d.sd.toFixed(3)}</span></div>
-      <div class="stat-row"><span>動量（後座力參考）</span><span>${Math.round(d.momentum).toLocaleString()} g·m/s</span></div>
+      <h4>${d.name[lang]}</h4>
+      <div class="gun">${UI.representativeGun[lang]}${d.gun[lang]}</div>
+      <div class="stat-row"><span>${UI.statLength[lang]}</span><span>${d.oal.toFixed(1)} mm</span></div>
+      <div class="stat-row"><span>${UI.statEnergy[lang]}</span><span>${Math.round(d.energy).toLocaleString()} J</span></div>
+      <div class="stat-row"><span>${UI.statDiam[lang]}</span><span>${d.diam.toFixed(2)} mm</span></div>
+      <div class="stat-row"><span>${UI.statWeight[lang]}</span><span>${d.weight.toFixed(1)} g</span></div>
+      <div class="stat-row"><span>${UI.statVel[lang]}</span><span>${Math.round(d.vel)} m/s</span></div>
+      <div class="stat-row"><span>${UI.statSD[lang]}</span><span>${d.sd.toFixed(3)}</span></div>
+      <div class="stat-row"><span>${UI.statMomentum[lang]}</span><span>${Math.round(d.momentum).toLocaleString()} g·m/s</span></div>
       <div class="chip-row">
-        <span class="chip-label">常見彈頭類型：</span>
-        ${d.tags.map(code=>`<span class="bullet-chip" data-code="${code}">${code} ${BULLET_GLOSSARY[code]?.short||''}</span>`).join('')}
+        <span class="chip-label">${UI.chipLabel[lang]}</span>
+        ${d.tags.map(code=>`<span class="bullet-chip" data-code="${code}">${code} ${BULLET_GLOSSARY[code]?.short?.[lang]||''}</span>`).join('')}
       </div>
-      ${d.note ? `<div class="chip-extra">${d.note}</div>` : ''}
-      <div class="desc-note">${d.desc}</div>
+      ${d.note ? `<div class="chip-extra">${d.note[lang]}</div>` : ''}
+      <div class="desc-note">${d.desc[lang]}</div>
     `;
     card.querySelector('.close').onclick = ()=>togglePin(d);
     card.querySelectorAll('.bullet-chip').forEach(chip=>{
@@ -630,10 +855,10 @@ function renderTray(){
   if(pinned.length===2){
     const [a,b] = pinned;
     const ratio = a.energy>b.energy ? (a.energy/b.energy) : (b.energy/a.energy);
-    const bigger = a.energy>b.energy? a.name : b.name;
+    const bigger = a.energy>b.energy? a.name[lang] : b.name[lang];
     const diff = document.createElement('div');
     diff.className='diff-row';
-    diff.textContent = `焦耳差距：${bigger} 約為另一者的 ${ratio.toFixed(1)} 倍`;
+    diff.textContent = diffRowText(bigger, ratio.toFixed(1));
     grid.appendChild(diff);
   }
 }
@@ -647,7 +872,7 @@ function showChipPopover(chipEl, pinned_){
   document.querySelectorAll('.bullet-chip.active').forEach(c=>c.classList.remove('active'));
   chipEl.classList.add('active');
   const pop = document.getElementById('chipPopover');
-  pop.innerHTML = `<h5>${entry.name}</h5>${entry.desc}`;
+  pop.innerHTML = `<h5>${entry.name[lang]}</h5>${entry.desc[lang]}`;
   pop.style.display = 'block';
   const rect = chipEl.getBoundingClientRect();
   const popW = 240;
@@ -671,6 +896,11 @@ document.addEventListener('click', (e)=>{
   if(!e.target.classList.contains('bullet-chip')) hideChipPopover();
 });
 
+// --- init ---
+applyStaticText();
+buildModeButtons();
+buildCatFilters();
+buildOriginFilters();
 render();
 </script>
 </body>
