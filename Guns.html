@@ -196,27 +196,31 @@ body.chart-fullscreen .chart-hint{display:none;}
 .cmp-clear-wrap{margin-top:10px;}
 
 footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line); color:var(--text-3); font-size:11px; line-height:1.8;}
+.lang-toggle-wrap{position:absolute; top:16px; right:16px; z-index:2;}
+.lang-toggle{background:var(--panel-alt); border:1px solid var(--border); color:var(--text-2); font-family:var(--font-display); font-size:11px; letter-spacing:.08em; padding:7px 14px; border-radius:3px; cursor:pointer; transition:all .15s;}
+.lang-toggle:hover{border-color:var(--accent); color:var(--accent);}
 </style>
 </head>
 <body>
 <div class="hud-frame">
 
   <header class="top">
-    <div class="eyebrow"><span class="dot"></span> SMALL ARMS & AUTOCANNON ENVELOPE · REFERENCE PLOT</div>
-    <h1>單兵輕兵器 × 載具機炮：<span class="accent">射程</span>／<span class="accent">槍口動能</span>／<span class="accent">射速</span>直覺對比</h1>
-    <p class="sub">本站特意將常見的<b>單兵輕兵器</b>與裝甲載具、戰機所使用的<b>機炮（Autocannon）</b>放在同一個維度，旨在用有效射程、槍口動能與射速，幫助初學者直覺理解從人體肌肉、單兵裝備到「機械怪獸」之間真正的量級跨度與斷層層級。<br><br>註：在軍事定義上，口徑大於20mm且具備全自動擊發能力的武器歸類為「機炮」，不屬於輕兵器（Small Arms）範疇。本站非嚴謹彈道學工具，數據僅取常見引用值。</p>
+    <div class="lang-toggle-wrap"><button class="lang-toggle" id="langToggle">EN</button></div>
+    <div class="eyebrow"><span class="dot"></span> <span id="eyebrowText">SMALL ARMS & AUTOCANNON ENVELOPE · REFERENCE PLOT</span></div>
+    <h1 id="h1Text">單兵輕兵器 × 載具機炮：<span class="accent">射程</span>／<span class="accent">槍口動能</span>／<span class="accent">射速</span>直覺對比</h1>
+    <p class="sub" id="subText">本站特意將常見的<b>單兵輕兵器</b>與裝甲載具、戰機所使用的<b>機炮（Autocannon）</b>放在同一個維度，旨在用有效射程、槍口動能與射速，幫助初學者直覺理解從人體肌肉、單兵裝備到「機械怪獸」之間真正的量級跨度與斷層層級。<br><br>註：在軍事定義上，口徑大於20mm且具備全自動擊發能力的武器歸類為「機炮」，不屬於輕兵器（Small Arms）範疇。本站非嚴謹彈道學工具，數據僅取常見引用值。</p>
     <div class="stat-row">
-      <div class="stat-chip"><div class="k">收錄兵器</div><div class="v"><span id="statCount">--</span> 件</div></div>
-      <div class="stat-chip"><div class="k">射程跨度</div><div class="v"><span id="statRange">--</span></div></div>
-      <div class="stat-chip"><div class="k">動能跨度</div><div class="v"><span id="statEnergy">--</span></div></div>
-      <div class="stat-chip"><div class="k">兵器類別</div><div class="v"><span id="statGroups">--</span> 類</div></div>
+      <div class="stat-chip"><div class="k" id="statCountLbl">收錄兵器</div><div class="v"><span id="statCount">--</span> <span id="statCountSuffix">件</span></div></div>
+      <div class="stat-chip"><div class="k" id="statRangeLbl">射程跨度</div><div class="v"><span id="statRange">--</span></div></div>
+      <div class="stat-chip"><div class="k" id="statEnergyLbl">動能跨度</div><div class="v"><span id="statEnergy">--</span></div></div>
+      <div class="stat-chip"><div class="k" id="statGroupsLbl">兵器類別</div><div class="v"><span id="statGroups">--</span> <span id="statGroupsSuffix">類</span></div></div>
     </div>
   </header>
 
   <div class="layout">
 
     <aside class="panel" id="filters">
-      <div class="panel-title">篩選 / FILTER</div>
+      <div class="panel-title" id="filterTitleText">篩選 / FILTER</div>
       <div class="search-wrap">
         <input type="text" id="search" placeholder="搜尋兵器或口徑…">
       </div>
@@ -226,15 +230,15 @@ footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line)
         <button class="btn-mini" id="btnNone">清空</button>
       </div>
 
-      <div class="panel-title" style="margin-top:16px;">射擊方式 / ACTION</div>
+      <div class="panel-title" style="margin-top:16px;" id="actionTitleText">射擊方式 / ACTION</div>
       <div id="actionList"></div>
 
-      <div class="panel-title" style="margin-top:16px;">參考 / REFERENCE</div>
+      <div class="panel-title" style="margin-top:16px;" id="refTitleText">參考 / REFERENCE</div>
       <div id="refLayerList"></div>
     </aside>
 
     <section class="panel" id="chartPanel">
-      <div class="panel-title">射程 × 動能 散點圖 <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="chartCount"></span></div>
+      <div class="panel-title"><span id="chartTitleText">射程 × 動能 散點圖</span> <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="chartCount"></span></div>
       <div class="chart-toolbar">
         <button id="toggleXScale" class="toggle-btn" aria-pressed="false">射程：對數</button>
         <button id="toggleYScale" class="toggle-btn" aria-pressed="false">動能：對數</button>
@@ -269,22 +273,22 @@ footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line)
           </div>
         </div>
       </div>
-      <div class="chart-hint">滑鼠滾輪在圖表上可縮放、拖曳可平移，也可直接拖動座標軸旁的拉桿手把調整範圍。想精準聚焦，按「框選縮放」後在圖表上拖曳畫出一個框；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原完整檢視；射程／動能都可各自切換對數或線性尺度。</div>
+      <div class="chart-hint" id="chartHintText">滑鼠滾輪在圖表上可縮放、拖曳可平移，也可直接拖動座標軸旁的拉桿手把調整範圍。想精準聚焦，按「框選縮放」後在圖表上拖曳畫出一個框；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原完整檢視；射程／動能都可各自切換對數或線性尺度。</div>
     </section>
 
     <section class="panel" id="legendPanel" style="grid-column:1/-1;">
-      <div class="panel-title">圖表判讀 / LEGEND</div>
+      <div class="panel-title" id="legendTitleText">圖表判讀 / LEGEND</div>
       <div class="legend-grid">
         <div class="legend-card">
-          <div class="legend-card-title">座標軸</div>
-          <div class="legend-card-body">
+          <div class="legend-card-title" id="legendAxesTitleText">座標軸</div>
+          <div class="legend-card-body" id="legendAxesBodyText">
             橫軸＝有效射程（公尺，可切換對數／線性）<br>
             縱軸＝槍口動能（焦耳，可切換對數／線性）
           </div>
         </div>
         <div class="legend-card">
-          <div class="legend-card-title">形狀＝射擊方式</div>
-          <div class="legend-card-body">
+          <div class="legend-card-title" id="legendShapeTitleText">形狀＝射擊方式</div>
+          <div class="legend-card-body" id="legendShapeBodyText">
             ● 圓形＝全自動武器（<b>泡泡大小正比於理論循環射速</b>，越大射速越快，如加特林火神砲）<br>
             ■ 方形＝半自動武器（固定大小，單次扣引發射單發）<br>
             ◆ 菱形＝栓動/手動式武器（固定大小，手動退殼上膛）<br>
@@ -292,8 +296,8 @@ footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line)
           </div>
         </div>
         <div class="legend-card">
-          <div class="legend-card-title">顏色與參考圖層</div>
-          <div class="legend-card-body">
+          <div class="legend-card-title" id="legendColorTitleText">顏色與參考圖層</div>
+          <div class="legend-card-body" id="legendColorBodyText">
             顏色＝兵器類別<br>
             綠色／橘色色帶＝防彈衣等級概略上限<br>
             橘色虛線＝常見物體的動能參考（頭骨、氣槍、裝甲車等）<br>
@@ -302,8 +306,8 @@ footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line)
           </div>
         </div>
         <div class="legend-card">
-          <div class="legend-card-title">資料說明</div>
-          <div class="legend-card-body">
+          <div class="legend-card-title" id="legendDataTitleText">資料說明</div>
+          <div class="legend-card-body" id="legendDataBodyText">
             數字為公開資料整理之概略估算值，並非嚴謹考據。詳細口徑與重量可在點選武器後彈出的卡片查看。
           </div>
         </div>
@@ -311,24 +315,24 @@ footer{margin-top:26px; padding-top:16px; border-top:1px solid var(--panel-line)
     </section>
 
     <section class="panel" id="comparePanel">
-      <div class="panel-title">比較清單 / COMPARE <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="compareCount"></span></div>
+      <div class="panel-title"><span id="compareTitleText">比較清單 / COMPARE</span> <span style="font-weight:400;color:var(--text-3);font-size:10px;" id="compareCount"></span></div>
       <div id="compareBody">
-        <div class="detail-empty" style="padding:6px 4px;">點選圖表上的兵器，於詳細卡片按「加入比較清單」，即可在此並排比較射程、動能與射速。</div>
+        <div class="detail-empty" style="padding:6px 4px;" id="compareEmptyText">點選圖表上的兵器，於詳細卡片按「加入比較清單」，即可在此並排比較射程、動能與射速。</div>
       </div>
     </section>
 
   </div>
 
-  <footer>
+  <footer id="footerText">
     數據為公開彈道規格資料整理之概略估算值，僅供科普與創作參考，並非嚴謹考據。「槍口動能」依「彈頭重量與初速」概略計算，實際數字因彈藥批次、槍管長度、氣候條件而異；「有效射程」在軍規、警規、民用市場間常有不同認定標準，本站僅取較常見的引用值。射速數字對全自動武器為廠商公布之理論射速，對半自動／栓動式武器則為熟練射手可維持的實際持續射速，兩者性質不同但都取自公開可查證的引用值。動能數字不直接等同於「殺傷力」或「停止作用」，實際毀傷效果還牽涉彈頭設計、命中部位等因素。
   </footer>
 
 </div>
 
 <script>
-window.GROUPS = {"PISTOL":{"label":"手槍","color":"#7A98B0","order":1},"SMG":{"label":"衝鋒槍","color":"#C98A4B","order":2},"RIFLE":{"label":"步槍","color":"#7A9D63","order":3},"SHOTGUN":{"label":"霰彈槍","color":"#6BA5A0","order":4},"SNIPER":{"label":"狙擊槍","color":"#B0524A","order":5},"MG":{"label":"機槍","color":"#C9A63C","order":6},"AUTOCANNON":{"label":"機炮（戰機／裝甲車）","color":"#E0475C","order":7},"OTHER":{"label":"其他兵器（歷史／人力／特殊）","color":"#B497D6","order":8}};
-window.ACTION_TYPE = {"SEMI_AUTO":{"label":"半自動","color":"#8FE3C0"},"FULL_AUTO":{"label":"全自動","color":"#FF7A45"},"BOLT_ACTION":{"label":"栓動式","color":"#8B9FD4"},"OTHER":{"label":"特殊／人力驅動","color":"#D6B497"}};
-window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PISTOL","actionType":"SEMI_AUTO","caliber":".22 LR","effectiveRangeM":25,"muzzleEnergyJ":68,"rpm":40,"weightKg":0.4,"origin":"美國","desc":"市面上真實在產的超緊湊型民用自衛武器。由於極致微型的槍身使槍管長度縮減至僅2.75吋，其動能表現大幅受限，遠低於一般步槍常引用的標準值。追求極致的隱蔽性與近乎零的後座力，讓射手能輕鬆放進衣袋或貼身隱藏，多用於新手入門練習或作為最後一線的備用槍械。然而，這款武器的制止力極度不足，在實務上完全不建議作為主要防身和自衛火力。"},{"id":2,"name":"Glock 19","group":"PISTOL","actionType":"SEMI_AUTO","caliber":"9×19mm","effectiveRangeM":50,"muzzleEnergyJ":521,"rpm":40,"weightKg":0.7,"origin":"奧地利","desc":"全世界執法機關與民用市場最普及的制式手槍之一，可靠度與彈匣容量的平衡點做得極好，9×19mm口徑也是全球軍警最常見的手槍彈藥標準。"},{"id":3,"name":"M1911","group":"PISTOL","actionType":"SEMI_AUTO","caliber":".45 ACP","effectiveRangeM":50,"muzzleEnergyJ":528,"rpm":40,"weightKg":1.1,"origin":"美國","desc":"1911年服役至今超過一世紀的經典手槍設計，.45 ACP口徑彈頭較重、初速較低，動能跟9mm相近但彈道特性不同，至今仍有大量民用與特種部隊愛用者。"},{"id":4,"name":"Desert Eagle","group":"PISTOL","actionType":"SEMI_AUTO","caliber":".50 AE","effectiveRangeM":50,"muzzleEnergyJ":2200,"rpm":40,"weightKg":1.9,"origin":"以色列／美國","desc":"民用市場最知名的大口徑半自動手槍，槍口動能直接超過本表多款突擊步槍彈藥，因為電影跟遊戲曝光度極高而聲名大噪，但巨大的後座力與重量讓它在實戰中的普及度遠不如聲量。"},{"id":5,"name":"Uzi","group":"SMG","actionType":"FULL_AUTO","caliber":"9×19mm","effectiveRangeM":150,"muzzleEnergyJ":521,"rpm":600,"weightKg":3.5,"origin":"以色列","desc":"1950年代設計、外型辨識度極高的經典衝鋒槍，機匣式結構讓槍身能做得短小，冷戰時期一度是全世界最暢銷的衝鋒槍之一，至今仍是流行文化中「衝鋒槍」的代名詞。"},{"id":6,"name":"HK MP5","group":"SMG","actionType":"FULL_AUTO","caliber":"9×19mm","effectiveRangeM":200,"muzzleEnergyJ":521,"rpm":800,"weightKg":2.5,"origin":"德國","desc":"滾輪延遲反衝式作動帶來的優異精準度，讓MP5成為全球特種部隊與反恐單位近數十年來的近戰標準配備之一，室內近距離作戰的代名詞。"},{"id":7,"name":"FN P90","group":"SMG","actionType":"FULL_AUTO","caliber":"5.7×28mm","effectiveRangeM":200,"muzzleEnergyJ":500,"rpm":900,"weightKg":2.5,"origin":"比利時","desc":"「個人防禦武器（PDW）」概念的代表作，橫置彈匣與未來感外型辨識度極高，5.7×28mm是專為PDW設計的小口徑高速彈，動能雖跟一般手槍彈相近，但彈頭穿透軟性防護的能力更好。"},{"id":40,"name":"Ruger 10/22","group":"RIFLE","actionType":"SEMI_AUTO","caliber":".22 LR","effectiveRangeM":100,"muzzleEnergyJ":166,"rpm":45,"weightKg":2.3,"origin":"美國","desc":"1964年推出、全球累積銷售超過700萬把，是名副其實「最普及的.22LR步槍」，幾乎是入門玩家跟小型害獸/小獵物獵人的預設選擇。標準18.5吋槍管配合高速彈藥，實測初速約1150-1200fps，換算動能166J——雖然還是遠低於任何中心點火步槍彈藥，但已經是本表Ruger LCP II口袋手槍（68J）的兩倍多，直接證明步槍夠長的槍管能把同一發.22LR子彈的動能榨出更多，光靠槍管長度差異就能讓同一種彈藥動能差到這個程度。"},{"id":8,"name":"AK-47","group":"RIFLE","actionType":"FULL_AUTO","caliber":"7.62×39mm","effectiveRangeM":400,"muzzleEnergyJ":2067,"rpm":600,"weightKg":4.3,"origin":"蘇聯","desc":"人類史上產量最大、分佈最廣的槍械，機械結構簡單耐用、就算保養不佳也能持續運作，是二十世紀後半葉幾乎所有武裝衝突都會出現的身影，本身已經是一個文化符號。"},{"id":9,"name":"AK-74","group":"RIFLE","actionType":"FULL_AUTO","caliber":"5.45×39mm","effectiveRangeM":400,"muzzleEnergyJ":1400,"rpm":600,"weightKg":3.9,"origin":"蘇聯","desc":"AK-47的小口徑高速化後繼型號，換裝5.45×39mm彈藥讓後座力更小、彈道更平直，是蘇聯／俄羅斯回應西方國家改用小口徑步槍彈趨勢的產物。"},{"id":10,"name":"M4A1","group":"RIFLE","actionType":"FULL_AUTO","caliber":"5.56×45mm","effectiveRangeM":500,"muzzleEnergyJ":1694,"rpm":850,"weightKg":3.4,"origin":"美國","desc":"美軍現役制式突擊步槍卡賓槍型號，短槍管配合可伸縮槍托讓它在載具、室內等狹窄空間更好操作，是過去二十年美軍與北約盟國最常見的單兵武器之一。"},{"id":11,"name":"M16A4","group":"RIFLE","actionType":"FULL_AUTO","caliber":"5.56×45mm","effectiveRangeM":550,"muzzleEnergyJ":1694,"rpm":800,"weightKg":3.9,"origin":"美國","desc":"M4的全長版本，較長的槍管帶來稍高的初速與略遠的有效射程，長年是美軍陸戰隊的制式步槍，直到近年才逐漸被M4系列全面取代第一線角色。"},{"id":12,"name":"FN SCAR-H","group":"RIFLE","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":600,"muzzleEnergyJ":3457,"rpm":625,"weightKg":3.6,"origin":"比利時","desc":"美軍特種作戰司令部（SOCOM）主導開發的模組化步槍系列，重型（H）版本採用全威力7.62×51mm彈藥，兼顧突擊步槍的操控性與戰鬥步槍等級的射程火力。"},{"id":13,"name":"M14","group":"RIFLE","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":460,"muzzleEnergyJ":3457,"rpm":700,"weightKg":4.1,"origin":"美國","desc":"越戰早期美軍制式步槍，全威力彈藥配合可選射方式，火力兇猛但全自動時後座力難以控制，越戰中後期逐漸讓位給更輕巧的M16，但至今仍以精確射手步槍的身分持續服役。"},{"id":14,"name":"FN FAL","group":"RIFLE","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":650,"muzzleEnergyJ":3457,"rpm":650,"weightKg":4.3,"origin":"比利時","desc":"冷戰時期西方陣營非美系國家最普及的制式步槍之一，因產量與使用國家眾多而有「自由世界的右手」之稱，全威力彈藥賦予它優異的射程與穿透力。"},{"id":52,"name":"莫辛-納甘 M91/30","group":"RIFLE","actionType":"BOLT_ACTION","caliber":"7.62×54mmR","effectiveRangeM":500,"muzzleEnergyJ":3550,"rpm":12,"weightKg":4,"origin":"俄羅斯帝國／蘇聯","desc":"1891年設計、服役超過一世紀的俄系經典栓動步槍，二戰蘇聯步兵標準配備，也是後來德拉貢諾夫SVD、PKM共用的7.62×54mmR彈藥的原始搭載平台。動能約3,550J，跟.30-06、7.62×51NATO同一個量級，證明19世紀末的彈藥設計底子其實不差，落後現代步槍的地方主要是栓動射速慢（每分鐘僅5發彈匣容量、手動退殼上膛）跟量產公差較大，不是彈藥本身威力不足。"},{"id":37,"name":"Remington 870（標準9粒裝）","group":"SHOTGUN","actionType":"BOLT_ACTION","caliber":"12號散彈 00鹿彈（標準9粒，2¾吋）","effectiveRangeM":40,"muzzleEnergyJ":2550,"rpm":20,"weightKg":3.4,"origin":"美國","desc":"全世界最普及的幫浦式（pump-action）霰彈槍之一，警用、軍用、民用獵槍市場都看得到它的身影。00鹿彈一發9顆.33吋鉛彈，本表動能取9顆彈丸槍口動能總和——等於一次扣扳機同時打出9發接近9mm等級的彈丸，這也是霰彈槍「近距離停止力」惡名昭彰的原因，但幫浦式手動退殼上膛也讓連續射擊速度遠不及自動武器。"},{"id":38,"name":"Mossberg 500（低後座力減裝彈）","group":"SHOTGUN","actionType":"BOLT_ACTION","caliber":"12號散彈 00鹿彈（低後座力9粒，2¾吋）","effectiveRangeM":35,"muzzleEnergyJ":1920,"rpm":20,"weightKg":3.3,"origin":"美國","desc":"跟870同級的經典幫浦式霰彈槍，這裡配的是低後座力（reduced recoil）減裝彈——初速故意降低換取更好操控性跟更快的後續瞄準，動能因此比標準彈藥低了約四分之一，是「同一把槍換彈藥、動能差很多」的好例子。"},{"id":39,"name":"Benelli M4（3吋麥格農15粒裝）","group":"SHOTGUN","actionType":"SEMI_AUTO","caliber":"12號散彈 00鹿彈（3吋麥格農15粒）","effectiveRangeM":45,"muzzleEnergyJ":4050,"rpm":45,"weightKg":3.8,"origin":"義大利","desc":"美軍陸戰隊制式半自動戰鬥霰彈槍，這裡配的是加長型3吋麥格農彈殼、可塞入15顆00鹿彈的重裝彈藥，總動能是本表所有霰彈槍裡最高的一款。半自動作動讓它不用像幫浦式那樣手動退殼上膛，連續射擊速度明顯更快。"},{"id":15,"name":"Remington 700 / M24","group":"SNIPER","actionType":"BOLT_ACTION","caliber":"7.62×51mm","effectiveRangeM":800,"muzzleEnergyJ":3457,"rpm":15,"weightKg":5.4,"origin":"美國","desc":"以民用獵槍平台為基礎發展出的軍規狙擊槍代表作（美軍M24型號），栓動式設計犧牲射速換取極高的精準度與可靠度，是中距離精確射擊的經典標竿。"},{"id":16,"name":"AI AWM","group":"SNIPER","actionType":"BOLT_ACTION","caliber":".338 Lapua Magnum","effectiveRangeM":1500,"muzzleEnergyJ":6464,"rpm":10,"weightKg":6.5,"origin":"英國","desc":"英國精密國際（Accuracy International）出品的長距離狙擊槍代表作，.338拉普阿麥格農彈藥填補了7.62mm與.50 BMG之間的空缺，兼顧長距離威力與可控後座力，各國特種部隊採用率極高。"},{"id":17,"name":"Barrett M82","group":"SNIPER","actionType":"SEMI_AUTO","caliber":".50 BMG","effectiveRangeM":1800,"muzzleEnergyJ":17950,"rpm":10,"weightKg":12.9,"origin":"美國","desc":"「反器材步槍」這個武器類別的開創者，本體巨大加上.50 BMG彈藥賦予的驚人動能，設計初衷就不是單純打人，而是打穿輕裝甲車輛、癱瘓雷達天線、引爆未爆彈這類「器材」目標，本表槍口動能數一數二誇張。"},{"id":18,"name":"德拉貢諾夫 SVD","group":"SNIPER","actionType":"SEMI_AUTO","caliber":"7.62×54mmR","effectiveRangeM":800,"muzzleEnergyJ":4000,"rpm":30,"weightKg":4.3,"origin":"蘇聯","desc":"蘇聯軍隊「精確射手步槍」概念的開創之作，半自動設計讓它比一般栓動狙擊槍能維持更高的持續射速，定位介於一般步槍與傳統狙擊槍之間，影響了後續全世界精確射手步槍的發展方向。"},{"id":19,"name":"M249 SAW","group":"MG","actionType":"FULL_AUTO","caliber":"5.56×45mm","effectiveRangeM":800,"muzzleEnergyJ":1694,"rpm":800,"weightKg":7.5,"origin":"比利時／美國","desc":"美軍班用輕機槍標準配備，與突擊步槍共用5.56mm彈藥簡化後勤，可用彈鏈或彈匣供彈，是步兵班壓制火力的核心，讓機動性與持續火力取得平衡。"},{"id":20,"name":"RPK","group":"MG","actionType":"FULL_AUTO","caliber":"7.62×39mm","effectiveRangeM":800,"muzzleEnergyJ":2067,"rpm":600,"weightKg":5.6,"origin":"蘇聯","desc":"AK-47的加長槍管、加重槍身輕機槍化型號，零件與AK系列高度共通、後勤壓力極低，是蘇聯及其盟國步兵班長年的標準支援火力。"},{"id":21,"name":"M240","group":"MG","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":1100,"muzzleEnergyJ":3457,"rpm":750,"weightKg":12.5,"origin":"比利時／美國","desc":"美軍現役通用機槍，全威力7.62mm彈藥賦予的射程與穿透力遠超班用輕機槍，是連、排級單位的核心支援火力，也常見於載具與直升機武裝配置。"},{"id":22,"name":"PKM","group":"MG","actionType":"FULL_AUTO","caliber":"7.62×54mmR","effectiveRangeM":1000,"muzzleEnergyJ":4000,"rpm":650,"weightKg":9,"origin":"蘇聯","desc":"蘇聯及其盟國廣泛採用的通用機槍，設計簡潔可靠、重量較同類西方機槍更輕，冷戰後在全世界各地武裝衝突中的出鏡率極高，地位大致對應西方陣營的M240。"},{"id":23,"name":"M2 Browning","group":"MG","actionType":"FULL_AUTO","caliber":".50 BMG","effectiveRangeM":2000,"muzzleEnergyJ":17950,"rpm":550,"weightKg":38,"origin":"美國","desc":"1921年設計、服役超過一世紀至今仍未被完全取代的傳奇重機槍，暱稱「Ma Deuce」。.50 BMG的動能大概就是輕兵器對抗裝甲載具的天花板——查證過的B6級警用裝甲車鋼板、一般裝甲運兵車等級的防護，都是專門設計來擋這發子彈的。換句話說.50 BMG差不多是「單兵可攜帶武器」跟「真正裝甲載具」之間那條分界線：再往上，就得靠本表機炮分類那些動輒數萬到數十萬焦耳的載具/防空武器才啃得動了。"},{"id":24,"name":"M134 迷你砲","group":"MG","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":1000,"muzzleEnergyJ":3457,"rpm":4000,"weightKg":24,"origin":"美國","desc":"加特林式六管旋轉槍管設計，靠外部馬達驅動，理論射速可依設定調整、最高可達每分鐘數千發，主要配備於直升機與載具，用極端射速彌補精準度不足，本表射速數字遙遙領先所有其他武器，是全表「泡泡最大」的一款。"},{"id":25,"name":"17世紀火繩槍","group":"OTHER","actionType":"OTHER","caliber":".69吋鉛彈（概略）","effectiveRangeM":60,"muzzleEnergyJ":1750,"rpm":1.5,"weightKg":5,"origin":"歐陸（代表性型號）","desc":"17世紀歐洲步兵標準單兵武器，靠一段預先點燃的火繩延遲擊發，裝填極慢、下雨天幾乎無法使用，動能與精準度都不及後來的燧發槍，但已經足以逼退當時的板甲騎兵。數字區間較寬，沒有像後續燧發槍那樣公認的複刻測試數字，屬於概略估計。"},{"id":26,"name":"18世紀燧發槍（Brown Bess）","group":"OTHER","actionType":"OTHER","caliber":".75吋鉛彈","effectiveRangeM":70,"muzzleEnergyJ":3000,"rpm":3,"weightKg":4.8,"origin":"英國","desc":"英軍1722年至1840年代的制式滑膛燧發槍，主宰了美國獨立戰爭到拿破崙戰爭的戰場。動能出奇地高——超過大部分現代手槍、逼近5.56步槍彈的兩倍，靠的是夠長的槍管跟夠重的彈丸，吃虧的地方全在準頭跟每分鐘只能打2-3發的裝填速度。"},{"id":27,"name":"19世紀來福槍（M1861，米尼彈）","group":"OTHER","actionType":"OTHER","caliber":".58吋米尼彈","effectiveRangeM":300,"muzzleEnergyJ":1340,"rpm":3,"weightKg":4.2,"origin":"美國","desc":"美國南北戰爭時期的制式來福槍，米尼彈的錐形設計配合膛線讓槍管內彈頭密合度大幅提升，有效射程直接從滑膛槍的百米級跳到三百米級。動能其實比18世紀滑膛槍還低，但精準度天差地遠，是「動能不等於整體殺傷效率」的一個好例子。"},{"id":28,"name":"西部左輪（Colt Peacemaker）","group":"OTHER","actionType":"OTHER","caliber":".45 Long Colt","effectiveRangeM":50,"muzzleEnergyJ":557,"rpm":20,"weightKg":1.1,"origin":"美國","desc":"1873年推出、美國西部拓荒時代的代表性左輪手槍，「和平締造者」的暱稱響亮。動能557J其實跟本表的Glock 19（521J）、M1911（528J）相近，甚至還高一點，並不像很多人想像的「老槍比較弱」，真正落後現代手槍的地方是彈匣容量跟單動式擊發拖慢的連續射擊速度，不是槍口動能。"},{"id":29,"name":"英格蘭長弓","group":"OTHER","actionType":"OTHER","caliber":"木製箭矢","effectiveRangeM":200,"muzzleEnergyJ":110,"rpm":11,"weightKg":1.4,"origin":"英格蘭","desc":"中世紀英格蘭步兵的招牌武器，克雷西、阿金庫爾等對法戰役中扮演關鍵角色，熟練弓箭手每分鐘可放箭十發以上，箭雨的密度跟持續性是它真正可怕之處，單發動能雖不算高，但箭矢的穿甲能力受箭頭設計影響很大。"},{"id":30,"name":"橡皮動力魚槍","group":"OTHER","actionType":"OTHER","caliber":"不鏽鋼魚叉","effectiveRangeM":5,"muzzleEnergyJ":65,"rpm":4,"weightKg":1.5,"origin":"現代（代表性規格）","desc":"現代潛水獵魚常用的橡皮動力魚槍，靠拉伸橡皮筋儲能發射魚叉，水中阻力遠大於空氣、有效距離很短，但近距離動能足以貫穿中大型魚類，換彈需要重新拉伸橡皮，射速遠不及任何火藥武器。"},{"id":31,"name":"世界級棒球投手全力投球","group":"OTHER","actionType":"OTHER","caliber":"棒球（145g）","effectiveRangeM":18.4,"muzzleEnergyJ":150,"rpm":15,"weightKg":0.145,"origin":"美國職棒（代表性數據）","desc":"職業棒球投手全力衝刺球速可達時速150公里以上，換算動能約150J——已經超過本表口袋型.22LR手槍（68J）兩倍以上，純粹靠人體肌肉力量丟一顆球，動能就能逼近一把真槍，這個對照常讓人意外。投手丘到本壘板的規定距離是18.4公尺。"},{"id":32,"name":"奧運標槍擲遠","group":"OTHER","actionType":"OTHER","caliber":"標槍（800g，男子規格）","effectiveRangeM":90,"muzzleEnergyJ":380,"rpm":1,"weightKg":0.8,"origin":"奧運（代表性數據）","desc":"男子標槍重800公克，頂尖選手出手瞬間速度可達時速100公里以上，換算動能大約380J——已經是本表口袋型.22LR手槍（68J）的五倍多，但還沒追上西部左輪（557J）或主流9mm手槍。純人力擲出的運動器材，動能能逼近手槍等級，還是本表「其他兵器」類別裡數一數二誇張的存在。"},{"id":33,"name":"現代狩獵吹箭","group":"OTHER","actionType":"OTHER","caliber":"金屬鏢頭吹箭","effectiveRangeM":10,"muzzleEnergyJ":13,"rpm":2,"weightKg":0.3,"origin":"現代（狩獵用）","desc":"現代法律禁止塗毒，在純物理傷害下，吹箭只能用來狩獵老鼠、松鼠、斑鳩這類小型害獸（Varmint）。若要對付大中型動物，這點動能無法造成足夠的瞬間失血，在沒有毒素輔助下不可能毒殺或擊斃大獵物。"},{"id":34,"name":"中世紀重型弩","group":"OTHER","actionType":"OTHER","caliber":"鋼製弩箭","effectiveRangeM":50,"muzzleEnergyJ":175,"rpm":1.5,"weightKg":7,"origin":"歐洲中世紀","desc":"鋼製弓翼的大型重弩，動能極為粗暴，專為貫穿鏈甲與早期板甲設計。弓體拉力常達數百磅，必須靠絞盤（Windlass）或起重器（Cranequin）機械式裝填，射速極低。沉重的弩箭在50公尺外彈道會因風阻與重力快速下墜，實戰中多用於城堡守備或陣地推進的精準壓制，不是野戰快速交火的武器。"},{"id":35,"name":"防暴布袋彈","group":"OTHER","actionType":"OTHER","caliber":"12號布袋彈（鉛砂填充）","effectiveRangeM":20,"muzzleEnergyJ":135,"rpm":8,"weightKg":3.5,"origin":"現代（警用低致命性彈藥）","desc":"低致命性警用彈藥，由霰彈槍發射。彈頭是強韌尼龍布袋包裹大量細鉛砂，擊中目標時瞬間變扁、擴大受力面積，設計核心是把百餘焦耳的能量轉化為極強的鈍痛與衝擊力（類似棒球重擊），用以瞬間制服或驅散目標，標準距離內通常不會穿透皮膚或造成開放性致命傷。"},{"id":36,"name":"古代狩獵標槍","group":"OTHER","actionType":"OTHER","caliber":"木柄金屬矛頭","effectiveRangeM":13,"muzzleEnergyJ":250,"rpm":2,"weightKg":2,"origin":"古代（代表性規格）","desc":"初速雖然不高，但高達1.5至2.5公斤的極重質量賦予了它恐怖的物理動量。設計核心是利用巨大的前進慣性，推動鋼尖砸碎野豬、鹿甚至棕熊的堅硬骨骼並直達內臟——跟本表其他靠高速取勝的投射武器邏輯完全相反，是「重量換動能」的極端案例。"},{"id":41,"name":"MG 151/20","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×82mm","effectiveRangeM":400,"muzzleEnergyJ":26000,"rpm":750,"weightKg":42,"origin":"納粹德國","desc":"二戰德國空軍主力機炮，Bf 109F型後標配。106公克彈頭、初速700m/s，德國人特意選擇「炸藥量優先於初速」的設計哲學（Minengeschoß薄殼高裝藥彈頭），寧可犧牲一點動能也要塞更多炸藥進彈頭裡，跟英美追求高初速穿甲的思路正好相反。"},{"id":42,"name":"Hispano Mk V","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×110mm","effectiveRangeM":450,"muzzleEnergyJ":50000,"rpm":750,"weightKg":50,"origin":"英國／美國","desc":"二戰量產20mm機炮裡動能最高的一款，130公克彈頭、初速870-880m/s，英美戰鬥機在二戰中後期的標準配備之一。動能已經是本表.50 BMG重機槍（17,950J）的近三倍——這也是為什麼「機炮」跟「輕兵器」根本不是同一個量級的東西。"},{"id":43,"name":"GAU-8「復仇者」","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"30×173mm","effectiveRangeM":1220,"muzzleEnergyJ":203000,"rpm":3900,"weightKg":281,"origin":"美國","desc":"A-10「疣豬」攻擊機專用反裝甲機炮，七管加特林式設計，395公克貧鈾穿甲彈頭、初速1013m/s，動能高達203,000J——是本表.50 BMG的11倍以上。整架A-10攻擊機幾乎是圍繞著這門砲設計出來的，專門用來從空中打穿坦克頂部裝甲，查資料時甚至看到「這東西打過來，躲在坦克後面都沒用」這種形容。"},{"id":44,"name":"Mk 44 巨蝮二式機砲","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"30×173mm","effectiveRangeM":3000,"muzzleEnergyJ":200000,"rpm":200,"weightKg":160,"origin":"美國","desc":"現代西方步兵戰鬥車／兩棲突擊車常見的鏈砲主武裝（如美軍ACV、多國LAV系列），跟GAU-8「復仇者」共用同一款30×173mm彈殼規格與相近的槍管長度，動能因此取跟GAU-8同一個量級的估計。但要澄清一個常見誤解：**兩者的彈藥並不能直接互通**——GAU-8為了配合加特林結構的極高射速，用的是電擊發（electrically primed）底火；Mk44鏈砲則是機械式撞針擊發（percussion primed），底火系統完全不同，硬要混用會導致擊發失敗甚至卡彈。真正的性能差異在射速——Mk44每分鐘只有100-200發，遠低於GAU-8的3,900發，這是機炮設計上「爆發射速」跟「持續壓制力」互相取捨的直接案例。"},{"id":45,"name":"俄製 2A42 機砲","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"30×165mm","effectiveRangeM":1500,"muzzleEnergyJ":195000,"rpm":650,"weightKg":115,"origin":"蘇聯／俄羅斯","desc":"蘇聯／俄羅斯BMP-2、BMD系列步兵戰鬥車的標準主砲，也裝在Mi-28、Ka-52攻擊直升機上，是東方陣營機炮的代表型號，跟西方的Mk 44、GAU-8同屬30mm級距但用不同彈藥規格（30×165mm）。俄系30mm彈藥不分陸用（2A42鏈砲）或空用（GSh-30-2機炮），用的都是同一套標準制式規格，彈頭重量是公開確定的數字（如3UOF8高爆彈約390g、3UBM6穿甲彈約400g），不是靠推算得出的估計值。"},{"id":46,"name":"KPV 重機槍","group":"MG","actionType":"FULL_AUTO","caliber":"14.5×114mm","effectiveRangeM":2000,"muzzleEnergyJ":32000,"rpm":600,"weightKg":49.1,"origin":"蘇聯","desc":"蘇聯設計的14.5mm重機槍，動能約是.50 BMG（本表17,950J）的近兩倍，查證資料直接寫「威力幾乎是12.7mm武器的兩倍」。原本是反戰車步槍彈藥的重機槍化版本，裝在ZPU防空機槍座、BTR裝甲車（KPVT車載型）上都很常見，500公尺內可打穿32mm鋼板。雖然動能已經逼近機炮等級，但彈鏈供彈、槍身結構本質上仍是機槍，是本表機槍分類裡動能最誇張的一款，直接把.50 BMG甩開一大截。"},{"id":47,"name":"M61 火神式機砲","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×102mm","effectiveRangeM":3000,"muzzleEnergyJ":53000,"rpm":6000,"weightKg":112,"origin":"美國","desc":"六管加特林式旋轉機炮，二戰後美軍幾乎所有主力戰機（F-14、F-15、F-16、F-22）都配備這款機炮，理論射速最高可達每分鐘6,000-7,200發，是「用射速彌補命中率」這個設計哲學的代表作。美方在冷戰初期刻意選擇20mm而非歐系慣用的30mm，用彈頭重量換取更高射速，跟本表其他30mm機炮的設計取捨正好相反。"},{"id":48,"name":"M242 巨蝮式鏈砲","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"25×137mm","effectiveRangeM":2000,"muzzleEnergyJ":121000,"rpm":200,"weightKg":115,"origin":"美國","desc":"美軍布萊德雷步兵戰鬥車、LAV-25等載具的標準主砲，是Mk44巨蝮二式的前身（Mk44沿用了M242約七成零件、加大口徑到30mm）。鏈砲（chain gun）靠外部電動馬達驅動循環，不依賴火藥氣體或後座力運作，可靠度較傳統氣動式機炮更穩定，是現代西方步兵戰鬥車機砲設計的重要分水嶺。"},{"id":49,"name":"GIAT M693 / F2 機砲","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×139mm","effectiveRangeM":1500,"muzzleEnergyJ":72000,"rpm":900,"weightKg":332,"origin":"法國","desc":"法國GIAT（現Nexter）研發的20mm機砲，衍生自瑞士Hispano-Suiza HS.820設計，F2型是法國海軍現役近迫防禦武器之一。本表列出的重量是艦載砲塔規格（332公斤），比一般陸用/機載型號重得多，這也反映出海軍艦砲通常不受重量限制、可以做得更堅固耐用。"},{"id":50,"name":"歐瑞康 GDF 35mm 機砲","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"35×228mm","effectiveRangeM":4000,"muzzleEnergyJ":380000,"rpm":550,"weightKg":6700,"origin":"瑞士","desc":"本體是雙管拖曳式防空機砲，但同系列35mm機砲也裝上了車輛——德國「獵豹式」自走防空戰車（Gepard，以豹1坦克底盤打造）就搭載雙聯裝35mm機砲，專門用來低空獵殺敵機、直升機、無人機，烏克蘭戰場上實際多次用來擊落俄軍巡弋飛彈與無人機群。要老實說明一點：獵豹是「自走防空砲」不是「步兵戰車」，車上不載步兵，跟本表波佛斯L70那台真正能載兵的CV9040步兵戰車不是同一類載具。動能已經是本表.50 BMG的21倍以上。"},{"id":51,"name":"波佛斯 L70 40mm 機砲","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"40×365mmR","effectiveRangeM":4200,"muzzleEnergyJ":461000,"rpm":240,"weightKg":4750,"origin":"瑞典","desc":"瑞典波佛斯二戰經典40mm防空砲（L60型）的現代化後繼型號，1953年獲北約採用為標準防空砲。這款砲的車載版直接裝上了瑞典CV9040步兵戰車的砲塔——一台能實際搭載6-8名步兵的正牌步兵戰車，官方描述直言這門砲「除了主戰坦克的正面裝甲之外，戰場上幾乎什麼都能摧毀」：對建築物與步兵用高爆彈、對空用近發引信高爆彈、對敵方裝甲車輛與攻擊直升機則換上脫殼穿甲彈（APFSDS），烏克蘭戰場上CV9040已有實戰擊毀俄軍裝甲目標的紀錄。870公克彈頭、初速1030m/s，動能高達461,000J，**是本表全部52項武器裡動能最高的一款，甚至超過GAU-8**。"},{"id":53,"name":"M197 加特林","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×102mm","effectiveRangeM":2000,"muzzleEnergyJ":53000,"rpm":750,"weightKg":60,"origin":"美國","desc":"AH-1「眼鏡蛇」攻擊直升機的標配機炮，本質上是M61火神式的縮小版——把六管減成三管、槍身減重減短，共用同一款20×102mm彈藥（跟火神式動能完全相同）。越戰經驗顯示原本配的7.62mm迷你砲對付地面目標火力不足，才催生了這款專為直升機平台設計的中間解——射速降到火神式的四分之一（750發/分），換取更小的後座力衝擊，避免震壞直升機機體結構。"},{"id":54,"name":"ZU-23-2","group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"23×152mm","effectiveRangeM":2000,"muzzleEnergyJ":89000,"rpm":2000,"weightKg":950,"origin":"蘇聯","desc":"蘇聯經典雙管拖曳式防空機砲，1960年代服役至今、全世界產量與擴散程度數一數二。冷戰後在各地內戰、衝突中經常被直接拆下來焊上皮卡車車斗，變成俗稱「技術改裝車」（Technical）的克難武裝載具，敘利亞、利比亞、蘇丹等地衝突中都能看到它的身影——原本設計給正規防空陣地用的重型機砲，最後反而成了非正規武裝最具代表性的火力象徵之一。"}];
+window.GROUPS = {"PISTOL":{"label":{"zh":"手槍","en":"Pistol"},"color":"#7A98B0","order":1},"SMG":{"label":{"zh":"衝鋒槍","en":"SMG"},"color":"#C98A4B","order":2},"RIFLE":{"label":{"zh":"步槍","en":"Rifle"},"color":"#7A9D63","order":3},"SHOTGUN":{"label":{"zh":"霰彈槍","en":"Shotgun"},"color":"#6BA5A0","order":4},"SNIPER":{"label":{"zh":"狙擊槍","en":"Sniper Rifle"},"color":"#B0524A","order":5},"MG":{"label":{"zh":"機槍","en":"Machine Gun"},"color":"#C9A63C","order":6},"AUTOCANNON":{"label":{"zh":"機炮（戰機／裝甲車）","en":"Autocannon (Aircraft/AFV)"},"color":"#E0475C","order":7},"OTHER":{"label":{"zh":"其他兵器（歷史／人力／特殊）","en":"Other (Historical/Human-powered/Special)"},"color":"#B497D6","order":8}};
+window.ACTION_TYPE = {"SEMI_AUTO":{"label":{"zh":"半自動","en":"Semi-auto"},"color":"#8FE3C0"},"FULL_AUTO":{"label":{"zh":"全自動","en":"Full-auto"},"color":"#FF7A45"},"BOLT_ACTION":{"label":{"zh":"栓動式","en":"Bolt/pump-action"},"color":"#8B9FD4"},"OTHER":{"label":{"zh":"特殊／人力驅動","en":"Special / human-powered"},"color":"#D6B497"}};
+window.DATA = [{"id":1,"name":{"zh":"Ruger LCP II（.22LR口袋手槍）","en":"Ruger LCP II (.22LR pocket pistol)"},"group":"PISTOL","actionType":"SEMI_AUTO","caliber":".22 LR","effectiveRangeM":25,"muzzleEnergyJ":68,"rpm":40,"weightKg":0.4,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"市面上真實在產的超緊湊型民用自衛武器。由於極致微型的槍身使槍管長度縮減至僅2.75吋，其動能表現大幅受限，遠低於一般步槍常引用的標準值。追求極致的隱蔽性與近乎零的後座力，讓射手能輕鬆放進衣袋或貼身隱藏，多用於新手入門練習或作為最後一線的備用槍械。然而，這款武器的制止力極度不足，在實務上完全不建議作為主要防身和自衛火力。","en":"A real, currently-produced ultra-compact civilian defense pistol. The extremely small frame shrinks the barrel to just 2.75 inches, sharply limiting muzzle energy — far below the \"typical .22LR\" figure usually quoted from rifle-length barrels. It trades power for concealability and near-zero recoil, easily pocketable, and is mostly used for beginner practice or as a last-resort backup gun. Its stopping power is genuinely too low to recommend as a primary self-defense weapon."}},{"id":2,"name":{"zh":"Glock 19","en":"Glock 19"},"group":"PISTOL","actionType":"SEMI_AUTO","caliber":"9×19mm","effectiveRangeM":50,"muzzleEnergyJ":521,"rpm":40,"weightKg":0.7,"origin":{"zh":"奧地利","en":"Austria"},"desc":{"zh":"全世界執法機關與民用市場最普及的制式手槍之一，可靠度與彈匣容量的平衡點做得極好，9×19mm口徑也是全球軍警最常見的手槍彈藥標準。","en":"One of the most widely issued service pistols worldwide, striking an excellent balance between reliability and magazine capacity. 9×19mm is the most common military/police handgun cartridge on the planet."}},{"id":3,"name":{"zh":"M1911","en":"M1911"},"group":"PISTOL","actionType":"SEMI_AUTO","caliber":".45 ACP","effectiveRangeM":50,"muzzleEnergyJ":528,"rpm":40,"weightKg":1.1,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"1911年服役至今超過一世紀的經典手槍設計，.45 ACP口徑彈頭較重、初速較低，動能跟9mm相近但彈道特性不同，至今仍有大量民用與特種部隊愛用者。","en":"In service since 1911 — over a century of continuous use. .45 ACP fires a heavier, slower bullet with similar energy to 9mm but different terminal behavior. Still has a large following among civilians and special forces alike."}},{"id":4,"name":{"zh":"Desert Eagle","en":"Desert Eagle"},"group":"PISTOL","actionType":"SEMI_AUTO","caliber":".50 AE","effectiveRangeM":50,"muzzleEnergyJ":2200,"rpm":40,"weightKg":1.9,"origin":{"zh":"以色列／美國","en":"Israel/USA"},"desc":{"zh":"民用市場最知名的大口徑半自動手槍，槍口動能直接超過本表多款突擊步槍彈藥，因為電影跟遊戲曝光度極高而聲名大噪，但巨大的後座力與重量讓它在實戰中的普及度遠不如聲量。","en":"The most famous big-bore semi-auto pistol on the civilian market — its muzzle energy actually beats several assault rifle cartridges on this chart. Massively over-exposed in movies and games; its real-world adoption is far smaller than its reputation, thanks to brutal recoil and weight."}},{"id":5,"name":{"zh":"Uzi","en":"Uzi"},"group":"SMG","actionType":"FULL_AUTO","caliber":"9×19mm","effectiveRangeM":150,"muzzleEnergyJ":521,"rpm":600,"weightKg":3.5,"origin":{"zh":"以色列","en":"Israel"},"desc":{"zh":"1950年代設計、外型辨識度極高的經典衝鋒槍，機匣式結構讓槍身能做得短小，冷戰時期一度是全世界最暢銷的衝鋒槍之一，至今仍是流行文化中「衝鋒槍」的代名詞。","en":"A 1950s design with one of the most recognizable silhouettes in firearms history. Its telescoping bolt lets the receiver run very short. Once one of the best-selling SMGs in the world, and still pop culture shorthand for \"submachine gun.\""}},{"id":6,"name":{"zh":"HK MP5","en":"HK MP5"},"group":"SMG","actionType":"FULL_AUTO","caliber":"9×19mm","effectiveRangeM":200,"muzzleEnergyJ":521,"rpm":800,"weightKg":2.5,"origin":{"zh":"德國","en":"Germany"},"desc":{"zh":"滾輪延遲反衝式作動帶來的優異精準度，讓MP5成為全球特種部隊與反恐單位近數十年來的近戰標準配備之一，室內近距離作戰的代名詞。","en":"Roller-delayed blowback gives it exceptional accuracy, making it a standard close-quarters weapon for special forces and counter-terror units worldwide for decades — practically synonymous with indoor CQB."}},{"id":7,"name":{"zh":"FN P90","en":"FN P90"},"group":"SMG","actionType":"FULL_AUTO","caliber":"5.7×28mm","effectiveRangeM":200,"muzzleEnergyJ":500,"rpm":900,"weightKg":2.5,"origin":{"zh":"比利時","en":"Belgium"},"desc":{"zh":"「個人防禦武器（PDW）」概念的代表作，橫置彈匣與未來感外型辨識度極高，5.7×28mm是專為PDW設計的小口徑高速彈，動能雖跟一般手槍彈相近，但彈頭穿透軟性防護的能力更好。","en":"The defining \"Personal Defense Weapon\" (PDW), instantly recognizable by its sideways top-mounted magazine and sci-fi looks. 5.7×28mm was purpose-built for the PDW role — similar energy to a pistol round but far better at defeating soft body armor."}},{"id":40,"name":{"zh":"Ruger 10/22","en":"Ruger 10/22"},"group":"RIFLE","actionType":"SEMI_AUTO","caliber":".22 LR","effectiveRangeM":100,"muzzleEnergyJ":166,"rpm":45,"weightKg":2.3,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"1964年推出、全球累積銷售超過700萬把，是名副其實「最普及的.22LR步槍」，幾乎是入門玩家跟小型害獸/小獵物獵人的預設選擇。標準18.5吋槍管配合高速彈藥，實測初速約1150-1200fps，換算動能166J——雖然還是遠低於任何中心點火步槍彈藥，但已經是本表Ruger LCP II口袋手槍（68J）的兩倍多，直接證明步槍夠長的槍管能把同一發.22LR子彈的動能榨出更多，光靠槍管長度差異就能讓同一種彈藥動能差到這個程度。","en":"Launched in 1964, with over 7 million sold — genuinely \"the most common .22LR rifle in the world,\" the default choice for beginners and small-game/varmint hunters. Its standard 18.5\" barrel with high-velocity ammo chronographs around 1150–1200fps, for 166J — still far below any centerfire rifle round, but over double the Ruger LCP II pocket pistol on this chart (68J), from the exact same cartridge. Barrel length alone accounts for that gap."}},{"id":8,"name":{"zh":"AK-47","en":"AK-47"},"group":"RIFLE","actionType":"FULL_AUTO","caliber":"7.62×39mm","effectiveRangeM":400,"muzzleEnergyJ":2067,"rpm":600,"weightKg":4.3,"origin":{"zh":"蘇聯","en":"USSR"},"desc":{"zh":"人類史上產量最大、分佈最廣的槍械，機械結構簡單耐用、就算保養不佳也能持續運作，是二十世紀後半葉幾乎所有武裝衝突都會出現的身影，本身已經是一個文化符號。","en":"The most mass-produced, most widely distributed firearm in human history. Simple, rugged, and keeps running even with poor maintenance. Present in nearly every armed conflict of the late 20th century — a cultural icon in its own right."}},{"id":9,"name":{"zh":"AK-74","en":"AK-74"},"group":"RIFLE","actionType":"FULL_AUTO","caliber":"5.45×39mm","effectiveRangeM":400,"muzzleEnergyJ":1400,"rpm":600,"weightKg":3.9,"origin":{"zh":"蘇聯","en":"USSR"},"desc":{"zh":"AK-47的小口徑高速化後繼型號，換裝5.45×39mm彈藥讓後座力更小、彈道更平直，是蘇聯／俄羅斯回應西方國家改用小口徑步槍彈趨勢的產物。","en":"The AK-47's small-caliber, high-velocity successor. The switch to 5.45×39mm cut recoil and flattened the trajectory — the Soviet/Russian answer to the Western shift toward small-caliber rifle cartridges."}},{"id":10,"name":{"zh":"M4A1","en":"M4A1"},"group":"RIFLE","actionType":"FULL_AUTO","caliber":"5.56×45mm","effectiveRangeM":500,"muzzleEnergyJ":1694,"rpm":850,"weightKg":3.4,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"美軍現役制式突擊步槍卡賓槍型號，短槍管配合可伸縮槍托讓它在載具、室內等狹窄空間更好操作，是過去二十年美軍與北約盟國最常見的單兵武器之一。","en":"The US military's current standard carbine. Short barrel and collapsible stock make it more maneuverable in vehicles and indoors — one of the most common individual weapons among US and NATO forces for the past two decades."}},{"id":11,"name":{"zh":"M16A4","en":"M16A4"},"group":"RIFLE","actionType":"FULL_AUTO","caliber":"5.56×45mm","effectiveRangeM":550,"muzzleEnergyJ":1694,"rpm":800,"weightKg":3.9,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"M4的全長版本，較長的槍管帶來稍高的初速與略遠的有效射程，長年是美軍陸戰隊的制式步槍，直到近年才逐漸被M4系列全面取代第一線角色。","en":"The full-length version of the M4. A longer barrel gives slightly higher velocity and reach. Long the USMC's standard rifle, only recently phased out of frontline service in favor of the M4 family."}},{"id":12,"name":{"zh":"FN SCAR-H","en":"FN SCAR-H"},"group":"RIFLE","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":600,"muzzleEnergyJ":3457,"rpm":625,"weightKg":3.6,"origin":{"zh":"比利時","en":"Belgium"},"desc":{"zh":"美軍特種作戰司令部（SOCOM）主導開發的模組化步槍系列，重型（H）版本採用全威力7.62×51mm彈藥，兼顧突擊步槍的操控性與戰鬥步槍等級的射程火力。","en":"A modular rifle family developed under US SOCOM. The Heavy (H) variant fires full-power 7.62×51mm, blending assault-rifle handling with battle-rifle range and power."}},{"id":13,"name":{"zh":"M14","en":"M14"},"group":"RIFLE","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":460,"muzzleEnergyJ":3457,"rpm":700,"weightKg":4.1,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"越戰早期美軍制式步槍，全威力彈藥配合可選射方式，火力兇猛但全自動時後座力難以控制，越戰中後期逐漸讓位給更輕巧的M16，但至今仍以精確射手步槍的身分持續服役。","en":"The standard US rifle of the early Vietnam War. Full-power ammo and select-fire made it hard-hitting but nearly uncontrollable on full-auto. Gradually replaced by the lighter M16, though it still serves today as a designated marksman rifle."}},{"id":14,"name":{"zh":"FN FAL","en":"FN FAL"},"group":"RIFLE","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":650,"muzzleEnergyJ":3457,"rpm":650,"weightKg":4.3,"origin":{"zh":"比利時","en":"Belgium"},"desc":{"zh":"冷戰時期西方陣營非美系國家最普及的制式步槍之一，因產量與使用國家眾多而有「自由世界的右手」之稱，全威力彈藥賦予它優異的射程與穿透力。","en":"One of the most widely issued Cold War rifles among non-US Western allies, nicknamed \"the right arm of the free world\" for its sheer production numbers and adoption. Full-power ammunition gives it excellent range and penetration."}},{"id":52,"name":{"zh":"莫辛-納甘 M91/30","en":"Mosin-Nagant M91/30"},"group":"RIFLE","actionType":"BOLT_ACTION","caliber":"7.62×54mmR","effectiveRangeM":500,"muzzleEnergyJ":3550,"rpm":12,"weightKg":4,"origin":{"zh":"俄羅斯帝國／蘇聯","en":"Russian Empire/USSR"},"desc":{"zh":"1891年設計、服役超過一世紀的俄系經典栓動步槍，二戰蘇聯步兵標準配備，也是後來德拉貢諾夫SVD、PKM共用的7.62×54mmR彈藥的原始搭載平台。動能約3,550J，跟.30-06、7.62×51NATO同一個量級，證明19世紀末的彈藥設計底子其實不差，落後現代步槍的地方主要是栓動射速慢（每分鐘僅5發彈匣容量、手動退殼上膛）跟量產公差較大，不是彈藥本身威力不足。","en":"Designed in 1891 and in service for over a century — the classic Russian bolt-action, standard-issue for Soviet infantry in WWII, and the original platform for the 7.62×54mmR cartridge later shared by the SVD and PKM. At roughly 3,550J it's in the same league as .30-06 or 7.62×51 NATO, proof that late-19th-century cartridge design wasn't lacking — what dates it is slow bolt cycling (5-round magazine, manual extraction) and looser manufacturing tolerances, not the round itself."}},{"id":37,"name":{"zh":"Remington 870（標準9粒裝）","en":"Remington 870 (standard 9-pellet)"},"group":"SHOTGUN","actionType":"BOLT_ACTION","caliber":{"zh":"12號散彈 00鹿彈（標準9粒，2¾吋）","en":"12ga 00 buckshot (standard 9-pellet, 2¾\")"},"effectiveRangeM":40,"muzzleEnergyJ":2550,"rpm":20,"weightKg":3.4,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"全世界最普及的幫浦式（pump-action）霰彈槍之一，警用、軍用、民用獵槍市場都看得到它的身影。00鹿彈一發9顆.33吋鉛彈，本表動能取9顆彈丸槍口動能總和——等於一次扣扳機同時打出9發接近9mm等級的彈丸，這也是霰彈槍「近距離停止力」惡名昭彰的原因，但幫浦式手動退殼上膛也讓連續射擊速度遠不及自動武器。","en":"One of the most widely used pump-action shotguns in the world, found across police, military, and civilian markets alike. A 00 buck shell holds nine .33\" lead pellets; the energy figure here is the combined total of all nine — effectively firing nine near-9mm-class projectiles with a single trigger pull, which is why shotguns have such a fearsome reputation at close range. The pump action, though, means follow-up shots are far slower than an automatic weapon."}},{"id":38,"name":{"zh":"Mossberg 500（低後座力減裝彈）","en":"Mossberg 500 (reduced-recoil load)"},"group":"SHOTGUN","actionType":"BOLT_ACTION","caliber":{"zh":"12號散彈 00鹿彈（低後座力9粒，2¾吋）","en":"12ga 00 buckshot (reduced-recoil 9-pellet, 2¾\")"},"effectiveRangeM":35,"muzzleEnergyJ":1920,"rpm":20,"weightKg":3.3,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"跟870同級的經典幫浦式霰彈槍，這裡配的是低後座力（reduced recoil）減裝彈——初速故意降低換取更好操控性跟更快的後續瞄準，動能因此比標準彈藥低了約四分之一，是「同一把槍換彈藥、動能差很多」的好例子。","en":"A classic pump-action shotgun in the same class as the 870, here loaded with reduced-recoil ammunition — velocity is deliberately lowered for better control and faster follow-up shots, cutting energy by about a quarter versus standard loads. A good example of how much energy can swing purely from an ammo change, same gun."}},{"id":39,"name":{"zh":"Benelli M4（3吋麥格農15粒裝）","en":"Benelli M4 (3\" Magnum, 15-pellet)"},"group":"SHOTGUN","actionType":"SEMI_AUTO","caliber":{"zh":"12號散彈 00鹿彈（3吋麥格農15粒）","en":"12ga 00 buckshot (3\" Magnum, 15-pellet)"},"effectiveRangeM":45,"muzzleEnergyJ":4050,"rpm":45,"weightKg":3.8,"origin":{"zh":"義大利","en":"Italy"},"desc":{"zh":"美軍陸戰隊制式半自動戰鬥霰彈槍，這裡配的是加長型3吋麥格農彈殼、可塞入15顆00鹿彈的重裝彈藥，總動能是本表所有霰彈槍裡最高的一款。半自動作動讓它不用像幫浦式那樣手動退殼上膛，連續射擊速度明顯更快。","en":"The USMC's standard semi-auto combat shotgun, loaded here with the extended 3\" Magnum shell that packs 15 buckshot pellets — the highest total energy of any shotgun on this chart. Being semi-auto, it skips the manual pump cycle entirely, giving noticeably faster follow-up shots."}},{"id":15,"name":{"zh":"Remington 700 / M24","en":"Remington 700 / M24"},"group":"SNIPER","actionType":"BOLT_ACTION","caliber":"7.62×51mm","effectiveRangeM":800,"muzzleEnergyJ":3457,"rpm":15,"weightKg":5.4,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"以民用獵槍平台為基礎發展出的軍規狙擊槍代表作（美軍M24型號），栓動式設計犧牲射速換取極高的精準度與可靠度，是中距離精確射擊的經典標竿。","en":"A civilian hunting-rifle platform turned into the archetypal military sniper rifle (US M24). The bolt-action trades rate of fire for exceptional accuracy and reliability — the classic benchmark for mid-range precision shooting."}},{"id":16,"name":{"zh":"AI AWM","en":"AI AWM"},"group":"SNIPER","actionType":"BOLT_ACTION","caliber":".338 Lapua Magnum","effectiveRangeM":1500,"muzzleEnergyJ":6464,"rpm":10,"weightKg":6.5,"origin":{"zh":"英國","en":"UK"},"desc":{"zh":"英國精密國際（Accuracy International）出品的長距離狙擊槍代表作，.338拉普阿麥格農彈藥填補了7.62mm與.50 BMG之間的空缺，兼顧長距離威力與可控後座力，各國特種部隊採用率極高。","en":"Accuracy International's flagship long-range sniper rifle. .338 Lapua Magnum fills the gap between 7.62mm and .50 BMG, balancing long-range power against manageable recoil — hugely popular with special forces worldwide."}},{"id":17,"name":{"zh":"Barrett M82","en":"Barrett M82"},"group":"SNIPER","actionType":"SEMI_AUTO","caliber":".50 BMG","effectiveRangeM":1800,"muzzleEnergyJ":17950,"rpm":10,"weightKg":12.9,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"「反器材步槍」這個武器類別的開創者，本體巨大加上.50 BMG彈藥賦予的驚人動能，設計初衷就不是單純打人，而是打穿輕裝甲車輛、癱瘓雷達天線、引爆未爆彈這類「器材」目標，本表槍口動能數一數二誇張。","en":"The rifle that created the \"anti-materiel rifle\" category. Its huge frame and .50 BMG ammunition weren't designed to simply shoot people — the intent was light armor, radar dishes, and unexploded ordnance: \"materiel,\" not personnel. One of the highest muzzle energies on this chart."}},{"id":18,"name":{"zh":"德拉貢諾夫 SVD","en":"Dragunov SVD"},"group":"SNIPER","actionType":"SEMI_AUTO","caliber":"7.62×54mmR","effectiveRangeM":800,"muzzleEnergyJ":4000,"rpm":30,"weightKg":4.3,"origin":{"zh":"蘇聯","en":"USSR"},"desc":{"zh":"蘇聯軍隊「精確射手步槍」概念的開創之作，半自動設計讓它比一般栓動狙擊槍能維持更高的持續射速，定位介於一般步槍與傳統狙擊槍之間，影響了後續全世界精確射手步槍的發展方向。","en":"The Soviet military's founding \"designated marksman rifle.\" Semi-auto operation gives it a higher sustained rate of fire than a bolt-action sniper rifle, sitting between a standard rifle and a traditional sniper rifle — it shaped the DMR concept worldwide."}},{"id":19,"name":{"zh":"M249 SAW","en":"M249 SAW"},"group":"MG","actionType":"FULL_AUTO","caliber":"5.56×45mm","effectiveRangeM":800,"muzzleEnergyJ":1694,"rpm":800,"weightKg":7.5,"origin":{"zh":"比利時／美國","en":"Belgium/USA"},"desc":{"zh":"美軍班用輕機槍標準配備，與突擊步槍共用5.56mm彈藥簡化後勤，可用彈鏈或彈匣供彈，是步兵班壓制火力的核心，讓機動性與持續火力取得平衡。","en":"The standard US squad automatic weapon. Sharing 5.56mm ammo with the rifle simplifies logistics; it can feed from belts or magazines and forms the core of a squad's suppressive fire, balancing mobility with sustained output."}},{"id":20,"name":{"zh":"RPK","en":"RPK"},"group":"MG","actionType":"FULL_AUTO","caliber":"7.62×39mm","effectiveRangeM":800,"muzzleEnergyJ":2067,"rpm":600,"weightKg":5.6,"origin":{"zh":"蘇聯","en":"USSR"},"desc":{"zh":"AK-47的加長槍管、加重槍身輕機槍化型號，零件與AK系列高度共通、後勤壓力極低，是蘇聯及其盟國步兵班長年的標準支援火力。","en":"A light-machine-gun version of the AK-47 with a longer barrel and heavier receiver. High parts commonality with the AK family keeps logistics simple — long the standard squad support weapon for the USSR and its allies."}},{"id":21,"name":{"zh":"M240","en":"M240"},"group":"MG","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":1100,"muzzleEnergyJ":3457,"rpm":750,"weightKg":12.5,"origin":{"zh":"比利時／美國","en":"Belgium/USA"},"desc":{"zh":"美軍現役通用機槍，全威力7.62mm彈藥賦予的射程與穿透力遠超班用輕機槍，是連、排級單位的核心支援火力，也常見於載具與直升機武裝配置。","en":"The US military's current general-purpose machine gun. Full-power 7.62mm gives it far more range and penetration than a squad light machine gun — core fire support at company/platoon level, and common on vehicles and helicopters."}},{"id":22,"name":{"zh":"PKM","en":"PKM"},"group":"MG","actionType":"FULL_AUTO","caliber":"7.62×54mmR","effectiveRangeM":1000,"muzzleEnergyJ":4000,"rpm":650,"weightKg":9,"origin":{"zh":"蘇聯","en":"USSR"},"desc":{"zh":"蘇聯及其盟國廣泛採用的通用機槍，設計簡潔可靠、重量較同類西方機槍更輕，冷戰後在全世界各地武裝衝突中的出鏡率極高，地位大致對應西方陣營的M240。","en":"A general-purpose machine gun widely used by the USSR and its allies — simple, reliable, and lighter than comparable Western guns. Ubiquitous in post-Cold War conflicts worldwide; roughly the Eastern-bloc counterpart to the M240."}},{"id":23,"name":{"zh":"M2 Browning","en":"M2 Browning"},"group":"MG","actionType":"FULL_AUTO","caliber":".50 BMG","effectiveRangeM":2000,"muzzleEnergyJ":17950,"rpm":550,"weightKg":38,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"1921年設計、服役超過一世紀至今仍未被完全取代的傳奇重機槍，暱稱「Ma Deuce」。.50 BMG的動能大概就是輕兵器對抗裝甲載具的天花板——查證過的B6級警用裝甲車鋼板、一般裝甲運兵車等級的防護，都是專門設計來擋這發子彈的。換句話說.50 BMG差不多是「單兵可攜帶武器」跟「真正裝甲載具」之間那條分界線：再往上，就得靠本表機炮分類那些動輒數萬到數十萬焦耳的載具/防空武器才啃得動了。","en":"Designed in 1921 and still in frontline service over a century later, never fully replaced — nicknamed \"Ma Deuce.\" .50 BMG energy is roughly the ceiling for what a small-arm can do against armored vehicles: verified B6-rated police armor plate and standard APC protection are specifically engineered to stop this exact round. In other words, .50 BMG is close to the dividing line between \"man-portable weapon\" and \"real armored vehicle\" — beyond it, you need this chart's autocannon category, running tens to hundreds of thousands of joules."}},{"id":24,"name":{"zh":"M134 迷你砲","en":"M134 Minigun"},"group":"MG","actionType":"FULL_AUTO","caliber":"7.62×51mm","effectiveRangeM":1000,"muzzleEnergyJ":3457,"rpm":4000,"weightKg":24,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"加特林式六管旋轉槍管設計，靠外部馬達驅動，理論射速可依設定調整、最高可達每分鐘數千發，主要配備於直升機與載具，用極端射速彌補精準度不足，本表射速數字遙遙領先所有其他武器，是全表「泡泡最大」的一款。","en":"A Gatling-style six-barrel design driven by an external motor; the settable cyclic rate can reach several thousand rounds per minute. Mainly mounted on helicopters and vehicles, using sheer volume of fire to compensate for accuracy — by far the highest rate of fire on this chart, and the biggest bubble on the whole plot."}},{"id":46,"name":{"zh":"KPV 重機槍","en":"KPV Heavy Machine Gun"},"group":"MG","actionType":"FULL_AUTO","caliber":"14.5×114mm","effectiveRangeM":2000,"muzzleEnergyJ":32000,"rpm":600,"weightKg":49.1,"origin":{"zh":"蘇聯","en":"USSR"},"desc":{"zh":"蘇聯設計的14.5mm重機槍，動能約是.50 BMG（本表17,950J）的近兩倍，查證資料直接寫「威力幾乎是12.7mm武器的兩倍」。原本是反戰車步槍彈藥的重機槍化版本，裝在ZPU防空機槍座、BTR裝甲車（KPVT車載型）上都很常見，500公尺內可打穿32mm鋼板。雖然動能已經逼近機炮等級，但彈鏈供彈、槍身結構本質上仍是機槍，是本表機槍分類裡動能最誇張的一款，直接把.50 BMG甩開一大截。","en":"A Soviet 14.5mm heavy machine gun with roughly double the energy of .50 BMG (17,950J on this chart) — sources describe it outright as \"nearly twice the power of a 12.7mm weapon.\" It began life as an anti-tank rifle round scaled up into a machine gun, commonly mounted on ZPU anti-aircraft carriages and BTR armored vehicles (as the KPVT), capable of punching through 32mm of steel at 500m. Its energy edges into autocannon territory, but belt feed and receiver design still make it fundamentally a machine gun — the most extreme energy figure in this chart's MG category, well clear of the .50 BMG."}},{"id":25,"name":{"zh":"17世紀火繩槍","en":"17th-century matchlock musket"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":".69吋鉛彈（概略）","en":".69 cal lead ball (approx.)"},"effectiveRangeM":60,"muzzleEnergyJ":1750,"rpm":1.5,"weightKg":5,"origin":{"zh":"歐陸（代表性型號）","en":"Continental Europe (representative type)"},"desc":{"zh":"17世紀歐洲步兵標準單兵武器，靠一段預先點燃的火繩延遲擊發，裝填極慢、下雨天幾乎無法使用，動能與精準度都不及後來的燧發槍，但已經足以逼退當時的板甲騎兵。數字區間較寬，沒有像後續燧發槍那樣公認的複刻測試數字，屬於概略估計。","en":"The standard 17th-century European infantry weapon, fired via a pre-lit slow match — very slow to reload, nearly useless in rain, with less energy and accuracy than the later flintlock. Still enough to push back plate-armored cavalry of the era. Figures here have a wide margin, since there's no reproduction-tested consensus number the way there is for the flintlock — treat this as a rough estimate."}},{"id":26,"name":{"zh":"18世紀燧發槍（Brown Bess）","en":"18th-century flintlock musket (Brown Bess)"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":".75吋鉛彈","en":".75 cal lead ball"},"effectiveRangeM":70,"muzzleEnergyJ":3000,"rpm":3,"weightKg":4.8,"origin":{"zh":"英國","en":"UK"},"desc":{"zh":"英軍1722年至1840年代的制式滑膛燧發槍，主宰了美國獨立戰爭到拿破崙戰爭的戰場。動能出奇地高——超過大部分現代手槍、逼近5.56步槍彈的兩倍，靠的是夠長的槍管跟夠重的彈丸，吃虧的地方全在準頭跟每分鐘只能打2-3發的裝填速度。","en":"Britain's standard smoothbore flintlock from 1722 to the 1840s, dominant from the American Revolution through the Napoleonic Wars. Its energy is surprisingly high — beating most modern pistols and nearly double 5.56mm — thanks to a long barrel and a heavy ball. Everything it loses is in accuracy and the 2-3 rounds per minute reload rate."}},{"id":27,"name":{"zh":"19世紀來福槍（M1861，米尼彈）","en":"19th-century rifled musket (M1861, Minié ball)"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":".58吋米尼彈","en":".58 cal Minié ball"},"effectiveRangeM":300,"muzzleEnergyJ":1340,"rpm":3,"weightKg":4.2,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"美國南北戰爭時期的制式來福槍，米尼彈的錐形設計配合膛線讓槍管內彈頭密合度大幅提升，有效射程直接從滑膛槍的百米級跳到三百米級。動能其實比18世紀滑膛槍還低，但精準度天差地遠，是「動能不等於整體殺傷效率」的一個好例子。","en":"The standard American Civil War rifle. The conical Minié ball's expanding skirt seals tightly against the rifling, jumping effective range from the smoothbore's hundred-odd meters to roughly 300m. Its energy is actually lower than the 18th-century smoothbore's, but accuracy is worlds apart — a good example of energy alone not determining overall lethality."}},{"id":28,"name":{"zh":"西部左輪（Colt Peacemaker）","en":"Wild West revolver (Colt Peacemaker)"},"group":"OTHER","actionType":"OTHER","caliber":".45 Long Colt","effectiveRangeM":50,"muzzleEnergyJ":557,"rpm":20,"weightKg":1.1,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"1873年推出、美國西部拓荒時代的代表性左輪手槍，「和平締造者」的暱稱響亮。動能557J其實跟本表的Glock 19（521J）、M1911（528J）相近，甚至還高一點，並不像很多人想像的「老槍比較弱」，真正落後現代手槍的地方是彈匣容量跟單動式擊發拖慢的連續射擊速度，不是槍口動能。","en":"Released in 1873, the iconic revolver of the American frontier era, nicknamed \"the Peacemaker.\" At 557J, its energy is actually close to — even slightly above — this chart's Glock 19 (521J) and M1911 (528J), contrary to the common assumption that \"old guns are weaker.\" What actually dates it against modern pistols is capacity and the single-action trigger slowing follow-up shots, not muzzle energy."}},{"id":29,"name":{"zh":"英格蘭長弓","en":"English longbow"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":"木製箭矢","en":"Wooden arrow"},"effectiveRangeM":200,"muzzleEnergyJ":110,"rpm":11,"weightKg":1.4,"origin":{"zh":"英格蘭","en":"England"},"desc":{"zh":"中世紀英格蘭步兵的招牌武器，克雷西、阿金庫爾等對法戰役中扮演關鍵角色，熟練弓箭手每分鐘可放箭十發以上，箭雨的密度跟持續性是它真正可怕之處，單發動能雖不算高，但箭矢的穿甲能力受箭頭設計影響很大。","en":"The signature weapon of medieval English infantry, decisive at battles like Crécy and Agincourt. A skilled archer could loose ten-plus arrows a minute — the density and sustainability of that arrow storm was the real threat, not any single shot. Per-arrow energy is modest, but armor penetration depends heavily on arrowhead design."}},{"id":30,"name":{"zh":"橡皮動力魚槍","en":"Rubber-powered speargun"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":"不鏽鋼魚叉","en":"Stainless steel spear"},"effectiveRangeM":5,"muzzleEnergyJ":65,"rpm":4,"weightKg":1.5,"origin":{"zh":"現代（代表性規格）","en":"Modern (representative spec)"},"desc":{"zh":"現代潛水獵魚常用的橡皮動力魚槍，靠拉伸橡皮筋儲能發射魚叉，水中阻力遠大於空氣、有效距離很短，但近距離動能足以貫穿中大型魚類，換彈需要重新拉伸橡皮，射速遠不及任何火藥武器。","en":"A common tool for modern spearfishing, storing energy in stretched rubber bands to launch the spear. Water resistance is far greater than air, so effective range is short, but up-close energy is enough to pierce mid-to-large fish. Reloading means re-stretching the bands by hand — nowhere near the rate of fire of any powder weapon."}},{"id":31,"name":{"zh":"世界級棒球投手全力投球","en":"World-class baseball pitch"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":"棒球（145g）","en":"Baseball (145g)"},"effectiveRangeM":18.4,"muzzleEnergyJ":150,"rpm":15,"weightKg":0.145,"origin":{"zh":"美國職棒（代表性數據）","en":"MLB (representative figure)"},"desc":{"zh":"職業棒球投手全力衝刺球速可達時速150公里以上，換算動能約150J——已經超過本表口袋型.22LR手槍（68J）兩倍以上，純粹靠人體肌肉力量丟一顆球，動能就能逼近一把真槍，這個對照常讓人意外。投手丘到本壘板的規定距離是18.4公尺。","en":"A top MLB pitcher can throw over 150km/h, which works out to roughly 150J — more than double this chart's pocket .22LR pistol (68J). Pure human muscle, throwing a ball, reaching energy levels that rival an actual firearm — a comparison that usually surprises people. The regulation mound-to-plate distance is 18.4m."}},{"id":32,"name":{"zh":"奧運標槍擲遠","en":"Olympic javelin throw"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":"標槍（800g，男子規格）","en":"Javelin (800g, men's spec)"},"effectiveRangeM":90,"muzzleEnergyJ":380,"rpm":1,"weightKg":0.8,"origin":{"zh":"奧運（代表性數據）","en":"Olympics (representative figure)"},"desc":{"zh":"男子標槍重800公克，頂尖選手出手瞬間速度可達時速100公里以上，換算動能大約380J——已經是本表口袋型.22LR手槍（68J）的五倍多，但還沒追上西部左輪（557J）或主流9mm手槍。純人力擲出的運動器材，動能能逼近手槍等級，還是本表「其他兵器」類別裡數一數二誇張的存在。","en":"The men's javelin weighs 800g; elite throwers reach release speeds over 100km/h, for roughly 380J — over five times this chart's pocket .22LR (68J), though still short of the Wild West revolver (557J) or a mainstream 9mm pistol. A piece of sporting equipment, thrown by human muscle alone, reaching near-handgun energy — one of the more extreme entries in this chart's Other category."}},{"id":33,"name":{"zh":"現代狩獵吹箭","en":"Modern hunting blowgun"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":"金屬鏢頭吹箭","en":"Metal-tipped dart"},"effectiveRangeM":10,"muzzleEnergyJ":13,"rpm":2,"weightKg":0.3,"origin":{"zh":"現代（狩獵用）","en":"Modern (hunting use)"},"desc":{"zh":"現代法律禁止塗毒，在純物理傷害下，吹箭只能用來狩獵老鼠、松鼠、斑鳩這類小型害獸（Varmint）。若要對付大中型動物，這點動能無法造成足夠的瞬間失血，在沒有毒素輔助下不可能毒殺或擊斃大獵物。","en":"Poison-tipped darts are illegal under modern law, so on pure physical trauma alone, a blowgun is only suitable for varmint-sized game — rats, squirrels, doves. Against medium-to-large animals this little energy can't cause enough immediate blood loss; without toxin assistance, it simply cannot kill or incapacitate larger game."}},{"id":34,"name":{"zh":"中世紀重型弩","en":"Medieval heavy crossbow"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":"鋼製弩箭","en":"Steel crossbow bolt"},"effectiveRangeM":50,"muzzleEnergyJ":175,"rpm":1.5,"weightKg":7,"origin":{"zh":"歐洲中世紀","en":"Medieval Europe"},"desc":{"zh":"鋼製弓翼的大型重弩，動能極為粗暴，專為貫穿鏈甲與早期板甲設計。弓體拉力常達數百磅，必須靠絞盤（Windlass）或起重器（Cranequin）機械式裝填，射速極低。沉重的弩箭在50公尺外彈道會因風阻與重力快速下墜，實戰中多用於城堡守備或陣地推進的精準壓制，不是野戰快速交火的武器。","en":"A large steel-limbed crossbow with brutal energy for its size, purpose-built to punch through mail and early plate armor. Draw weights often ran into the hundreds of pounds, requiring a windlass or cranequin to mechanically span it — rate of fire was very low. The heavy bolt drops fast past 50m due to drag and gravity; historically it was a siege-defense or precision-suppression weapon, not something for fast-moving field skirmishes."}},{"id":35,"name":{"zh":"防暴布袋彈","en":"Riot bean bag round"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":"12號布袋彈（鉛砂填充）","en":"12ga bean bag round (lead shot filled)"},"effectiveRangeM":20,"muzzleEnergyJ":135,"rpm":8,"weightKg":3.5,"origin":{"zh":"現代（警用低致命性彈藥）","en":"Modern (police less-lethal munition)"},"desc":{"zh":"低致命性警用彈藥，由霰彈槍發射。彈頭是強韌尼龍布袋包裹大量細鉛砂，擊中目標時瞬間變扁、擴大受力面積，設計核心是把百餘焦耳的能量轉化為極強的鈍痛與衝擊力（類似棒球重擊），用以瞬間制服或驅散目標，標準距離內通常不會穿透皮膚或造成開放性致命傷。","en":"A less-lethal police munition fired from a shotgun. The \"bullet\" is a tough nylon bag packed with fine lead shot that flattens on impact, spreading the force over a wider area. The design intent is to turn ~100J-plus of energy into severe blunt trauma (think a hard baseball hit) to incapacitate or disperse a target — at standard distances it usually doesn't break the skin or cause an open, lethal wound."}},{"id":36,"name":{"zh":"古代狩獵標槍","en":"Ancient hunting spear"},"group":"OTHER","actionType":"OTHER","caliber":{"zh":"木柄金屬矛頭","en":"Wood-shafted metal spearhead"},"effectiveRangeM":13,"muzzleEnergyJ":250,"rpm":2,"weightKg":2,"origin":{"zh":"古代（代表性規格）","en":"Ancient (representative spec)"},"desc":{"zh":"初速雖然不高，但高達1.5至2.5公斤的極重質量賦予了它恐怖的物理動量。設計核心是利用巨大的前進慣性，推動鋼尖砸碎野豬、鹿甚至棕熊的堅硬骨骼並直達內臟——跟本表其他靠高速取勝的投射武器邏輯完全相反，是「重量換動能」的極端案例。","en":"Low initial speed, but a mass of 1.5–2.5kg gives it fearsome momentum. The whole design leans on forward inertia, driving the steel point through boar, deer, or even bear bone straight into the vitals — the exact opposite logic of every other high-velocity projectile on this chart. An extreme case of trading mass for energy."}},{"id":41,"name":{"zh":"MG 151/20","en":"MG 151/20"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×82mm","effectiveRangeM":400,"muzzleEnergyJ":26000,"rpm":750,"weightKg":42,"origin":{"zh":"納粹德國","en":"Nazi Germany"},"desc":{"zh":"二戰德國空軍主力機炮，Bf 109F型後標配。106公克彈頭、初速700m/s，德國人特意選擇「炸藥量優先於初速」的設計哲學（Minengeschoß薄殼高裝藥彈頭），寧可犧牲一點動能也要塞更多炸藥進彈頭裡，跟英美追求高初速穿甲的思路正好相反。","en":"The Luftwaffe's primary cannon in WWII, standard from the Bf 109F onward. 106g shell at 700m/s. Germany deliberately chose an \"explosive filler over velocity\" philosophy (the thin-walled, high-capacity Minengeschoß shell) — happy to sacrifice some energy to pack in more explosive, the opposite approach to the British/American pursuit of high-velocity kinetic penetration."}},{"id":42,"name":{"zh":"Hispano Mk V","en":"Hispano Mk V"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×110mm","effectiveRangeM":450,"muzzleEnergyJ":50000,"rpm":750,"weightKg":50,"origin":{"zh":"英國／美國","en":"UK/USA"},"desc":{"zh":"二戰量產20mm機炮裡動能最高的一款，130公克彈頭、初速870-880m/s，英美戰鬥機在二戰中後期的標準配備之一。動能已經是本表.50 BMG重機槍（17,950J）的近三倍——這也是為什麼「機炮」跟「輕兵器」根本不是同一個量級的東西。","en":"The highest-energy mass-produced 20mm cannon of WWII: a 130g shell at 870–880m/s, standard equipment on British and American fighters by the latter half of the war. Its energy is nearly triple this chart's .50 BMG machine gun (17,950J) — which is exactly why \"autocannon\" and \"small arm\" simply aren't the same order of magnitude."}},{"id":43,"name":{"zh":"GAU-8「復仇者」","en":"GAU-8 \"Avenger\""},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"30×173mm","effectiveRangeM":1220,"muzzleEnergyJ":203000,"rpm":3900,"weightKg":281,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"A-10「疣豬」攻擊機專用反裝甲機炮，七管加特林式設計，395公克貧鈾穿甲彈頭、初速1013m/s，動能高達203,000J——是本表.50 BMG的11倍以上。整架A-10攻擊機幾乎是圍繞著這門砲設計出來的，專門用來從空中打穿坦克頂部裝甲，查資料時甚至看到「這東西打過來，躲在坦克後面都沒用」這種形容。","en":"The dedicated anti-armor cannon of the A-10 \"Warthog,\" a seven-barrel Gatling design firing a 395g depleted-uranium armor-piercing shell at 1013m/s — 203,000J, over 11 times this chart's .50 BMG. The entire A-10 airframe was practically built around this gun, designed to punch through tank top armor from the air; one source I found while researching this put it bluntly: \"hiding behind a tank won't save you from this.\""}},{"id":44,"name":{"zh":"Mk 44 巨蝮二式機砲","en":"Mk 44 Bushmaster II"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"30×173mm","effectiveRangeM":3000,"muzzleEnergyJ":200000,"rpm":200,"weightKg":160,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"現代西方步兵戰鬥車／兩棲突擊車常見的鏈砲主武裝（如美軍ACV、多國LAV系列），跟GAU-8「復仇者」共用同一款30×173mm彈殼規格與相近的槍管長度，動能因此取跟GAU-8同一個量級的估計。但要澄清一個常見誤解：**兩者的彈藥並不能直接互通**——GAU-8為了配合加特林結構的極高射速，用的是電擊發（electrically primed）底火；Mk44鏈砲則是機械式撞針擊發（percussion primed），底火系統完全不同，硬要混用會導致擊發失敗甚至卡彈。真正的性能差異在射速——Mk44每分鐘只有100-200發，遠低於GAU-8的3,900發，這是機炮設計上「爆發射速」跟「持續壓制力」互相取捨的直接案例。","en":"The chain-gun main armament on modern Western IFVs and amphibious assault vehicles (US ACV, various LAV variants). It shares the same 30×173mm case dimensions and a similar barrel length with the GAU-8 \"Avenger,\" so its energy figure here is estimated at the same order of magnitude. One common misconception worth correcting: **the ammunition is not actually interchangeable between the two** — the GAU-8 uses electrically primed rounds to support its extreme Gatling-driven rate of fire, while the Mk44 chain gun uses conventional percussion-primed ammunition. Mixing the two causes misfires or jams. The real performance difference is rate of fire: the Mk44 runs only 100–200 rounds/min, far below the GAU-8's 3,900 — a direct case study in trading burst rate for sustained suppression."}},{"id":45,"name":{"zh":"俄製 2A42 機砲","en":"Russian 2A42"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"30×165mm","effectiveRangeM":1500,"muzzleEnergyJ":195000,"rpm":650,"weightKg":115,"origin":{"zh":"蘇聯／俄羅斯","en":"USSR/Russia"},"desc":{"zh":"蘇聯／俄羅斯BMP-2、BMD系列步兵戰鬥車的標準主砲，也裝在Mi-28、Ka-52攻擊直升機上，是東方陣營機炮的代表型號，跟西方的Mk 44、GAU-8同屬30mm級距但用不同彈藥規格（30×165mm）。俄系30mm彈藥不分陸用（2A42鏈砲）或空用（GSh-30-2機炮），用的都是同一套標準制式規格，彈頭重量是公開確定的數字（如3UOF8高爆彈約390g、3UBM6穿甲彈約400g），不是靠推算得出的估計值。","en":"The standard main gun on Soviet/Russian BMP-2 and BMD-series IFVs, also mounted on Mi-28 and Ka-52 attack helicopters — the Eastern-bloc equivalent to the Western Mk 44 and GAU-8, same 30mm class but a different case (30×165mm). Russian 30mm ammunition is standardized across both ground (2A42 chain gun) and air (GSh-30-2 cannon) applications — projectile weights are publicly confirmed figures (the 3UOF8 HE round at roughly 390g, the 3UBM6 AP round at roughly 400g), not derived estimates."}},{"id":47,"name":{"zh":"M61 火神式機砲","en":"M61 Vulcan"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×102mm","effectiveRangeM":3000,"muzzleEnergyJ":53000,"rpm":6000,"weightKg":112,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"六管加特林式旋轉機炮，二戰後美軍幾乎所有主力戰機（F-14、F-15、F-16、F-22）都配備這款機炮，理論射速最高可達每分鐘6,000-7,200發，是「用射速彌補命中率」這個設計哲學的代表作。美方在冷戰初期刻意選擇20mm而非歐系慣用的30mm，用彈頭重量換取更高射速，跟本表其他30mm機炮的設計取捨正好相反。","en":"A six-barrel Gatling-style rotary cannon fitted to nearly every major post-WWII US fighter (F-14, F-15, F-16, F-22). Theoretical cyclic rate reaches 6,000-7,200 rounds/min — the definitive example of \"make up for accuracy with volume of fire.\" Early Cold War America deliberately chose 20mm over the European-standard 30mm, trading shell weight for a much higher rate of fire — the exact opposite trade-off from the other 30mm guns on this chart."}},{"id":48,"name":{"zh":"M242 巨蝮式鏈砲","en":"M242 Bushmaster"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"25×137mm","effectiveRangeM":2000,"muzzleEnergyJ":121000,"rpm":200,"weightKg":115,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"美軍布萊德雷步兵戰鬥車、LAV-25等載具的標準主砲，是Mk44巨蝮二式的前身（Mk44沿用了M242約七成零件、加大口徑到30mm）。鏈砲（chain gun）靠外部電動馬達驅動循環，不依賴火藥氣體或後座力運作，可靠度較傳統氣動式機炮更穩定，是現代西方步兵戰鬥車機砲設計的重要分水嶺。","en":"The standard main gun on the US Bradley IFV, LAV-25, and similar vehicles — the direct predecessor to the Mk 44 Bushmaster II (which reuses roughly 70% of the M242's parts, bored out to 30mm). As a \"chain gun,\" it's cycled by an external electric motor rather than propellant gas or recoil, giving it more consistent reliability than a traditional gas-operated autocannon — a genuine turning point in Western IFV gun design."}},{"id":49,"name":{"zh":"GIAT M693 / F2 機砲","en":"GIAT M693 / F2"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×139mm","effectiveRangeM":1500,"muzzleEnergyJ":72000,"rpm":900,"weightKg":332,"origin":{"zh":"法國","en":"France"},"desc":{"zh":"法國GIAT（現Nexter）研發的20mm機砲，衍生自瑞士Hispano-Suiza HS.820設計，F2型是法國海軍現役近迫防禦武器之一。本表列出的重量是艦載砲塔規格（332公斤），比一般陸用/機載型號重得多，這也反映出海軍艦砲通常不受重量限制、可以做得更堅固耐用。","en":"A 20mm cannon from France's GIAT (now Nexter), derived from the Swiss Hispano-Suiza HS.820 design; the F2 variant is a current French Navy close-in defense weapon. The weight listed here is the naval turret configuration (332kg) — much heavier than typical land or aircraft mounts, reflecting how naval gun mounts, unrelieved by weight constraints, can simply be built tougher."}},{"id":50,"name":{"zh":"歐瑞康 GDF 35mm 機砲","en":"Oerlikon GDF 35mm"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"35×228mm","effectiveRangeM":4000,"muzzleEnergyJ":380000,"rpm":550,"weightKg":6700,"origin":{"zh":"瑞士","en":"Switzerland"},"desc":{"zh":"本體是雙管拖曳式防空機砲，但同系列35mm機砲也裝上了車輛——德國「獵豹式」自走防空戰車（Gepard，以豹1坦克底盤打造）就搭載雙聯裝35mm機砲，專門用來低空獵殺敵機、直升機、無人機，烏克蘭戰場上實際多次用來擊落俄軍巡弋飛彈與無人機群。要老實說明一點：獵豹是「自走防空砲」不是「步兵戰車」，車上不載步兵，跟本表波佛斯L70那台真正能載兵的CV9040步兵戰車不是同一類載具。動能已經是本表.50 BMG的21倍以上。","en":"A twin-barrel towed anti-aircraft gun by design, though the same 35mm cannon family has also gone on vehicles — Germany's Gepard self-propelled anti-aircraft gun (built on a Leopard 1 chassis) carries twin 35mm cannons purpose-built to hunt low-flying aircraft, helicopters, and drones, with real combat use in Ukraine shooting down Russian cruise missiles and drone swarms. One clarification worth making honestly: the Gepard is a \"self-propelled AA gun,\" not an \"infantry fighting vehicle\" — it carries no troops, unlike this chart's CV9040 (armed with the Bofors L70), which genuinely does. Energy here is over 21 times this chart's .50 BMG."}},{"id":51,"name":{"zh":"波佛斯 L70 40mm 機砲","en":"Bofors L70 40mm"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"40×365mmR","effectiveRangeM":4200,"muzzleEnergyJ":461000,"rpm":240,"weightKg":4750,"origin":{"zh":"瑞典","en":"Sweden"},"desc":{"zh":"瑞典波佛斯二戰經典40mm防空砲（L60型）的現代化後繼型號，1953年獲北約採用為標準防空砲。這款砲的車載版直接裝上了瑞典CV9040步兵戰車的砲塔——一台能實際搭載6-8名步兵的正牌步兵戰車，官方描述直言這門砲「除了主戰坦克的正面裝甲之外，戰場上幾乎什麼都能摧毀」：對建築物與步兵用高爆彈、對空用近發引信高爆彈、對敵方裝甲車輛與攻擊直升機則換上脫殼穿甲彈（APFSDS），烏克蘭戰場上CV9040已有實戰擊毀俄軍裝甲目標的紀錄。870公克彈頭、初速1030m/s，動能高達461,000J，**是本表全部52項武器裡動能最高的一款，甚至超過GAU-8**。","en":"Sweden's modern successor to the classic WWII Bofors 40mm AA gun (the L60), adopted by NATO as a standard anti-aircraft gun in 1953. The vehicle-mounted version sits directly in the turret of Sweden's CV9040 infantry fighting vehicle — a genuine troop carrier holding 6-8 soldiers — and official descriptions state bluntly that the gun \"can destroy almost anything on the battlefield except a main battle tank's frontal armor\": HE against buildings and infantry, proximity-fused HE against aircraft, and APFSDS sabot rounds against armored vehicles and attack helicopters. CV9040s have real combat kills against Russian armor in Ukraine. An 870g shell at 1030m/s gives 461,000J — **the single highest energy figure of all 52 weapons on this chart, even beating the GAU-8**."}},{"id":53,"name":{"zh":"M197 加特林","en":"M197 Gatling gun"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"20×102mm","effectiveRangeM":2000,"muzzleEnergyJ":53000,"rpm":750,"weightKg":60,"origin":{"zh":"美國","en":"USA"},"desc":{"zh":"AH-1「眼鏡蛇」攻擊直升機的標配機炮，本質上是M61火神式的縮小版——把六管減成三管、槍身減重減短，共用同一款20×102mm彈藥（跟火神式動能完全相同）。越戰經驗顯示原本配的7.62mm迷你砲對付地面目標火力不足，才催生了這款專為直升機平台設計的中間解——射速降到火神式的四分之一（750發/分），換取更小的後座力衝擊，避免震壞直升機機體結構。","en":"The standard cannon on the AH-1 \"Cobra\" attack helicopter — essentially a shrunk-down M61 Vulcan, cut from six barrels to three and lightened, but firing the exact same 20×102mm ammunition (and therefore identical energy). Vietnam-era experience showed the original 7.62mm minigun lacked punch against ground targets, driving development of this middle-ground solution built specifically for helicopter platforms: rate of fire cut to a quarter of the Vulcan's (750 rounds/min) to keep recoil shock low enough not to damage the airframe."}},{"id":54,"name":{"zh":"ZU-23-2","en":"ZU-23-2"},"group":"AUTOCANNON","actionType":"FULL_AUTO","caliber":"23×152mm","effectiveRangeM":2000,"muzzleEnergyJ":89000,"rpm":2000,"weightKg":950,"origin":{"zh":"蘇聯","en":"USSR"},"desc":{"zh":"蘇聯經典雙管拖曳式防空機砲，1960年代服役至今、全世界產量與擴散程度數一數二。冷戰後在各地內戰、衝突中經常被直接拆下來焊上皮卡車車斗，變成俗稱「技術改裝車」（Technical）的克難武裝載具，敘利亞、利比亞、蘇丹等地衝突中都能看到它的身影——原本設計給正規防空陣地用的重型機砲，最後反而成了非正規武裝最具代表性的火力象徵之一。","en":"A classic Soviet twin-barrel towed anti-aircraft gun, in service since the 1960s and among the most widely produced and proliferated guns of its kind. Since the Cold War it's routinely stripped from its carriage and welded onto pickup truck beds, becoming the archetypal \"technical\" — seen across conflicts in Syria, Libya, Sudan, and beyond. A heavy gun designed for formal air-defense positions ended up as one of the most iconic firepower symbols of irregular warfare."}}];
 </script>
 <script>
 (function(){
@@ -338,6 +342,92 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
   var DATA = window.DATA.slice().sort(function(a,b){ return b.rpm - a.rpm; }); // draw big bubbles first
 
   // ---------------- formatting helpers ----------------
+  function L(v){
+    if(v && typeof v === 'object' && (typeof v.zh === 'string' || typeof v.en === 'string')){
+      return v[state.lang] || v.zh || v.en || '';
+    }
+    return v;
+  }
+  var UI_STRINGS = {
+    eyebrow: { zh: 'SMALL ARMS & AUTOCANNON ENVELOPE · REFERENCE PLOT', en: 'SMALL ARMS & AUTOCANNON ENVELOPE · REFERENCE PLOT' },
+    h1_1: { zh: '單兵輕兵器 × 載具機炮：', en: 'Small Arms × Vehicle Autocannons: ' },
+    h1_accent1: { zh: '射程', en: 'Range' },
+    h1_mid1: { zh: '／', en: ' / ' },
+    h1_accent2: { zh: '槍口動能', en: 'Muzzle Energy' },
+    h1_mid2: { zh: '／', en: ' / ' },
+    h1_accent3: { zh: '射速', en: 'Rate of Fire' },
+    h1_end: { zh: '直覺對比', en: ': An Intuitive Comparison' },
+    sub: { zh: '本站特意將常見的<b>單兵輕兵器</b>與裝甲載具、戰機所使用的<b>機炮（Autocannon）</b>放在同一個維度，旨在用有效射程、槍口動能與射速，幫助初學者直覺理解從人體肌肉、單兵裝備到「機械怪獸」之間真正的量級跨度與斷層層級。<br><br>註：在軍事定義上，口徑大於20mm且具備全自動擊發能力的武器歸類為「機炮」，不屬於輕兵器（Small Arms）範疇。本站非嚴謹彈道學工具，數據僅取常見引用值。',
+          en: 'This site deliberately plots common <b>small arms</b> alongside the <b>autocannons</b> carried by armored vehicles and combat aircraft, on the same axes — using effective range, muzzle energy, and rate of fire to build an intuitive sense of the real gap between human muscle, individual weapons, and full "mechanical monsters."<br><br>Note: by military convention, any automatic weapon over 20mm caliber is classified as an "autocannon," not a small arm. This is not a rigorous ballistics tool; figures are drawn from commonly cited public sources.' },
+    statCountLbl: { zh: '收錄兵器', en: 'Weapons Listed' },
+    statCountSuffix: { zh: '件', en: '' },
+    statRangeLbl: { zh: '射程跨度', en: 'Range Span' },
+    statEnergyLbl: { zh: '動能跨度', en: 'Energy Span' },
+    statGroupsLbl: { zh: '兵器類別', en: 'Categories' },
+    statGroupsSuffix: { zh: '類', en: '' },
+    filterTitle: { zh: '篩選 / FILTER', en: 'FILTER' },
+    searchPlaceholder: { zh: '搜尋兵器或口徑…', en: 'Search weapon or caliber…' },
+    btnAll: { zh: '全選', en: 'All' },
+    btnNone: { zh: '清空', en: 'None' },
+    actionTitle: { zh: '射擊方式 / ACTION', en: 'ACTION TYPE' },
+    refTitle: { zh: '參考 / REFERENCE', en: 'REFERENCE' },
+    refBands: { zh: '防彈等級色帶', en: 'Armor rating bands' },
+    refLines: { zh: '常見物體參考線', en: 'Everyday-object reference lines' },
+    refRangeLines: { zh: '射程參考線', en: 'Range reference lines' },
+    chartTitle: { zh: '射程 × 動能 散點圖', en: 'Range × Energy Scatter Plot' },
+    chartCount: function(vis, total, lang){ return lang === 'zh' ? ('(顯示 ' + vis + ' / ' + total + ' 件)') : ('(showing ' + vis + ' / ' + total + ')'); },
+    btnXScaleLog: { zh: '射程：對數', en: 'Range: Log' },
+    btnXScaleLinear: { zh: '射程：線性', en: 'Range: Linear' },
+    btnYScaleLog: { zh: '動能：對數', en: 'Energy: Log' },
+    btnYScaleLinear: { zh: '動能：線性', en: 'Energy: Linear' },
+    btnBoxZoom: { zh: '🔲 框選縮放', en: '🔲 Box Zoom' },
+    btnZoomFit: { zh: '🔍 縮放至可見項目', en: '🔍 Zoom to Visible' },
+    btnResetZoom: { zh: '重置縮放', en: 'Reset Zoom' },
+    btnLabelAuto: { zh: '名稱：自動', en: 'Labels: Auto' },
+    btnLabelShow: { zh: '名稱：顯示', en: 'Labels: Show' },
+    btnLabelHide: { zh: '名稱：隱藏', en: 'Labels: Hide' },
+    btnFullscreen: { zh: '⛶ 全螢幕', en: '⛶ Fullscreen' },
+    btnFullscreenExit: { zh: '⛶ 退出全螢幕', en: '⛶ Exit Fullscreen' },
+    chartHint: { zh: '滑鼠滾輪在圖表上可縮放、拖曳可平移，也可直接拖動座標軸旁的拉桿手把調整範圍。想精準聚焦，按「框選縮放」後在圖表上拖曳畫出一個框；「縮放至可見項目」依左側篩選結果自動抓範圍；「重置縮放」還原完整檢視；射程／動能都可各自切換對數或線性尺度。',
+               en: 'Scroll to zoom the chart, drag to pan, or drag the handles beside each axis to set the range directly. For precise focus, click "Box Zoom" then drag a box on the chart; "Zoom to Visible" fits the view to the current filter results; "Reset Zoom" restores the full view; range and energy can each be switched between log and linear scale independently.' },
+    legendTitle: { zh: '圖表判讀 / LEGEND', en: 'LEGEND' },
+    legendAxesTitle: { zh: '座標軸', en: 'Axes' },
+    legendAxesBody: { zh: '橫軸＝有效射程（公尺，可切換對數／線性）<br>縱軸＝槍口動能（焦耳，可切換對數／線性）',
+                       en: 'X-axis = effective range (meters, log or linear)<br>Y-axis = muzzle energy (joules, log or linear)' },
+    legendShapeTitle: { zh: '形狀＝射擊方式', en: 'Shape = Action Type' },
+    legendShapeBody: { zh: '● 圓形＝全自動武器（<b>泡泡大小正比於理論循環射速</b>，越大射速越快，如加特林火神砲）<br>■ 方形＝半自動武器（固定大小，單次扣引發射單發）<br>◆ 菱形＝栓動/手動式武器（固定大小，手動退殼上膛）<br>▲ 三角形＝保留給未來的特殊／人力驅動武器',
+                        en: '● Circle = full-auto weapons (<b>bubble size scales with theoretical cyclic rate</b> — bigger means faster, like a Gatling cannon)<br>■ Square = semi-auto weapons (fixed size, one round per trigger pull)<br>◆ Diamond = bolt/pump-action weapons (fixed size, manually cycled)<br>▲ Triangle = reserved for future special/human-powered weapons' },
+    legendColorTitle: { zh: '顏色與參考圖層', en: 'Color & Reference Layers' },
+    legendColorBody: { zh: '顏色＝兵器類別<br>綠色／橘色色帶＝防彈衣等級概略上限<br>橘色虛線＝常見物體的動能參考（頭骨、氣槍、裝甲車等）<br>藍色虛線＝射程距離參考<br>三者皆可於左側獨立開關',
+                        en: 'Color = weapon category<br>Green/orange bands = approximate body-armor rating ceilings<br>Orange dashed lines = everyday-object energy references (skull, air rifle, armored vehicle, etc.)<br>Blue dashed lines = distance references<br>All three can be toggled independently from the left panel' },
+    legendDataTitle: { zh: '資料說明', en: 'Data Notes' },
+    legendDataBody: { zh: '數字為公開資料整理之概略估算值，並非嚴謹考據。詳細口徑與重量可在點選武器後彈出的卡片查看。',
+                       en: 'Figures are rough estimates compiled from public sources, not rigorous ballistic research. Detailed caliber and weight are shown in the card that pops up when you select a weapon.' },
+    compareTitle: { zh: '比較清單 / COMPARE', en: 'COMPARE' },
+    compareEmpty: { zh: '點選圖表上的兵器，於詳細卡片按「加入比較清單」，即可在此並排比較射程、動能與射速。',
+                     en: 'Select a weapon on the chart and click "Add to Compare" on its detail card to compare range, energy, and rate of fire side by side here.' },
+    footer: { zh: '數據為公開彈道規格資料整理之概略估算值，僅供科普與創作參考，並非嚴謹考據。「槍口動能」依「彈頭重量與初速」概略計算，實際數字因彈藥批次、槍管長度、氣候條件而異；「有效射程」在軍規、警規、民用市場間常有不同認定標準，本站僅取較常見的引用值。射速數字對全自動武器為廠商公布之理論射速，對半自動／栓動式武器則為熟練射手可維持的實際持續射速，兩者性質不同但都取自公開可查證的引用值。動能數字不直接等同於「殺傷力」或「停止作用」，實際毀傷效果還牽涉彈頭設計、命中部位等因素。',
+             en: 'All figures are rough estimates compiled from publicly available ballistics data, intended for general reference and creative use, not rigorous research. "Muzzle energy" is calculated approximately from projectile weight and velocity; actual numbers vary with ammunition batch, barrel length, and weather. "Effective range" has different definitions across military, police, and civilian sources — this site uses the most commonly cited figures. Rate-of-fire figures are manufacturer-stated theoretical cyclic rates for full-auto weapons, and a trained shooter\'s realistic sustained rate for semi-auto/bolt-action weapons — both drawn from public, verifiable sources. Energy figures do not directly equate to "lethality" or "stopping power"; actual wounding effects also depend on projectile design and point of impact.' },
+    detailAddCompare: { zh: '＋ 加入比較清單', en: '＋ Add to Compare' },
+    detailRemoveCompare: { zh: '✕ 移出比較清單', en: '✕ Remove from Compare' },
+    dstatRange: { zh: '有效射程', en: 'Effective Range' },
+    dstatEnergy: { zh: '槍口動能', en: 'Muzzle Energy' },
+    dstatRpm: { zh: '射速', en: 'Rate of Fire' },
+    dstatWeight: { zh: '槍身重量', en: 'Weight' },
+    cmpRow_range: { zh: '射程', en: 'Range' },
+    cmpRow_energy: { zh: '動能', en: 'Energy' },
+    cmpRow_rpm: { zh: '射速', en: 'ROF' },
+    cmpRow_weight: { zh: '重量', en: 'Weight' },
+    ttRange: { zh: '射程', en: 'Range' },
+    ttEnergy: { zh: '動能', en: 'Energy' },
+    ttRpm: { zh: '射速', en: 'ROF' },
+    langToggle: { zh: 'EN', en: '中文' },
+    axisRangeLbl: { zh: '有效射程 m', en: 'Effective Range m' },
+    axisEnergyLbl: { zh: '槍口動能 J', en: 'Muzzle Energy J' },
+    scaleLinear: { zh: '線性尺度', en: 'linear scale' },
+    scaleLog: { zh: '對數尺度', en: 'log scale' }
+  };
+  function t(key){ return L(UI_STRINGS[key]); }
   function fmtRange(m){ return Math.round(m).toLocaleString('en-US') + ' m'; }
   function fmtEnergy(j){ return Math.round(j).toLocaleString('en-US') + ' J'; }
   function fmtRpm(r){ return Math.round(r).toLocaleString('en-US') + ' RPM'; }
@@ -459,7 +549,8 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
     yMode: 'log',
     showArmorBands: true,
     showEnergyRefs: true,
-    showRangeRefs: true
+    showRangeRefs: true,
+    lang: 'zh'
   };
 
   function isVisible(d){
@@ -467,7 +558,8 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
     if(!state.activeActions.has(d.actionType)) return false;
     if(state.search){
       var q = state.search.toLowerCase();
-      var hay = (d.name + ' ' + (d.caliber||'')).toLowerCase();
+      var nameBoth = (d.name && typeof d.name === 'object') ? (d.name.zh + ' ' + d.name.en) : d.name;
+      var hay = (nameBoth + ' ' + (L(d.caliber) || '')).toLowerCase();
       if(hay.indexOf(q) === -1) return false;
     }
     return true;
@@ -499,7 +591,7 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       row.innerHTML =
         '<input type="checkbox" ' + checked + ' data-group="' + key + '">' +
         '<span class="swatch" style="background:' + g.color + '"></span>' +
-        '<span class="lbl">' + g.label + '</span>' +
+        '<span class="lbl">' + L(g.label) + '</span>' +
         '<span class="cnt">' + count + '</span>';
       groupListEl.appendChild(row);
     });
@@ -530,18 +622,23 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
 
   // ---------------- filter panel: action type toggles ----------------
   var actionListEl = document.getElementById('actionList');
-  Object.keys(ACTION_TYPE).forEach(function(key){
-    var c = ACTION_TYPE[key];
-    var count = DATA.filter(function(d){ return d.actionType === key; }).length;
-    var row = document.createElement('label');
-    row.className = 'group-row';
-    row.innerHTML =
-      '<input type="checkbox" checked data-action="' + key + '">' +
-      '<span class="swatch" style="background:' + c.color + '"></span>' +
-      '<span class="lbl">' + c.label + '</span>' +
-      '<span class="cnt">' + count + '</span>';
-    actionListEl.appendChild(row);
-  });
+  function renderActionList(){
+    actionListEl.innerHTML = '';
+    Object.keys(ACTION_TYPE).forEach(function(key){
+      var c = ACTION_TYPE[key];
+      var count = DATA.filter(function(d){ return d.actionType === key; }).length;
+      var checked = state.activeActions.has(key) ? 'checked' : '';
+      var row = document.createElement('label');
+      row.className = 'group-row';
+      row.innerHTML =
+        '<input type="checkbox" ' + checked + ' data-action="' + key + '">' +
+        '<span class="swatch" style="background:' + c.color + '"></span>' +
+        '<span class="lbl">' + L(c.label) + '</span>' +
+        '<span class="cnt">' + count + '</span>';
+      actionListEl.appendChild(row);
+    });
+  }
+  renderActionList();
   actionListEl.addEventListener('change', function(e){
     var cb = e.target;
     if(cb && cb.dataset && cb.dataset.action){
@@ -553,28 +650,33 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
 
   // ---------------- filter panel: reference band/line toggles ----------------
   var refLayerListEl = document.getElementById('refLayerList');
-  if(refLayerListEl){
+  function renderRefLayerList(){
+    if(!refLayerListEl) return;
+    refLayerListEl.innerHTML = '';
     var bandRow = document.createElement('label');
     bandRow.className = 'group-row';
     bandRow.innerHTML =
-      '<input type="checkbox" checked data-reflayer="bands">' +
+      '<input type="checkbox" ' + (state.showArmorBands ? 'checked' : '') + ' data-reflayer="bands">' +
       '<span class="swatch" style="background:#8FA876"></span>' +
-      '<span class="lbl">防彈等級色帶</span>';
+      '<span class="lbl">' + t('refBands') + '</span>';
     refLayerListEl.appendChild(bandRow);
     var lineRow = document.createElement('label');
     lineRow.className = 'group-row';
     lineRow.innerHTML =
-      '<input type="checkbox" checked data-reflayer="lines">' +
+      '<input type="checkbox" ' + (state.showEnergyRefs ? 'checked' : '') + ' data-reflayer="lines">' +
       '<span class="swatch" style="background:#FF7A45"></span>' +
-      '<span class="lbl">常見物體參考線</span>';
+      '<span class="lbl">' + t('refLines') + '</span>';
     refLayerListEl.appendChild(lineRow);
     var rangeRow = document.createElement('label');
     rangeRow.className = 'group-row';
     rangeRow.innerHTML =
-      '<input type="checkbox" checked data-reflayer="rangelines">' +
+      '<input type="checkbox" ' + (state.showRangeRefs ? 'checked' : '') + ' data-reflayer="rangelines">' +
       '<span class="swatch" style="background:#8FB8D6"></span>' +
-      '<span class="lbl">射程參考線</span>';
+      '<span class="lbl">' + t('refRangeLines') + '</span>';
     refLayerListEl.appendChild(rangeRow);
+  }
+  renderRefLayerList();
+  if(refLayerListEl){
     refLayerListEl.addEventListener('change', function(e){
       var cb = e.target;
       if(cb && cb.dataset && cb.dataset.reflayer === 'bands'){
@@ -602,6 +704,16 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
   var getCurrentValueRange = null;
   var pendingXRange = null, pendingYRange = null;
 
+  function updateToolbarLabels(){
+    btnXScale.textContent = t(state.xMode === 'log' ? 'btnXScaleLog' : 'btnXScaleLinear');
+    btnYScale.textContent = t(state.yMode === 'log' ? 'btnYScaleLog' : 'btnYScaleLinear');
+    btnBoxZoom.textContent = t('btnBoxZoom');
+    btnZoomFit.textContent = t('btnZoomFit');
+    btnResetZoom.textContent = t('btnResetZoom');
+    btnLabelMode.textContent = t(LABEL_MODE_KEY[state.labelMode]);
+    btnFullscreen.textContent = t(state.fullscreen ? 'btnFullscreenExit' : 'btnFullscreen');
+  }
+
   btnXScale.addEventListener('click', function(){
     if(getCurrentValueRange){
       var r = getCurrentValueRange();
@@ -609,7 +721,7 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       pendingYRange = [r.yMin, r.yMax];
     }
     state.xMode = state.xMode === 'log' ? 'linear' : 'log';
-    btnXScale.textContent = '射程：' + (state.xMode === 'log' ? '對數' : '線性');
+    btnXScale.textContent = t(state.xMode === 'log' ? 'btnXScaleLog' : 'btnXScaleLinear');
     btnXScale.classList.toggle('active', state.xMode === 'linear');
     btnXScale.setAttribute('aria-pressed', state.xMode === 'linear');
     buildChart();
@@ -621,7 +733,7 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       pendingYRange = [r.yMin, r.yMax];
     }
     state.yMode = state.yMode === 'log' ? 'linear' : 'log';
-    btnYScale.textContent = '動能：' + (state.yMode === 'log' ? '對數' : '線性');
+    btnYScale.textContent = t(state.yMode === 'log' ? 'btnYScaleLog' : 'btnYScaleLinear');
     btnYScale.classList.toggle('active', state.yMode === 'linear');
     btnYScale.setAttribute('aria-pressed', state.yMode === 'linear');
     buildChart();
@@ -631,11 +743,11 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
   btnBoxZoom.addEventListener('click', function(){ setBoxZoomMode(!state.boxZoomMode); });
   btnResetZoom.addEventListener('click', function(){ if(resetChartViewRef) resetChartViewRef(); });
 
-  var LABEL_MODE_TEXT = { auto: '名稱：自動', show: '名稱：顯示', hide: '名稱：隱藏' };
+  var LABEL_MODE_KEY = { auto: 'btnLabelAuto', show: 'btnLabelShow', hide: 'btnLabelHide' };
   var LABEL_MODE_NEXT = { auto: 'show', show: 'hide', hide: 'auto' };
   btnLabelMode.addEventListener('click', function(){
     state.labelMode = LABEL_MODE_NEXT[state.labelMode];
-    btnLabelMode.textContent = LABEL_MODE_TEXT[state.labelMode];
+    btnLabelMode.textContent = t(LABEL_MODE_KEY[state.labelMode]);
     btnLabelMode.classList.toggle('active', state.labelMode !== 'auto');
     if(refreshLabelsOnChart) refreshLabelsOnChart();
   });
@@ -645,7 +757,7 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
     document.body.classList.toggle('chart-fullscreen', on);
     btnFullscreen.classList.toggle('active', on);
     btnFullscreen.setAttribute('aria-pressed', on);
-    btnFullscreen.textContent = on ? '⛶ 退出全螢幕' : '⛶ 全螢幕';
+    btnFullscreen.textContent = t(on ? 'btnFullscreenExit' : 'btnFullscreen');
     requestAnimationFrame(function(){ buildChart(); });
   }
   btnFullscreen.addEventListener('click', function(){ setFullscreen(!state.fullscreen); });
@@ -696,39 +808,39 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
   // out at IIIA; III/IV are hard plates and the real distinguishing factor
   // there is AP-penetrator resistance, not raw energy, hence the wide band.
   var ARMOR_BANDS = [
-    { from: 0,    to: 600,   label: 'IIA 軟式（低速手槍）', color: 'rgba(143,168,118,.10)' },
-    { from: 600,  to: 800,   label: 'II 軟式（高速手槍）', color: 'rgba(143,168,118,.16)' },
-    { from: 800,  to: 1480,  label: 'IIIA 軟式防彈衣上限', color: 'rgba(143,168,118,.24)' },
-    { from: 1480, to: 4000,  label: 'Level III/IV 硬式插板', label2: '（防護重點已轉為彈頭硬度／穿甲彈，而非子彈動能）', color: 'rgba(255,122,69,.14)' }
+    { from: 0,    to: 600,   label: { zh: 'IIA 軟式（低速手槍）', en: 'IIA soft (low-vel. pistol)' }, color: 'rgba(143,168,118,.10)' },
+    { from: 600,  to: 800,   label: { zh: 'II 軟式（高速手槍）', en: 'II soft (high-vel. pistol)' }, color: 'rgba(143,168,118,.16)' },
+    { from: 800,  to: 1480,  label: { zh: 'IIIA 軟式防彈衣上限', en: 'IIIA soft armor ceiling' }, color: 'rgba(143,168,118,.24)' },
+    { from: 1480, to: 4000,  label: { zh: 'Level III/IV 硬式插板', en: 'Level III/IV hard plate' }, label2: { zh: '（防護重點已轉為彈頭硬度／穿甲彈，而非子彈動能）', en: '(now about penetrator hardness/AP rounds, not raw energy)' }, color: 'rgba(255,122,69,.14)' }
   ];
 
   // Toggleable vertical (range/X-axis) reference lines — distance intuition
   // anchors provided by the user.
   var RANGE_REF_LINES = [
-    { m: 15,   label: '狩獵標槍致命極限' },
-    { m: 28,   label: '標準籃球場總長' },
-    { m: 105,  label: '標準足球場總長' },
-    { m: 300,  label: '艾菲爾鐵塔高度' },
-    { m: 1000, label: '大城市中心兩個地鐵站的距離' },
-    { m: 2286, label: '1967年M2重機槍加瞄準鏡改裝狙擊紀錄（保持35年）' },
-    { m: 2475, label: '歷史第3狙擊紀錄（.338麥格農彈）' },
-    { m: 3000, label: 'Mk44步兵戰車機砲陸用有效射程' },
-    { m: 3540, label: '歷史第2狙擊紀錄（TAC-50步槍）' },
-    { m: 3800, label: '歷史第1狙擊紀錄（地平線之王步槍）' }
+    { m: 15,   label: { zh: '狩獵標槍致命極限', en: 'Hunting spear lethal limit' } },
+    { m: 28,   label: { zh: '標準籃球場總長', en: 'Standard basketball court length' } },
+    { m: 105,  label: { zh: '標準足球場總長', en: 'Standard soccer pitch length' } },
+    { m: 300,  label: { zh: '艾菲爾鐵塔高度', en: 'Eiffel Tower height' } },
+    { m: 1000, label: { zh: '大城市中心兩個地鐵站的距離', en: 'Distance between two downtown subway stops' } },
+    { m: 2286, label: { zh: '1967年M2重機槍加瞄準鏡改裝狙擊紀錄（保持35年）', en: '1967 scoped-M2 sniper record (stood 35 years)' } },
+    { m: 2475, label: { zh: '歷史第3狙擊紀錄（.338麥格農彈）', en: '3rd-longest sniper kill on record (.338 Magnum)' } },
+    { m: 3000, label: { zh: 'Mk44步兵戰車機砲陸用有效射程', en: 'Mk44 IFV cannon land effective range' } },
+    { m: 3540, label: { zh: '歷史第2狙擊紀錄（TAC-50步槍）', en: '2nd-longest sniper kill on record (TAC-50)' } },
+    { m: 3800, label: { zh: '歷史第1狙擊紀錄（地平線之王步槍）', en: 'Longest sniper kill on record (Horizon rifle)' } }
   ];
 
   // Toggleable individual reference lines — everyday intuition anchors.
   // Approximate values; see conversation notes for sourcing per line.
   var ENERGY_REF_LINES = [
-    { id: 'hk_air',     j: 2,     label: '香港合法氣槍上限 2J' },
-    { id: 'uk_air',     j: 16.3,  label: '英式合法狩獵氣槍 ~16.3J（官方：打不穿頭骨）' },
-    { id: 'skull',      j: 72,    label: '穿透人類頭骨門檻 ~72J' },
-    { id: 'brick5',     j: 1800,  label: '5公分磚牆 ~1,800J（來源存疑，僅供參考）' },
-    { id: 'wall10',     j: 3450,  label: '10公分水泥牆/磚牆 ~3450J' },
-    { id: 'bmg_vehicle',j: 17950, label: '.50 BMG・開始威脅輕裝甲車輛 17,950J' },
-    { id: 'glass_ul10', j: 17950, label: 'UL 752 Level 10防彈玻璃（4-6公分厚）單發防禦上限' },
-    { id: 'sandbag',    j: 20000, label: '一般戰場沙包 ~20,000J（僅供參考，概略估計）' },
-    { id: 'autocannon_start', j: 50000, label: '機炮量級起點 ~50,000J' }
+    { id: 'hk_air',     j: 2,     label: { zh: '香港合法氣槍上限 2J', en: 'HK legal air-gun limit — 2J' } },
+    { id: 'uk_air',     j: 16.3,  label: { zh: '英式合法狩獵氣槍 ~16.3J（官方：打不穿頭骨）', en: 'UK legal hunting air rifle ~16.3J (official: won\'t penetrate skull)' } },
+    { id: 'skull',      j: 72,    label: { zh: '穿透人類頭骨門檻 ~72J', en: 'Human skull penetration threshold ~72J' } },
+    { id: 'brick5',     j: 1800,  label: { zh: '5公分磚牆 ~1,800J（來源存疑，僅供參考）', en: '5cm brick wall ~1,800J (source unverified, reference only)' } },
+    { id: 'wall10',     j: 3450,  label: { zh: '10公分水泥牆/磚牆 ~3450J', en: '10cm concrete/brick wall ~3,450J' } },
+    { id: 'bmg_vehicle',j: 17950, label: { zh: '.50 BMG・開始威脅輕裝甲車輛 17,950J', en: '.50 BMG — starts threatening light armored vehicles, 17,950J' } },
+    { id: 'glass_ul10', j: 17950, label: { zh: 'UL 752 Level 10防彈玻璃（4-6公分厚）單發防禦上限', en: 'UL 752 Level 10 bulletproof glass (4-6cm) — single-shot ceiling' } },
+    { id: 'sandbag',    j: 20000, label: { zh: '一般戰場沙包 ~20,000J（僅供參考，概略估計）', en: 'Typical field sandbag ~20,000J (reference only, rough estimate)' } },
+    { id: 'autocannon_start', j: 50000, label: { zh: '機炮量級起點 ~50,000J', en: 'Where "autocannon" territory begins ~50,000J' } }
   ];
 
   function xTickLabel(v){ return Math.round(v); }
@@ -822,8 +934,8 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       sel.each(function(d){
         var t = d3.select(this);
         t.selectAll('tspan').remove();
-        t.append('tspan').attr('x', 6).attr('dy', 0).text(d.label);
-        if(d.label2) t.append('tspan').attr('x', 6).attr('dy', '1.15em').text(d.label2);
+        t.append('tspan').attr('x', 6).attr('dy', 0).text(L(d.label));
+        if(d.label2) t.append('tspan').attr('x', 6).attr('dy', '1.15em').text(L(d.label2));
       });
     }
     var bandLabelSel = gArmorBands.selectAll('text.armor-band-label')
@@ -845,7 +957,7 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       .attr('class', 'energy-ref-label')
       .attr('x', innerW - 6)
       .attr('text-anchor', 'end')
-      .text(function(d){ return d.label; });
+      .text(function(d){ return L(d.label); });
 
     var gRangeRefs = clip.append('g').attr('class', 'range-refs');
     var rangeLineSel = gRangeRefs.selectAll('line.range-ref-line')
@@ -858,16 +970,16 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       .join('text')
       .attr('class', 'range-ref-label')
       .attr('y', 10)
-      .text(function(d){ return d.label; });
+      .text(function(d){ return L(d.label); });
 
     function refreshRefLayers(){
       bandRectSel = gArmorBands.selectAll('rect.armor-band').data(state.showArmorBands ? ARMOR_BANDS : []).join('rect').attr('class', 'armor-band').attr('x', 0);
       bandLabelSel = gArmorBands.selectAll('text.armor-band-label').data(state.showArmorBands ? ARMOR_BANDS : []).join('text').attr('class', 'armor-band-label').attr('x', 6);
       buildBandLabelTspans(bandLabelSel);
       energyLineSel = gEnergyRefs.selectAll('line.energy-ref-line').data(state.showEnergyRefs ? ENERGY_REF_LINES : []).join('line').attr('class', 'energy-ref-line').attr('x1', 0);
-      energyLabelSel = gEnergyRefs.selectAll('text.energy-ref-label').data(state.showEnergyRefs ? ENERGY_REF_LINES : []).join('text').attr('class', 'energy-ref-label').attr('x', innerW - 6).attr('text-anchor', 'end').text(function(d){ return d.label; });
+      energyLabelSel = gEnergyRefs.selectAll('text.energy-ref-label').data(state.showEnergyRefs ? ENERGY_REF_LINES : []).join('text').attr('class', 'energy-ref-label').attr('x', innerW - 6).attr('text-anchor', 'end').text(function(d){ return L(d.label); });
       rangeLineSel = gRangeRefs.selectAll('line.range-ref-line').data(state.showRangeRefs ? RANGE_REF_LINES : []).join('line').attr('class', 'range-ref-line').attr('y1', 0);
-      rangeLabelSel = gRangeRefs.selectAll('text.range-ref-label').data(state.showRangeRefs ? RANGE_REF_LINES : []).join('text').attr('class', 'range-ref-label').attr('y', 10).text(function(d){ return d.label; });
+      rangeLabelSel = gRangeRefs.selectAll('text.range-ref-label').data(state.showRangeRefs ? RANGE_REF_LINES : []).join('text').attr('class', 'range-ref-label').attr('y', 10).text(function(d){ return L(d.label); });
       redraw();
     }
     refreshRefLayersOnChart = refreshRefLayers;
@@ -882,8 +994,8 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
     var yAxisLabel = gRoot.append('text').attr('class', 'axis-label')
       .attr('transform', 'rotate(-90)').attr('x', 0).attr('y', -48).attr('text-anchor', 'end');
     function updateAxisLabels(){
-      xAxisLabel.text('有效射程 m (' + (state.xMode === 'linear' ? '線性尺度' : '對數尺度') + ') →');
-      yAxisLabel.text('↑ 槍口動能 J (' + (state.yMode === 'linear' ? '線性尺度' : '對數尺度') + ')');
+      xAxisLabel.text(t('axisRangeLbl') + ' (' + (state.xMode === 'linear' ? t('scaleLinear') : t('scaleLog')) + ') →');
+      yAxisLabel.text('↑ ' + t('axisEnergyLbl') + ' (' + (state.yMode === 'linear' ? t('scaleLinear') : t('scaleLog')) + ')');
     }
     updateAxisLabels();
 
@@ -942,12 +1054,12 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       .each(function(d){
         var t = d3.select(this);
         t.selectAll('tspan').remove();
-        var parts = splitNameForLabel(d.name);
+        var parts = splitNameForLabel(L(d.name));
         if(parts.line2){
           t.append('tspan').attr('class', 'pt-label-l1').attr('dy', 0).text(parts.line1);
           t.append('tspan').attr('class', 'pt-label-l2').attr('dy', '1.15em').text(parts.line2);
         } else {
-          t.text(d.name);
+          t.text(L(d.name));
         }
       });
 
@@ -1111,7 +1223,7 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       var ENERGY_ROW_H = 13;
       var visibleRefs = ENERGY_REF_LINES.filter(function(d){ return d.j >= yDomainNow[0] && d.j <= yDomainNow[1]; });
       var refPositioned = visibleRefs.map(function(d){
-        return { d: d, y: curYScale(d.j), w: estimateLabelWidth(d.label, 9.5) };
+        return { d: d, y: curYScale(d.j), w: estimateLabelWidth(L(d.label), 9.5) };
       }).sort(function(a, b){ return a.y - b.y; });
       var lastBottom = -999;
       refPositioned.forEach(function(p){
@@ -1137,7 +1249,7 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       var RANGE_ROW_H = 13;
       var visibleRangeRefs = RANGE_REF_LINES.filter(function(d){ return d.m >= xDomainNow[0] && d.m <= xDomainNow[1]; });
       var rangePositioned = visibleRangeRefs.map(function(d){
-        return { d: d, x: curXScale(d.m), w: estimateLabelWidth(d.label, 9.5) };
+        return { d: d, x: curXScale(d.m), w: estimateLabelWidth(L(d.label), 9.5) };
       }).sort(function(a, b){ return a.x - b.x; });
       var rangeRowBottoms = [];
       var rangeRowById = {};
@@ -1172,11 +1284,11 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
         var candidates = [];
         DATA.forEach(function(d){
           if(!isChartVisible(d)) return;
-          var parts = splitNameForLabel(d.name);
+          var parts = splitNameForLabel(L(d.name));
           var lines = parts.line2 ? 2 : 1;
           var w = parts.line2
             ? Math.max(estimateLabelWidth(parts.line1, LFS), estimateLabelWidth(parts.line2, LFS))
-            : estimateLabelWidth(d.name, LFS);
+            : estimateLabelWidth(L(d.name), LFS);
           candidates.push({
             d: d, x: curX(d), y: curY(d) - symbolRadius(d) - 6,
             w: w, h: lines * LINE_H + 3, lines: lines
@@ -1201,7 +1313,7 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       labelSel
         .attr('x', function(d){ return curX(d); })
         .attr('y', function(d){
-          var parts = splitNameForLabel(d.name);
+          var parts = splitNameForLabel(L(d.name));
           var baseY = curY(d) - symbolRadius(d) - 6;
           return parts.line2 ? baseY - LINE_H : baseY;
         })
@@ -1394,10 +1506,10 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
 
   function showTooltip(event, d){
     tooltip.innerHTML =
-      '<div class="tt-name">' + d.name + '</div>' +
-      '<div class="tt-row">射程 <span>' + fmtRange(d.effectiveRangeM) + '</span></div>' +
-      '<div class="tt-row">動能 <span>' + fmtEnergy(d.muzzleEnergyJ) + '</span></div>' +
-      '<div class="tt-row">射速 <span>' + fmtRpm(d.rpm) + '</span></div>';
+      '<div class="tt-name">' + L(d.name) + '</div>' +
+      '<div class="tt-row">' + t('ttRange') + ' <span>' + fmtRange(d.effectiveRangeM) + '</span></div>' +
+      '<div class="tt-row">' + t('ttEnergy') + ' <span>' + fmtEnergy(d.muzzleEnergyJ) + '</span></div>' +
+      '<div class="tt-row">' + t('ttRpm') + ' <span>' + fmtRpm(d.rpm) + '</span></div>';
     tooltip.style.opacity = 1;
     positionTooltip(event);
   }
@@ -1421,26 +1533,26 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       .transition().duration(150)
       .attr('stroke-opacity', function(d){ return isChartVisible(d) ? 0.9 : 0.05; });
     document.getElementById('chartCount').textContent =
-      '(顯示 ' + DATA.filter(isChartVisible).length + ' / ' + DATA.length + ' 件)';
+      UI_STRINGS.chartCount(DATA.filter(isChartVisible).length, DATA.length, state.lang);
   }
 
   // ---------------- detail overlay ----------------
   function buildDetailHTML(d){
     var g = GROUPS[d.group];
     var at = ACTION_TYPE[d.actionType];
-    return '<span class="detail-tag" style="background:' + g.color + '22;color:' + g.color + ';border:1px solid ' + g.color + '55;">' + g.label + '</span>' +
-      '<span class="detail-tag" style="background:' + at.color + '22;color:' + at.color + ';border:1px solid ' + at.color + '55;">' + at.label + '</span>' +
-      '<h3 class="detail-name">' + d.name + '</h3>' +
-      '<div class="detail-type">' + d.caliber + ' · ' + d.origin + '</div>' +
+    return '<span class="detail-tag" style="background:' + g.color + '22;color:' + g.color + ';border:1px solid ' + g.color + '55;">' + L(g.label) + '</span>' +
+      '<span class="detail-tag" style="background:' + at.color + '22;color:' + at.color + ';border:1px solid ' + at.color + '55;">' + L(at.label) + '</span>' +
+      '<h3 class="detail-name">' + L(d.name) + '</h3>' +
+      '<div class="detail-type">' + L(d.caliber) + ' · ' + L(d.origin) + '</div>' +
       '<div class="detail-stats">' +
-        '<div class="dstat"><div class="k">有效射程</div><div class="v">' + fmtRange(d.effectiveRangeM) + '</div></div>' +
-        '<div class="dstat"><div class="k">槍口動能</div><div class="v">' + fmtEnergy(d.muzzleEnergyJ) + '</div></div>' +
-        '<div class="dstat"><div class="k">射速</div><div class="v">' + fmtRpm(d.rpm) + '</div></div>' +
-        '<div class="dstat"><div class="k">槍身重量</div><div class="v">' + fmtKg(d.weightKg) + '</div></div>' +
+        '<div class="dstat"><div class="k">' + t('dstatRange') + '</div><div class="v">' + fmtRange(d.effectiveRangeM) + '</div></div>' +
+        '<div class="dstat"><div class="k">' + t('dstatEnergy') + '</div><div class="v">' + fmtEnergy(d.muzzleEnergyJ) + '</div></div>' +
+        '<div class="dstat"><div class="k">' + t('dstatRpm') + '</div><div class="v">' + fmtRpm(d.rpm) + '</div></div>' +
+        '<div class="dstat"><div class="k">' + t('dstatWeight') + '</div><div class="v">' + fmtKg(d.weightKg) + '</div></div>' +
       '</div>' +
-      '<div class="detail-desc">' + d.desc + '</div>' +
+      '<div class="detail-desc">' + L(d.desc) + '</div>' +
       '<div class="filter-actions" style="margin-top:14px;">' +
-        '<button class="btn-mini detail-cmp-toggle">' + (state.compareIds.has(d.id) ? '✕ 移出比較清單' : '＋ 加入比較清單') + '</button>' +
+        '<button class="btn-mini detail-cmp-toggle">' + (state.compareIds.has(d.id) ? t('detailRemoveCompare') : t('detailAddCompare')) + '</button>' +
       '</div>';
   }
 
@@ -1472,9 +1584,9 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
   function renderCompare(){
     var body = document.getElementById('compareBody');
     var ids = Array.from(state.compareIds);
-    document.getElementById('compareCount').textContent = ids.length ? '(' + ids.length + ' 件)' : '';
+    document.getElementById('compareCount').textContent = ids.length ? ('(' + ids.length + (state.lang === 'zh' ? ' 件)' : ')')) : '';
     if(ids.length === 0){
-      body.innerHTML = '<div class="detail-empty" style="padding:6px 4px;">點選圖表上的兵器，於詳細卡片按「加入比較清單」，即可在此並排比較射程、動能與射速。</div>';
+      body.innerHTML = '<div class="detail-empty" style="padding:6px 4px;">' + t('compareEmpty') + '</div>';
       return;
     }
     var items = ids.map(function(id){ return DATA.find(function(d){ return d.id === id; }); }).filter(Boolean);
@@ -1483,16 +1595,16 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
       var at = ACTION_TYPE[d.actionType];
       return '<div class="cmp-card">' +
         '<button class="cmp-close" data-id="' + d.id + '">✕</button>' +
-        '<div><span class="cmp-tag" style="background:' + g.color + '"></span><span style="font-size:10px;color:var(--text-3);">' + g.label + ' · ' + at.label + '</span></div>' +
-        '<div class="cmp-name">' + d.name + '</div>' +
-        '<div class="cmp-type">' + d.caliber + '</div>' +
-        '<div class="cmp-row"><span class="k">射程</span><span class="v">' + fmtRange(d.effectiveRangeM) + '</span></div>' +
-        '<div class="cmp-row"><span class="k">動能</span><span class="v">' + fmtEnergy(d.muzzleEnergyJ) + '</span></div>' +
-        '<div class="cmp-row"><span class="k">射速</span><span class="v">' + fmtRpm(d.rpm) + '</span></div>' +
-        '<div class="cmp-row"><span class="k">重量</span><span class="v">' + fmtKg(d.weightKg) + '</span></div>' +
+        '<div><span class="cmp-tag" style="background:' + g.color + '"></span><span style="font-size:10px;color:var(--text-3);">' + L(g.label) + ' · ' + L(at.label) + '</span></div>' +
+        '<div class="cmp-name">' + L(d.name) + '</div>' +
+        '<div class="cmp-type">' + L(d.caliber) + '</div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpRow_range') + '</span><span class="v">' + fmtRange(d.effectiveRangeM) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpRow_energy') + '</span><span class="v">' + fmtEnergy(d.muzzleEnergyJ) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpRow_rpm') + '</span><span class="v">' + fmtRpm(d.rpm) + '</span></div>' +
+        '<div class="cmp-row"><span class="k">' + t('cmpRow_weight') + '</span><span class="v">' + fmtKg(d.weightKg) + '</span></div>' +
       '</div>';
     }).join('');
-    body.innerHTML = cards + '<div class="cmp-clear-wrap"><button class="btn-mini" id="btnCompareClear" style="height:100%;">清空比較</button></div>';
+    body.innerHTML = cards + '<div class="cmp-clear-wrap"><button class="btn-mini" id="btnCompareClear" style="height:100%;">' + t('btnNone') + '</button></div>';
     body.querySelectorAll('.cmp-close').forEach(function(btn){
       btn.addEventListener('click', function(){
         state.compareIds.delete(Number(btn.dataset.id));
@@ -1514,6 +1626,72 @@ window.DATA = [{"id":1,"name":"Ruger LCP II（.22LR口袋手槍）","group":"PIS
     if(refreshSelectionOnChart) refreshSelectionOnChart();
     renderDetail();
     renderCompare();
+  }
+
+  // ---------------- language switching ----------------
+  function setText(id, key){
+    var el = document.getElementById(id);
+    if(el) el.innerHTML = t(key);
+  }
+  function applyLanguage(){
+    document.documentElement.lang = state.lang === 'zh' ? 'zh-Hant' : 'en';
+    var langBtn = document.getElementById('langToggle');
+    if(langBtn) langBtn.textContent = t('langToggle');
+
+    setText('eyebrowText', 'eyebrow');
+    var h1 = document.getElementById('h1Text');
+    if(h1){
+      h1.innerHTML = t('h1_1') +
+        '<span class="accent">' + t('h1_accent1') + '</span>' + t('h1_mid1') +
+        '<span class="accent">' + t('h1_accent2') + '</span>' + t('h1_mid2') +
+        '<span class="accent">' + t('h1_accent3') + '</span>' + t('h1_end');
+    }
+    setText('subText', 'sub');
+    setText('statCountLbl', 'statCountLbl');
+    setText('statCountSuffix', 'statCountSuffix');
+    setText('statRangeLbl', 'statRangeLbl');
+    setText('statEnergyLbl', 'statEnergyLbl');
+    setText('statGroupsLbl', 'statGroupsLbl');
+    setText('statGroupsSuffix', 'statGroupsSuffix');
+    setText('filterTitleText', 'filterTitle');
+    var searchEl = document.getElementById('search');
+    if(searchEl) searchEl.placeholder = t('searchPlaceholder');
+    setText('btnAll', 'btnAll');
+    setText('btnNone', 'btnNone');
+    setText('actionTitleText', 'actionTitle');
+    setText('refTitleText', 'refTitle');
+    setText('chartTitleText', 'chartTitle');
+    setText('chartHintText', 'chartHint');
+    setText('legendTitleText', 'legendTitle');
+    setText('legendAxesTitleText', 'legendAxesTitle');
+    setText('legendAxesBodyText', 'legendAxesBody');
+    setText('legendShapeTitleText', 'legendShapeTitle');
+    setText('legendShapeBodyText', 'legendShapeBody');
+    setText('legendColorTitleText', 'legendColorTitle');
+    setText('legendColorBodyText', 'legendColorBody');
+    setText('legendDataTitleText', 'legendDataTitle');
+    setText('legendDataBodyText', 'legendDataBody');
+    setText('compareTitleText', 'compareTitle');
+    setText('footerText', 'footer');
+
+    // dynamic sidebar lists + toolbar labels
+    renderGroupList();
+    renderActionList();
+    renderRefLayerList();
+    updateToolbarLabels();
+
+    // chart itself (axis labels, point labels, ref-line labels are all
+    // baked into the SVG) plus any open detail/compare panels
+    buildChart();
+    renderDetail();
+    renderCompare();
+  }
+  var langToggleBtn = document.getElementById('langToggle');
+  if(langToggleBtn){
+    langToggleBtn.addEventListener('click', function(){
+      state.lang = state.lang === 'zh' ? 'en' : 'zh';
+      applyLanguage();
+    });
   }
 
   // ---------------- init + resize ----------------
